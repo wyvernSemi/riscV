@@ -8,6 +8,7 @@ The ISS has the following features:
 *	RV32I ISA model
 *	Support for RV32E via compile option
 *	CSR instructions and registers
+*	RV32M extensions
 *	Single HART
 *	Only Machine (M) privilege currently mode supported
 *	Trap handling
