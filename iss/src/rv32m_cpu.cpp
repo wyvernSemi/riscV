@@ -149,8 +149,8 @@ void rv32m_cpu::div                             (const p_rv32i_decode_t d)
         {
             div_result = -1;
         }
-        // Overflow (vol1. 7,2)
-        else if (a == 0x80000000LL and b == 0xffffffffLL)
+        // Overflow (vol1. 7.2)
+        else if ((uint32_t)a == 0x80000000ULL and (uint32_t)b == 0xffffffffULL)
         {
             div_result = 0x80000000;
         }
@@ -206,8 +206,8 @@ void rv32m_cpu::rem                             (const p_rv32i_decode_t d)
         {
             rem_result = a;
         }
-        // Overflow (vol1. 7,2)
-        else if (a == 0x80000000LL and b == 0xffffffffLL)
+        // Overflow (vol1. 7.2)
+        else if ((uint32_t)a == 0x80000000ULL and (uint32_t)b == 0xffffffffULL)
         {
             rem_result = 0;
         }
