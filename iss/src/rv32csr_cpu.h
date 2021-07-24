@@ -29,6 +29,7 @@
 
 #include "rv32_extensions.h"
 #include "rv32csr_cpu_hdr.h"
+#include RV32CSR_INCLUDE
 
 class rv32csr_cpu : public RV32_ZICSR_INHERITANCE_CLASS
 {
@@ -47,6 +48,14 @@ private:
     p_rv32i_intcallback_t p_int_callback;
 
     rv32i_time_t          interrupt_wakeup_time;
+
+    const char mret_str    [DISASSEM_STR_SIZE] = "mret     ";
+    const char csrrw_str   [DISASSEM_STR_SIZE] = "csrrw    ";
+    const char csrrs_str   [DISASSEM_STR_SIZE] = "csrrs    ";
+    const char csrrc_str   [DISASSEM_STR_SIZE] = "csrrc    ";
+    const char csrrwi_str  [DISASSEM_STR_SIZE] = "csrrwi   ";
+    const char csrrsi_str  [DISASSEM_STR_SIZE] = "csrrsi   ";
+    const char csrrci_str  [DISASSEM_STR_SIZE] = "csrrci   ";
 
     // ------------------------------------------------
     // Private member functions

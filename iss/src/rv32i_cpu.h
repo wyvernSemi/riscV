@@ -146,13 +146,6 @@ protected:
     const char and_str     [DISASSEM_STR_SIZE] = "and      ";
     const char ecall_str   [DISASSEM_STR_SIZE] = "ecall    ";
     const char ebrk_str    [DISASSEM_STR_SIZE] = "ebreak   ";
-    const char mret_str    [DISASSEM_STR_SIZE] = "mret     ";
-    const char csrrw_str   [DISASSEM_STR_SIZE] = "csrrw    ";
-    const char csrrs_str   [DISASSEM_STR_SIZE] = "csrrs    ";
-    const char csrrc_str   [DISASSEM_STR_SIZE] = "csrrc    ";
-    const char csrrwi_str  [DISASSEM_STR_SIZE] = "csrrwi   ";
-    const char csrrsi_str  [DISASSEM_STR_SIZE] = "csrrsi   ";
-    const char csrrci_str  [DISASSEM_STR_SIZE] = "csrrci   ";
     const char auipc_str   [DISASSEM_STR_SIZE] = "auipc    ";
     const char lui_str     [DISASSEM_STR_SIZE] = "lui      ";
 
@@ -291,8 +284,6 @@ private:
     // ------------------------------------------------
 
 protected:
-    // For illegal/unimplemented instructions
-    void reserved                        (const p_rv32i_decode_t);
 
     // Disassembly register name decode to a fixed width string
     // (Uses [and clobbers] scratch member variable "str and its
@@ -344,6 +335,13 @@ private:
 
     // Primary instruction decode method
     rv32i_decode_table_t* primary_decode (const opcode_t instr, rv32i_decode_t& decoded_data);
+
+    // ------------------------------------------------
+    // Instruction methods
+    // ------------------------------------------------
+public:
+    // For illegal/unimplemented instructions
+    void reserved                        (const p_rv32i_decode_t);
 
     // RV32I instruction methods
     void lui                             (const p_rv32i_decode_t);

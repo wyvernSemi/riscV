@@ -65,3 +65,20 @@ for %%i in (^
     make SUBDIR=rv32mi FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
+  
+   for %%i in (^
+  mul^
+  mulh^
+  mulhsu^
+  mulhu^
+  div^
+  divu^
+  rem^
+  remu^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    make SUBDIR=rv32um FNAME=%%i.S
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  )

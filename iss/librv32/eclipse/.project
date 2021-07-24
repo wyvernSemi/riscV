@@ -80,5 +80,15 @@
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32i_cpu_hdr.h</locationURI>
 		</link>
+		<link>
+			<name>src/rv32m_cpu.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32m_cpu.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/rv32m_cpu.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32m_cpu.h</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

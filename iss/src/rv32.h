@@ -28,6 +28,7 @@
 #define _RV32_H_
 
 #include "rv32_extensions.h"
+#include RV32_TARGET_INCLUDE
 
 // This class is the top level ISS implementation class, configurable
 // to have only those extensions required to be modelled. The

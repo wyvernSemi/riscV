@@ -45,7 +45,7 @@ INCLPATHS     = -I.                                     \
                 -I${TESTENVDIR}\p                       \
                 -I${TESTDIR}\isa\macros\scalar
 
-COPTS         = -c -fpic -march=rv32i -mabi=ilp32 ${INCLPATHS}
+COPTS         = -c -fpic -march=rv32im -mabi=ilp32 ${INCLPATHS}
 LDOPTS        = -melf32lriscv -Ttext ${START_ADDR}
 
 OBJDIR        = obj
