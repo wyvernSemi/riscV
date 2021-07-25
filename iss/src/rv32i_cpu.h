@@ -156,7 +156,8 @@ protected:
     typedef uint32_t opcode_t;
 
     // Define a class to hold all of the CPU registers. This makes it easier
-    // to access all of the state as a single unit for debug purposes.
+    // to access all of the state as a single unit for debug purposes, and
+    // save & restore features.
     class rv32i_hart_state
     {
     public:
@@ -253,6 +254,12 @@ protected:
     // ------------------------------------------------
     // Virtual methods
     // ------------------------------------------------
+public:
+    // Instruction for illegal/unimplemented instructions. Public
+    // so derived classes can use same function, and virtual so
+    // can be overloaded.
+    virtual void reserved                 (const p_rv32i_decode_t);
+
 protected:
     // State reset
     virtual void     reset                ();
@@ -285,7 +292,6 @@ private:
         bool fault;
         return read_mem(state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
     }
-
 
     // ------------------------------------------------
     // Protected methods
@@ -347,9 +353,6 @@ private:
     // ------------------------------------------------
     // Instruction methods
     // ------------------------------------------------
-public:
-    // For illegal/unimplemented instructions
-    void reserved                        (const p_rv32i_decode_t);
 
     // RV32I instruction methods
     void lui                             (const p_rv32i_decode_t);
