@@ -46,19 +46,33 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     reset();
 
     // No callback functions registered by default
-    p_mem_callback = NULL;
+    p_mem_callback     = NULL;
 
     // Cycle count set to 0
-    cycle_count = 0;
+    cycle_count        = 0;
 
     // Default the current instruction to an unimplemented instruction
-    curr_instr  = 0x00000000;
+    curr_instr         = 0x00000000;
 
     // Default the load/store address
-    access_addr  = 0x00000000;
+    access_addr        = 0x00000000;
 
     // Set up decode tables for RV32I, as per The RISC-V Instruction Set Manual,
     // Volume I: RISC-V Unprivileged ISA V20191213 chapter 24
+
+    // Initialse tertiary tables to reserved instruction
+    for (int i = 0; i < RV32I_NUM_TERTIARY_OPCODES; i++)
+    {
+        sri_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        arith_tbl[i]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        sll_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        slt_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        sltu_tbl[i]    = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        srr_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        xor_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        or_tbl[i]      = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+        and_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
+    }
 
     // Seconary table for load instructions (decoded on funct3)
     int idx = 0;
@@ -94,10 +108,6 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     branch_tbl[idx++]  = {false, bgeu_str,     RV32I_INSTR_FMT_B,   &rv32i_cpu::bgeu };     /*BGEU*/
 
     // Tertiary table for shift right immediate instructions (decoded on funct7)
-    for (idx = 0; idx < RV32I_NUM_TERTIARY_OPCODES; idx++)
-    {
-        sri_tbl[idx]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved }; /*RSVD*/
-    }
     sri_tbl[0x00]      = {false, srli_str,     RV32I_INSTR_FMT_I,   &rv32i_cpu::srli };     /*SRLI*/
     sri_tbl[0x20]      = {false, srai_str,     RV32I_INSTR_FMT_I,   &rv32i_cpu::srai };     /*SRAI*/
 
@@ -113,45 +123,49 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     op_imm_tbl[idx++]  = {false, andi_str,     RV32I_INSTR_FMT_I,   &rv32i_cpu::andi };     /*ANDI*/
 
     // Tertiary table for arithmetic instructions (decoded on funct7)
-    for (idx = 0; idx < RV32I_NUM_TERTIARY_OPCODES; idx++)
-    {
-        arith_tbl[idx] = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved }; /*RSVD*/
-    }
     arith_tbl[0x00]    = {false, add_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::addr };     /*ADD*/
     arith_tbl[0x20]    = {false, sub_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::subr };     /*SUB*/
 
+    // Tertiary table for shift left register to register instructions (decoded on funct7
+    sll_tbl[0x00]      = {false, sll_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::sllr };     /*SLL*/
+ 
+    // Tertiary table for set-less-than register to register instructions (decoded on funct7
+    slt_tbl[0x00]      = {false, slt_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::sltr };     /*SLT*/
+    sltu_tbl[0x00]     = {false, sltu_str,     RV32I_INSTR_FMT_R,   &rv32i_cpu::sltur };    /*SLTU*/
+
     // Tertiary table for shift right register to register instructions (decoded on funct7)
-    for (idx = 0; idx < RV32I_NUM_TERTIARY_OPCODES; idx++)
-    {
-        srr_tbl[idx]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved }; /*RSVD*/
-    }
     srr_tbl[0x00]      = {false, srl_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::srlr };     /*SRL*/
     srr_tbl[0x20]      = {false, sra_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::srar };     /*SRA*/
 
+    // Tertiary table for logic operation register to register instructions (decoded on funct7
+    xor_tbl[0x00]      = {false, xor_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::xorr };     /*XOR*/
+    or_tbl[0x00]       = {false, or_str,       RV32I_INSTR_FMT_R,   &rv32i_cpu::orr };      /*OR*/
+    and_tbl[0x00]      = {false, and_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::andr };     /*AND*/
+
     // Seconary table for register to register operations instructions (decoded on funct3)
     idx = 0;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], arith_tbl); idx++;                                    /*ADD and SUB*/
-    op_tbl[idx++]      = {false, sll_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::sllr };     /*SLLI*/
-    op_tbl[idx++]      = {false, slt_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::sltr };     /*SLTI*/
-    op_tbl[idx++]      = {false, sltu_str,     RV32I_INSTR_FMT_R,   &rv32i_cpu::sltur };    /*SLTIU*/
-    op_tbl[idx++]      = {false, xor_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::xorr };     /*XORI*/
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], srr_tbl); idx++;                                      /*SRL and SRA*/
-    op_tbl[idx++]      = {false, or_str,       RV32I_INSTR_FMT_R,   &rv32i_cpu::orr };      /*OR*/
-    op_tbl[idx++]      = {false, and_str,      RV32I_INSTR_FMT_R,   &rv32i_cpu::andr };     /*AND*/
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], arith_tbl); idx++;
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], sll_tbl);   idx++;
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], slt_tbl);   idx++;
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], sltu_tbl);  idx++; 
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], xor_tbl);   idx++;
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], srr_tbl);   idx++; 
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], or_tbl);    idx++;
+    INIT_TBL_WITH_SUBTBL(op_tbl[idx], and_tbl);   idx++; 
 
-                                                                                            // Seconary table for immediate operations instructions (decoded on funct3)
+     // Seconary table for immediate operations instructions (decoded on funct3)
     idx = 0;
     op_imm_tbl[idx++]  = {false, addi_str,     RV32I_INSTR_FMT_I,   &rv32i_cpu::addi };
 
     // Update decode table with extended instructions
     idx = 0;
     // Tertiary table for ECALL and EBREAK instructions (decoded on funct12 = imm_i)
-    e_tbl[idx++]       = {false, ecall_str,    RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::ecall };    /*ECALL*/
-    e_tbl[idx++]       = {false, ebrk_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::ebreak };   /*EBREAK*/
+    e_tbl[idx++]       = {false, ecall_str,    RV32I_INSTR_FMT_R,   &rv32i_cpu::ecall };    /*ECALL*/
+    e_tbl[idx++]       = {false, ebrk_str,     RV32I_INSTR_FMT_R,   &rv32i_cpu::ebreak };   /*EBREAK*/
     e_tbl[idx++]       = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
     e_tbl[idx++]       = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
 
-                                                                                            // Secondary table for system instructions (decoded on funct3)
+    // Secondary table for system instructions (decoded on funct3)
     idx = 0;
     INIT_TBL_WITH_SUBTBL(sys_tbl[idx], e_tbl); idx++;                                       /*ECALL/EBREAK*/
     for (idx = 1; idx < RV32I_NUM_SECONDARY_OPCODES; idx++)

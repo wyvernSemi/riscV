@@ -172,7 +172,8 @@ protected:
 
     };
 
-    // Define a class to hold the registers (times the number of supported harts) and other internal state
+    // Define a class to hold the registers (times the number of 
+    // supported harts) and other internal state
     class rv32i_state
     {
     public:
@@ -209,6 +210,13 @@ protected:
     rv32i_decode_table_t  arith_tbl      [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  sri_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  srr_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  sll_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  slt_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  sltu_tbl       [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  xor_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  or_tbl         [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  and_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+
 
     // Decode table for SYSTEM instructions
     rv32i_decode_table_t  sys_tbl        [RV32I_NUM_SECONDARY_OPCODES];

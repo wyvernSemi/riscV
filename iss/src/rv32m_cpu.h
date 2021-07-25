@@ -37,13 +37,6 @@ public:
              LIBRISCV32_API      rv32m_cpu      (FILE* dbgfp = stdout);
     virtual  LIBRISCV32_API      ~rv32m_cpu()   { };
 
-    rv32i_decode_table_t  sll_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-    rv32i_decode_table_t  slt_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-    rv32i_decode_table_t  sltu_tbl       [RV32I_NUM_TERTIARY_OPCODES];
-    rv32i_decode_table_t  xor_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-    rv32i_decode_table_t  or_tbl         [RV32I_NUM_TERTIARY_OPCODES];
-    rv32i_decode_table_t  and_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-
 private:
     // ------------------------------------------------
     // Private member variables

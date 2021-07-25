@@ -33,44 +33,20 @@
 
 rv32m_cpu::rv32m_cpu(FILE* dbgfp) : RV32_M_INHERITANCE_CLASS(dbgfp)
 {
-    // Update arith table
-    arith_tbl[0x01]    = {false, mul_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mul };     /*MUL (note: arith_tbl entries at 0 (ADD) and 0x20 (SUB) already initialised in rv32i_cpu*/
-    sll_tbl[0x00]      = {false, sll_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::sllr };    /*SLL*/
+    // Update tertiary tables table with RV32M instruction data
+    arith_tbl[0x01]    = {false, mul_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mul };     /*MUL*/
     sll_tbl[0x01]      = {false, mulh_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mulh };    /*MULH*/
-    slt_tbl[0x00]      = {false, slt_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::sltr };    /*SLT*/
     slt_tbl[0x01]      = {false, mulhsu_str,   RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mulhsu };  /*MULHSU*/
-    sltu_tbl[0x00]     = {false, sltu_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::sltur };   /*SLTU*/
     sltu_tbl[0x01]     = {false, mulhu_str,    RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mulhu };   /*MULHU*/
-    xor_tbl[0x00]      = {false, xor_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::xorr };    /*XOR*/
     xor_tbl[0x01]      = {false, div_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::div };     /*DIV*/
-    srr_tbl[0x01]      = {false, divu_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::divu };    /*DIVU (note: srr_tbl entries at 0 (SRL) and 0x20 (SRA) already initialised in rv32i_cpu*/
-    or_tbl[0x00]       = {false, or_str,       RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::orr };     /*OR*/
+    srr_tbl[0x01]      = {false, divu_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::divu };    /*DIVU*/
     or_tbl[0x01]       = {false, rem_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::rem };     /*REM*/
-    and_tbl[0x00]      = {false, and_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32i_cpu::andr };    /*OR*/
     and_tbl[0x01]      = {false, remu_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::remu };    /*REMU*/
-
-    // Initialise unused entries from local teriary tables to reserved instructions method
-    for (int i = 2; i < RV32I_NUM_TERTIARY_OPCODES; i++)
-    {
-        sll_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-        slt_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-        sltu_tbl[i]    = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-        xor_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-        or_tbl[i]      = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-        and_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, (pFunc_t)&rv32i_cpu::reserved };
-    }
-
-    int idx = 0;
-
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], arith_tbl); idx++;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], sll_tbl); idx++;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], slt_tbl); idx++;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], sltu_tbl); idx++; 
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], xor_tbl); idx++;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], srr_tbl); idx++; 
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], or_tbl); idx++;
-    INIT_TBL_WITH_SUBTBL(op_tbl[idx], and_tbl); idx++; 
 }
+
+// -----------------------------------------------------------
+// RV32M instruction methods
+// -----------------------------------------------------------
 
 void rv32m_cpu::mul(const p_rv32i_decode_t d)
 {
@@ -85,7 +61,7 @@ void rv32m_cpu::mul(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::mulh                            (const p_rv32i_decode_t d)
+void rv32m_cpu::mulh(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -101,7 +77,7 @@ void rv32m_cpu::mulh                            (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::mulhsu                          (const p_rv32i_decode_t d)
+void rv32m_cpu::mulhsu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -117,7 +93,7 @@ void rv32m_cpu::mulhsu                          (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::mulhu                           (const p_rv32i_decode_t d)
+void rv32m_cpu::mulhu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -133,7 +109,7 @@ void rv32m_cpu::mulhu                           (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::div                             (const p_rv32i_decode_t d)
+void rv32m_cpu::div(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -164,7 +140,7 @@ void rv32m_cpu::div                             (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::divu                            (const p_rv32i_decode_t d)
+void rv32m_cpu::divu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -190,7 +166,7 @@ void rv32m_cpu::divu                            (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::rem                             (const p_rv32i_decode_t d)
+void rv32m_cpu::rem(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -221,7 +197,7 @@ void rv32m_cpu::rem                             (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32m_cpu::remu                            (const p_rv32i_decode_t d)
+void rv32m_cpu::remu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
