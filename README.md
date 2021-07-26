@@ -9,6 +9,7 @@ The ISS has the following features:
 *	Support for RV32E via compile option
 *	CSR instructions and registers
 *	RV32M extensions
+*	RV32A extensions
 *	Single HART
 *	Only Machine (M) privilege currently mode supported
 *	Trap handling
