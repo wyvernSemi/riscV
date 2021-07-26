@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\rv32.h" />
+    <ClInclude Include="..\src\rv32a_cpu.h" />
     <ClInclude Include="..\src\rv32csr_cpu.h" />
     <ClInclude Include="..\src\rv32csr_cpu_hdr.h" />
     <ClInclude Include="..\src\rv32i_cpu.h" />
@@ -29,6 +30,7 @@
     <ClInclude Include="..\src\rv32_extensions.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\rv32a_cpu .cpp" />
     <ClCompile Include="..\src\rv32csr_cpu.cpp" />
     <ClCompile Include="..\src\rv32i_cpu.cpp" />
     <ClCompile Include="..\src\rv32i_cpu_elf.cpp" />

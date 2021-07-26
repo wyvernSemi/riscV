@@ -317,6 +317,11 @@
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs1), rmap_str[_rs2]); \
 }
 
+#define RV32I_DISASSEM_RA_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                           \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s (%s)\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs2), rmap_str[_rs1]); \
+}
+
 #define RV32I_DISASSEM_I_TYPE(_instr,_str,_rd,_rs1,_imm_i)   {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %d\n",  state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  rmap(_rs1),  _imm_i);     \

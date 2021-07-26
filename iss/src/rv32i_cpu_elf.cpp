@@ -170,7 +170,6 @@ void rv32i_cpu::read_elf (const char * const filename)
                     exit(USER_ERROR);
                 }
             }
-
         }
     }
 }

@@ -1221,21 +1221,29 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
     RV32I_DISASSEM_J_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_j);
     RV32I_DISASSEM_PC_JUMP;
 
-    access_addr = state.hart[curr_hart].pc + d->imm_j;
-
-    // Check for misalignment on target address
-    if (access_addr & 0x00000003)
+    if (!disassemble)
     {
-        process_trap(RV32I_IADDR_MISALIGNED);
+
+        access_addr = state.hart[curr_hart].pc + d->imm_j;
+
+        // Check for misalignment on target address
+        if (access_addr & 0x00000003)
+        {
+            process_trap(RV32I_IADDR_MISALIGNED);
+        }
+        else
+        {
+            if (d->rd)
+            {
+                state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].pc + 4;
+            }
+
+            state.hart[curr_hart].pc = access_addr;
+        }
     }
     else
     {
-        if (d->rd)
-        {
-            state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].pc + 4;
-        }
-
-        state.hart[curr_hart].pc = access_addr;
+        increment_pc();
     }
 }
 
@@ -1244,23 +1252,30 @@ void rv32i_cpu::jalr(const p_rv32i_decode_t d)
     RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
     RV32I_DISASSEM_PC_JUMP;
 
-    uint32_t next_pc = state.hart[curr_hart].pc + 4;
-
-    access_addr = (state.hart[curr_hart].x[d->rs1] + d->imm_i) & 0xfffffffe;  // Clear bottom bit
-
-    // Check for address misalignment
-    if (access_addr & 0x00000003)
+    if (!disassemble)
     {
-        process_trap(RV32I_IADDR_MISALIGNED);
+        uint32_t next_pc = state.hart[curr_hart].pc + 4;
+
+        access_addr = (state.hart[curr_hart].x[d->rs1] + d->imm_i) & 0xfffffffe;  // Clear bottom bit
+
+        // Check for address misalignment
+        if (access_addr & 0x00000003)
+        {
+            process_trap(RV32I_IADDR_MISALIGNED);
+        }
+        else
+        {
+            state.hart[curr_hart].pc = access_addr;
+
+            if (d->rd)
+            {
+                state.hart[curr_hart].x[d->rd] = next_pc;
+            }
+        }
     }
     else
     {
-        state.hart[curr_hart].pc = access_addr;
-
-        if (d->rd)
-        {
-            state.hart[curr_hart].x[d->rd] = next_pc;
-        }
+        increment_pc();
     }
 
 }
@@ -1292,6 +1307,10 @@ void rv32i_cpu::ecall(const p_rv32i_decode_t d)
     {
         process_trap(RV32I_ENV_CALL_M_MODE);
     }
+    else
+    {
+        increment_pc();
+    }
 }
 
 void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
@@ -1302,5 +1321,9 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
     if (!disassemble)
     {
         process_trap(RV32I_BREAK_POINT);
+    }
+    else
+    {
+        increment_pc();
     }
 }

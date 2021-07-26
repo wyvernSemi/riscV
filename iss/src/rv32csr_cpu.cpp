@@ -360,7 +360,7 @@ void rv32csr_cpu::csrrw(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSR_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -370,7 +370,7 @@ void rv32csr_cpu::csrrs(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSR_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -380,7 +380,7 @@ void rv32csr_cpu::csrrc(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSR_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -390,7 +390,7 @@ void rv32csr_cpu::csrrwi(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSRI_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -400,7 +400,7 @@ void rv32csr_cpu::csrrsi(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSRI_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -410,7 +410,7 @@ void rv32csr_cpu::csrrci(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_ICSRI_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_i & BIT12_MASK, d->rs1);
 
-    if (!access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
+    if (disassemble || !access_csr(d->funct3, d->imm_i & BIT12_MASK, d->rd, d->rs1))
     {
         increment_pc();
     }
@@ -425,9 +425,16 @@ void rv32csr_cpu::mret(const p_rv32i_decode_t d)
     RV32I_DISASSEM_SYS_TYPE(d->instr, d->entry.instr_name);
     RV32I_DISASSEM_PC_JUMP;
 
-    // Set MSTATUS MIE to MPIE
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] &= ~RV32CSR_MIE_BITMASK;
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] |= (state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MPIE_BITMASK) ? RV32CSR_MIE_BITMASK : 0;
+    if (!disassemble)
+    {
+        // Set MSTATUS MIE to MPIE
+        state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] &= ~RV32CSR_MIE_BITMASK;
+        state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] |= (state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MPIE_BITMASK) ? RV32CSR_MIE_BITMASK : 0;
 
-    state.hart[curr_hart].pc = state.hart[curr_hart].csr[RV32CSR_ADDR_MEPC];
+        state.hart[curr_hart].pc = state.hart[curr_hart].csr[RV32CSR_ADDR_MEPC];
+    }
+    else
+    {
+        increment_pc();
+    }
 }

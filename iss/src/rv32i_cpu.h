@@ -92,6 +92,14 @@ public:
     };
 
     // ------------------------------------------------
+    // Public member variables
+    // ------------------------------------------------
+public:
+
+    // Load/store or jump target address (for trap handling)
+    uint32_t              access_addr;
+
+    // ------------------------------------------------
     // Protected member variables
     // ------------------------------------------------
 protected:
@@ -247,9 +255,6 @@ protected:
 
     // Current instruction
     uint32_t              curr_instr;
-
-    // Load/store or jump target address (for trap handling)
-    uint32_t              access_addr;
 
     // ------------------------------------------------
     // Virtual methods

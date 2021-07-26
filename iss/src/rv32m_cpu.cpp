@@ -5,7 +5,7 @@
 // Date: 24th July 2021
 //
 // Contains the instruction execution methods for the
-// rv32csr_cpu derived class
+// rv32m_cpu derived class
 //
 // This file is part of the base RISC-V instruction set simulator
 // (rv32m_cpu).

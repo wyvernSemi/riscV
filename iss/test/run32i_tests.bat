@@ -66,7 +66,7 @@ for %%i in (^
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
   
-   for %%i in (^
+ for %%i in (^
   mul^
   mulh^
   mulhsu^
@@ -82,3 +82,22 @@ for %%i in (^
     make SUBDIR=rv32um FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
+  
+  for %%i in (^
+  amoadd_w^
+  amoand_w^
+  amomax_w^
+  amomaxu_w^
+  amomin_w^
+  amominu_w^
+  amoor_w^
+  amoswap_w^
+  amoxor_w^
+  lrsc^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    make SUBDIR=rv32ua FNAME=%%i.S
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  ) 
