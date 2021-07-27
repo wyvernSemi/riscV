@@ -4,10 +4,10 @@
 //
 // Date: 26th July 2021
 //
-// Contains the class definition for the rv32m_cpu derived class
+// Contains the class definition for the rv32a_cpu derived class
 //
 // This file is part of the M extended RISC-V instruction
-// set simulator (rv32m_cpu).
+// set simulator (rv32a_cpu).
 //
 // This code is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

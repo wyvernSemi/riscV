@@ -173,6 +173,9 @@ protected:
         // General purpose registers
         uint32_t x[RV32I_NUM_OF_REGISTERS];
 
+        // Floating point registers (for RV32F)
+        uint32_t f[RV32I_NUM_OF_REGISTERS];
+
         // CSR registrs
         uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
 
@@ -296,6 +299,11 @@ private:
     {
         bool fault;
         return read_mem(state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
+    }
+
+    virtual void decode_exception(rv32i_decode_table_t*& pEntry, rv32i_decode_t& d)
+    {
+        pEntry = NULL;
     }
 
     // ------------------------------------------------

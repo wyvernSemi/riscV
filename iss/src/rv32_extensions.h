@@ -47,11 +47,11 @@
 
 // Inheritance for a G spec processor should have all the above
 // classes inherited, without skips
-#define RV32_G_INHERITANCE_CLASS         rv32d_cpu
+#define RV32_G_INHERITANCE_CLASS         rv32f_cpu
 
 // Uncomment the following to compile for RV32E base class,
 // or define it when compiling rv32i_cpu.cpp
-// 
+
 //#define RV32E_EXTENSION
 
 // Define the extension spec for the target model. Chose the
@@ -67,7 +67,8 @@
 #define RV32M_INCLUDE                   "rv32csr_cpu.h"
 #define RV32A_INCLUDE                   "rv32m_cpu.h"
 #define RV32F_INCLUDE                   "rv32a_cpu.h"
-#define RV32D_INCLUDE                   "rv32d_cpu.h"
-#define RV32_TARGET_INCLUDE             "rv32a_cpu.h"
+#define RV32D_INCLUDE                   "rv32f_cpu.h"
+
+#define RV32_TARGET_INCLUDE             "rv32f_cpu.h"
 
 #endif

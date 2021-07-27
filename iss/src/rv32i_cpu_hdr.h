@@ -197,7 +197,8 @@
 #define RV32I_INSTR_FMT_B                              3
 #define RV32I_INSTR_FMT_U                              4
 #define RV32I_INSTR_FMT_J                              5
-                                                       
+#define RV32I_INSTR_FMT_R4                             6
+
 // Trap types                                          
 #define RV32I_IADDR_MISALIGNED                         0
 #define RV32I_INSTR_ACCESS_FAULT                       1

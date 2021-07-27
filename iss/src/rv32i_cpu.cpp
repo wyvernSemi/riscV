@@ -384,10 +384,12 @@ rv32i_decode_table_t* rv32i_cpu::primary_decode(const opcode_t instr, rv32i_deco
                     p_entry = &p_entry->ref.p_entry[decoded_data.funct7];
                 }
 
-                // It is illegal to have a fourth level of sub-table
+                // It is illegal, in the base class, to have a fourth level of sub-table.
+                // Call virtual function so child classes can handle separately. Base
+                // class method returns NULL
                 if (p_entry->sub_table)
                 {
-                    p_entry = NULL;
+                    decode_exception(p_entry, decoded_data);
                 }
             }
         }

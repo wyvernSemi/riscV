@@ -66,6 +66,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32csr_cpu_hdr.h</locationURI>
 		</link>
 		<link>
+			<name>src/rv32f_cpu.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32f_cpu.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/rv32f_cpu.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32f_cpu.h</locationURI>
+		</link>
+		<link>
 			<name>src/rv32i_cpu.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32i_cpu.cpp</locationURI>
