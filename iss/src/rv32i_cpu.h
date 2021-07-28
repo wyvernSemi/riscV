@@ -114,6 +114,12 @@ protected:
                                  "a6",   "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
                                  "s8",   "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
 
+    // Mappings of register indexes to register name strings 
+    const char* fmap_str[32] = { "ft0", "ft1", "ft2",  "ft3",  "ft4", "ft5", "ft6",  "ft7",
+                                 "fs0", "fs1", "fa0",  "fa1",  "fa2", "fa3", "fa4",  "fa5",
+                                 "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
+                                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"};
+
     // String constants for instruction disassembly
     const char reserved_str[DISASSEM_STR_SIZE] = "reserved ";
     const char lb_str      [DISASSEM_STR_SIZE] = "lb       ";
@@ -325,6 +331,26 @@ protected:
         size_t len         = strlen(rmap_str[r]);                     // Get length of indexed abi string
 
         strncpy(str[str_idx], rmap_str[r], DISASSEM_STR_SIZE);        // Lookup and copy abi string from reg index
+
+        str[str_idx][len]  = ',';                                     // Add a comma
+        str[str_idx][slen] = 0;                                       // Terminate string at fixed width
+
+        return str[str_idx];
+    }
+
+    // Disassembly register name decode to a fixed width string
+    // (Uses [and clobbers] scratch member variable "str and its
+    // index, str_idx")
+    inline char* fmap                    (uint32_t r, int slen = 5)
+    {
+        // Move to next string buffer
+        str_idx = (str_idx + 1) % NUM_DISASSEM_BUFS;
+
+        strcpy(str[str_idx], "         ");                            // Initialise with spaces
+
+        size_t len         = strlen(fmap_str[r]);                     // Get length of indexed abi string
+
+        strncpy(str[str_idx], fmap_str[r], DISASSEM_STR_SIZE);        // Lookup and copy abi string from reg index
 
         str[str_idx][len]  = ',';                                     // Add a comma
         str[str_idx][slen] = 0;                                       // Terminate string at fixed width

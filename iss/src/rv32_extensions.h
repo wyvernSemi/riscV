@@ -54,10 +54,6 @@
 
 //#define RV32E_EXTENSION
 
-// Define the extension spec for the target model. Chose the
-// highest order class that's needed. Currently Zicsr extensions.
-#define RV32_TARGET_INHERITANCE_CLASS    rv32a_cpu
-
 // Define the class include file definitions used here. I.e. those needed
 // for the target spec. Each one defines its predecessor, as including
 // headers for later derived classes causes a compile error---even when
@@ -69,6 +65,11 @@
 #define RV32F_INCLUDE                   "rv32a_cpu.h"
 #define RV32D_INCLUDE                   "rv32f_cpu.h"
 
+// Define the extension spec for the target model. Chose the
+// highest order class that's needed. Currently Zicsr extensions.
+#define RV32_TARGET_INHERITANCE_CLASS    rv32f_cpu
+
+// Define target include: must match include of RV32_TARGET_INHERITANCE_CLASS
 #define RV32_TARGET_INCLUDE             "rv32f_cpu.h"
 
 #endif

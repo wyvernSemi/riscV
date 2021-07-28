@@ -28,24 +28,24 @@ FNAME         = add.S
 START_ADDR    = 0
 ARCHCHAIN     = riscv64-unknown-elf-
 
-TESTSRCROOT   = c:\git
+TESTSRCROOT   = c:/git
 
-TESTDIR       = ${TESTSRCROOT}\riscv-tests
-TESTENVDIR    = ${TESTSRCROOT}\riscv-test-env
+TESTDIR       = ${TESTSRCROOT}/riscv-tests
+TESTENVDIR    = ${TESTSRCROOT}/riscv-test-env
 
 SUBDIR        = rv32ui
 
-DIR32UI       = ${TESTDIR}\isa\${SUBDIR}
+DIR32UI       = ${TESTDIR}/isa/${SUBDIR}
 
 
 CC            = ${ARCHCHAIN}gcc
 LD            = ${ARCHCHAIN}ld
 
 INCLPATHS     = -I.                                     \
-                -I${TESTENVDIR}\p                       \
-                -I${TESTDIR}\isa\macros\scalar
+                -I${TESTENVDIR}/p                       \
+                -I${TESTDIR}/isa/macros/scalar
 
-COPTS         = -c -fpic -march=rv32ima -mabi=ilp32 ${INCLPATHS}
+COPTS         = -c -fpic -march=rv32imaf -mabi=ilp32 ${INCLPATHS}
 LDOPTS        = -melf32lriscv -Ttext ${START_ADDR}
 
 OBJDIR        = obj

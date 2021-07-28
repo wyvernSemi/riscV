@@ -318,9 +318,19 @@
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs1), rmap_str[_rs2]); \
 }
 
-#define RV32I_DISASSEM_RA_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                           \
+#define RV32I_DISASSEM_RA_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                          \
     if (disassemble || rt_disassem)                                                                                                      \
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s (%s)\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs2), rmap_str[_rs1]); \
+}
+
+#define RV32I_DISASSEM_RF_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                           \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,fmap(_rd),fmap(_rs1), fmap_str[_rs2]); \
+}
+
+#define RV32I_DISASSEM_R4_TYPE(_instr,_str,_rd,_rs1,_rs2,_rs3)     {                                                                     \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,fmap(_rd),fmap(_rs1),fmap(_rs2),fmap_str[_rs3]); \
 }
 
 #define RV32I_DISASSEM_I_TYPE(_instr,_str,_rd,_rs1,_imm_i)   {                                                                           \
@@ -333,6 +343,11 @@
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, rmap(_rs2), _imm_s, rmap_str[_rs1]);  \
 }
 
+#define RV32I_DISASSEM_SFS_TYPE(_instr,_str,_rs1,_rs2,_imm_s)  {                                                                         \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, fmap(_rs2), _imm_s, rmap_str[_rs1]);      \
+}
+
 #define RV32I_DISASSEM_IL_TYPE(_instr,_str,_rd,_rs1,_imm_i)  {                                                               /* LOAD */  \
     if (disassemble || rt_disassem)                                                                                                      \
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  _imm_i, rmap_str[_rs1]);  \
@@ -341,6 +356,11 @@
 #define RV32I_DISASSEM_IF_TYPE(_instr,_str,_imm_i)           {                                                               /* FENCE */ \
     if (disassemble || rt_disassem)                                                                                                      \
         fprintf(dasm_fp, "%08x: 0x%08x    %s %d, %d\n",    state.hart[curr_hart].pc, _instr, _str, ((_imm_i)>>4)&0xf, ((_imm_i)>>0)&0xf);\
+}
+
+#define RV32I_DISASSEM_IFS_TYPE(_instr,_str,_rd,_rs1,_imm_i)  {                                                               /* LOAD */ \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, fmap(_rd), _imm_i, rmap_str[_rs1]);   \
 }
 
 #define RV32I_DISASSEM_ICSR_TYPE(_instr,_str,_rd,_csr,_rs1)  {                                                               /* CSR */   \

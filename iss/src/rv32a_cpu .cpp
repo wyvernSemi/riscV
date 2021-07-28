@@ -33,6 +33,8 @@
 
 rv32a_cpu::rv32a_cpu(FILE* dbgfp) : RV32_A_INHERITANCE_CLASS(dbgfp)
 {
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA] |=  RV32CSR_EXT_A;
+
     // Initialise the AMOW tertiary table for reserved instruction method
     for (int i = 0; i < RV32I_NUM_TERTIARY_OPCODES; i++)
     {

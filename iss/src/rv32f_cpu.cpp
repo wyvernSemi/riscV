@@ -33,13 +33,16 @@
 
 rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
 {
-
     int idx;
+
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA] |=  RV32CSR_EXT_F;
+
+    curr_rnd_method = fegetround();
 
     // Quarternary tables for floating point, decoded in funct3.
     // For OP-FP instructions not using 'rm' field in funct3 place.
 
-    // Initialise quarternary table sto reserved instruction method
+    // Initialise quarternary table to reserved instruction method
     for (int i = 0; i < RV32I_NUM_SECONDARY_OPCODES; i++)
     {
         fsgnjs_tbl[i]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
@@ -82,7 +85,7 @@ rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
 
     // For all combinations of funct3, point to the tertiary fsop_tbl. 
     // Will decode funct3 locally in instruction methods. Avoids large
-    // and complex tables initialiation on all combinations of rm.
+    // and complex tables initialisation on all combinations of rm.
     // This effectively pushes funct3 decode to a quarternary decode
     // from secondary.
     for (int i = 0; i < RV32I_NUM_SECONDARY_OPCODES; i++)
@@ -102,31 +105,274 @@ rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
     INIT_TBL_WITH_SUBTBL(primary_tbl[idx], fsop_tbl); idx++;
 }
 
+uint32_t rv32f_cpu::access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm)
+{
+    uint32_t error = 0;
+    
+    // Call csr class's access_acr function.
+    if (!(error = rv32csr_cpu::access_csr(funct3, addr, rd, rs1_uimm)))
+    {
+        // If no error, check if access was to floating point CSRs. Since FRM and FFLAGS are
+        // copies of FCSR fields, if any are updated, the relevant other registers need
+        // updating too. Note, FRM occupies bottom three bits, but FCSR copy starts from
+        // bit 5.
+        switch (addr)
+        {
+        case RV32CSR_ADDR_FFLAGS:
+            state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   = (state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   & ~RV32CSR_FFLAGS_WR_MASK) |
+                                                              state.hart[curr_hart].csr[RV32CSR_ADDR_FFLAGS] & RV32CSR_FFLAGS_WR_MASK;
+            break;
+        case RV32CSR_ADDR_FRM:
+            state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   = (state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR] & ~(RV32CSR_FRM_WR_MASK << 5)) | 
+                                                             ((state.hart[curr_hart].csr[RV32CSR_ADDR_FRM] & RV32CSR_FRM_WR_MASK ) << 5);
+            break;
+        case RV32CSR_ADDR_FCSR:
+            state.hart[curr_hart].csr[RV32CSR_ADDR_FFLAGS] =  state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR] & RV32CSR_FFLAGS_WR_MASK;
+            state.hart[curr_hart].csr[RV32CSR_ADDR_FRM]    = (state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR] >> 5) & RV32CSR_FRM_WR_MASK;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return error;
+}
+
+// -----------------------------------------------------------
+// Overloaded CSR write mask method
+// -----------------------------------------------------------
+
+uint32_t rv32f_cpu::csr_wr_mask(const uint32_t addr, bool& unimp)
+{
+    // Offer the access to the ancestor classes first
+    uint32_t mask =  rv32csr_cpu::csr_wr_mask(addr, unimp);
+
+    // If not implemented in the parent classes, decode here
+    if (unimp)
+    {
+        unimp = false;
+
+        switch (addr)
+        {
+        case RV32CSR_ADDR_FFLAGS:
+            mask = RV32CSR_FFLAGS_WR_MASK;
+            break;
+        case RV32CSR_ADDR_FRM:
+            mask = RV32CSR_FRM_WR_MASK;
+            break;
+        case RV32CSR_ADDR_FCSR:
+            mask = RV32CSR_FCSR_WR_MASK;
+            break;
+        default:
+            mask = 0;
+            unimp = true;
+            break;
+        }
+    }
+
+    return mask;
+}
+
 // -----------------------------------------------------------
 // RV32F instruction methods
 // -----------------------------------------------------------
 
-void rv32f_cpu::flw    (const p_rv32i_decode_t d){};
-void rv32f_cpu::fsw    (const p_rv32i_decode_t d){};
-void rv32f_cpu::fmadds (const p_rv32i_decode_t d){};
-void rv32f_cpu::fmsubs (const p_rv32i_decode_t d){};
-void rv32f_cpu::fnmsubs(const p_rv32i_decode_t d){};
-void rv32f_cpu::fnmadds(const p_rv32i_decode_t d){};
-void rv32f_cpu::fadds  (const p_rv32i_decode_t d){};
-void rv32f_cpu::fsubs  (const p_rv32i_decode_t d){};
-void rv32f_cpu::fmuls  (const p_rv32i_decode_t d){}; 
-void rv32f_cpu::fdivs  (const p_rv32i_decode_t d){};
-void rv32f_cpu::fsqrts (const p_rv32i_decode_t d){};
-void rv32f_cpu::fsgnjs (const p_rv32i_decode_t d){};
-void rv32f_cpu::fsgnjns(const p_rv32i_decode_t d){};
-void rv32f_cpu::fsgnjxs(const p_rv32i_decode_t d){};
-void rv32f_cpu::fmins  (const p_rv32i_decode_t d){};
-void rv32f_cpu::fmaxs  (const p_rv32i_decode_t d){};
-void rv32f_cpu::fcvtws (const p_rv32i_decode_t d){};
-void rv32f_cpu::fmvxw  (const p_rv32i_decode_t d){};
-void rv32f_cpu::feqs   (const p_rv32i_decode_t d){}; 
-void rv32f_cpu::flts   (const p_rv32i_decode_t d){};
-void rv32f_cpu::fles   (const p_rv32i_decode_t d){};
-void rv32f_cpu::fclasss(const p_rv32i_decode_t d){};
-void rv32f_cpu::fcvtsw (const p_rv32i_decode_t d){}; 
-void rv32f_cpu::fmvwx  (const p_rv32i_decode_t d){};
+void rv32f_cpu::flw(const p_rv32i_decode_t d)
+{
+    bool access_fault = false;
+
+    RV32I_DISASSEM_IFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+
+    if (!disassemble)
+    {
+        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+
+        uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault);
+
+        if (!access_fault)
+        {
+            state.hart[curr_hart].f[d->rd] = rd_val;
+        }
+    }
+
+    if (!access_fault)
+    {
+        increment_pc();
+    }
+}
+
+void rv32f_cpu::fsw(const p_rv32i_decode_t d)
+{
+    bool access_fault = false;
+
+    RV32I_DISASSEM_SFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+
+    if (!disassemble)
+    {
+        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+
+        write_mem(access_addr, state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
+    }
+
+    if (!access_fault)
+    {
+        increment_pc();
+    }
+}
+
+void rv32f_cpu::fmadds(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)&0x1f));
+
+    int rnd_method = fegetround();
+    fesetround(rnd_method);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmsubs (const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)&0x1f));
+
+    increment_pc();
+}
+
+void rv32f_cpu::fnmsubs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)&0x1f));
+
+    increment_pc();
+}
+
+void rv32f_cpu::fnmadds(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)&0x1f));
+
+    increment_pc();
+}
+
+void rv32f_cpu::fadds(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fsubs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmuls(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);;
+
+    increment_pc();
+}
+
+void rv32f_cpu::fdivs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fsqrts(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fsgnjs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fsgnjns(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fsgnjxs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmins(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmaxs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fcvtws(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display 
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmvxw(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display 
+
+    increment_pc();
+}
+
+void rv32f_cpu::feqs(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::flts(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fles   (const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+
+    increment_pc();
+}
+
+void rv32f_cpu::fclasss(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display 
+
+    increment_pc();
+}
+
+void rv32f_cpu::fcvtsw(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display 
+
+    increment_pc();
+}
+
+void rv32f_cpu::fmvwx(const p_rv32i_decode_t d)
+{
+    RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display 
+
+    increment_pc();
+}

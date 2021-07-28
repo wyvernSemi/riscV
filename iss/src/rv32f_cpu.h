@@ -27,6 +27,9 @@
 #ifndef _RV32F_CPU_H_
 #define _RV32F_CPU_H_
 
+#include <cmath>
+#include <cfenv>
+
 #include "rv32_extensions.h"
 #include "rv32i_cpu_hdr.h"
 #include RV32F_INCLUDE
@@ -40,7 +43,7 @@ public:
     // Add an RV32F instruction secondary table here.
     rv32i_decode_table_t  fsop_tbl      [RV32I_NUM_SECONDARY_OPCODES];
 
-    // OP-FP teriary table (decoded on funct7)
+    // OP-FP tertiary table (decoded on funct7)
     rv32i_decode_table_t  fs_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  fsgnjs_tbl    [RV32I_NUM_SECONDARY_OPCODES];
     rv32i_decode_table_t  fminmaxs_tbl  [RV32I_NUM_SECONDARY_OPCODES];
@@ -81,9 +84,14 @@ private:
     const char fcvtsw_str        [DISASSEM_STR_SIZE] = "fcvt.s.w ";
     const char fmvwx_str         [DISASSEM_STR_SIZE] = "fmv.w.x  ";
 
+    int        curr_rnd_method;
+
     // ------------------------------------------------
     // Private member functions
     // ------------------------------------------------
+
+    uint32_t csr_wr_mask(const uint32_t addr, bool& unimp);
+    uint32_t access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm);
 
     void decode_exception(rv32i_decode_table_t*& p_entry, rv32i_decode_t& d)
     {

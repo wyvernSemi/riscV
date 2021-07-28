@@ -76,6 +76,11 @@
 
 // CSR register addresses
 
+// Floating point CSR addresses
+#define RV32CSR_ADDR_FFLAGS                            0x001
+#define RV32CSR_ADDR_FRM                               0x002
+#define RV32CSR_ADDR_FCSR                              0x003
+
 // Machine information
 #define RV32CSR_ADDR_MVENDORID                         0xf11
 #define RV32CSR_ADDR_MARCHID                           0xf12
@@ -243,6 +248,9 @@
 #define RV32CSR_MEPC_WR_MASK                           0xfffffffc
 #define RV32CSR_MCAUSE_WR_MASK                         0xffffffff
 #define RV32CSR_MTVAL_WR_MASK                          0xffffffff
+#define RV32CSR_FFLAGS_WR_MASK                         0x0000001f
+#define RV32CSR_FRM_WR_MASK                            0x00000007
+#define RV32CSR_FCSR_WR_MASK                           0x000000ff
 
 // CSR memory protection registers are implemented but currently hardwired to 0
 #define RV32CSR_PMPX_WR_MASK                           0x00000000

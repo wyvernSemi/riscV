@@ -201,7 +201,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
     uint32_t priv_reqd_level = (addr & RV32CSR_PRIV_MASK) >> RV32CSR_RIV_START_BIT;
     bool     csr_rnw         = ((addr & RV32CSR_RW_MASK) == RV32CSR_RW_MASK);          // All RW bits set == readonly
 
-    bool     unimplemented;
+    bool     unimplemented = false;
     uint32_t wr_mask;
 
     // Check sufficient privilege level and register implemented

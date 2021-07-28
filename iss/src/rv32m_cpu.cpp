@@ -33,6 +33,8 @@
 
 rv32m_cpu::rv32m_cpu(FILE* dbgfp) : RV32_M_INHERITANCE_CLASS(dbgfp)
 {
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA] |=  RV32CSR_EXT_M;
+
     // Update tertiary tables table with RV32M instruction data
     arith_tbl[0x01]    = {false, mul_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mul };     /*MUL*/
     sll_tbl[0x01]      = {false, mulh_str,     RV32I_INSTR_FMT_R,   (pFunc_t)&rv32m_cpu::mulh };    /*MULH*/
