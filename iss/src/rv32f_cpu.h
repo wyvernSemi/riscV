@@ -29,6 +29,7 @@
 
 #include <cmath>
 #include <cfenv>
+#include <climits>
 
 #include "rv32_extensions.h"
 #include "rv32i_cpu_hdr.h"
@@ -45,6 +46,8 @@ public:
 
     // OP-FP tertiary table (decoded on funct7)
     rv32i_decode_table_t  fs_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+
+    // Quarternary table (decoded on funct3 via decode_exception method)
     rv32i_decode_table_t  fsgnjs_tbl    [RV32I_NUM_SECONDARY_OPCODES];
     rv32i_decode_table_t  fminmaxs_tbl  [RV32I_NUM_SECONDARY_OPCODES];
     rv32i_decode_table_t  fcmp_tbl      [RV32I_NUM_SECONDARY_OPCODES];
@@ -106,6 +109,23 @@ private:
         }
     }
 
+    float map_uint_to_float(uint32_t& num)
+    {
+        return *((float*)&num);
+    }
+
+    uint32_t map_float_to_uint(float& num, bool make_pos = true)
+    {
+        // Map float to unit32_t. If NaN, ensure sign bit is clear
+        return *((uint32_t*)&num) & ((std::isnan(num) & make_pos )? 0x7fffffff : 0xffffffff);
+    }
+
+    // Updates the floating point rounding method
+    void update_rm(int req_rnd_method);
+
+    // Handles flotaing point exceptions
+    void handle_fexceptions();
+
     // RV32F extension instruction methods
     void flw                             (const p_rv32i_decode_t);
     void fsw                             (const p_rv32i_decode_t);
@@ -124,13 +144,13 @@ private:
     void fmins                           (const p_rv32i_decode_t);
     void fmaxs                           (const p_rv32i_decode_t);
     void fcvtws                          (const p_rv32i_decode_t);
-    void fmvxw                           (const p_rv32i_decode_t);
-    void feqs                            (const p_rv32i_decode_t); 
+    void feqs                            (const p_rv32i_decode_t);
     void flts                            (const p_rv32i_decode_t);
     void fles                            (const p_rv32i_decode_t);
     void fclasss                         (const p_rv32i_decode_t);
-    void fcvtsw                          (const p_rv32i_decode_t); 
+    void fcvtsw                          (const p_rv32i_decode_t);
     void fmvwx                           (const p_rv32i_decode_t);
+    void fmvxw                           (const p_rv32i_decode_t);
 };
 
 #endif

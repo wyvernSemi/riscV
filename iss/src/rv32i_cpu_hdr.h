@@ -55,6 +55,8 @@
 
 // General bit masks
 #define MASK_INSTR_ADDR                                0xfffffffc
+#define BIT2_MASK                                      0x00000003
+#define BIT5_MASK                                      0x0000001f
 #define BYTE_MASK                                      0x000000ff
 #define BIT12_MASK                                     0x00000fff
 #define BIT13_MASK                                     0x00001fff
@@ -85,6 +87,8 @@
 
 #define MEM_NOT_DBG_MASK                               0x0f
 #define MEM_DBG_MASK                                   0x10
+
+#define SIGN32_BIT                                     0x80000000U
 
 // External memory callback return values
 #define RV32I_EXT_MEM_NOT_PROCESSED                    (-1)
@@ -251,6 +255,24 @@
 // Memory mapped mtime and mtimecmp register offsets 
 #define RV32I_RTCLOCK_ADDRESS                          0xfffffff0
 #define RV32I_RTCLOCK_CMP_ADDRESS                      0xfffffff8
+
+// FP rounding modes
+#define RV32I_RNE                                      0
+#define RV32I_RTZ                                      1
+#define RV32I_RDN                                      2
+#define RV32I_RUP                                      3
+#define RV32I_RMM                                      4
+#define RV32I_DYN                                      7
+
+// FP flga masks
+#define RV32I_NX                                       0x01
+#define RV32I_UF                                       0x02
+#define RV32I_OF                                       0x04
+#define RV32I_DZ                                       0x08
+#define RV32I_NV                                       0x10
+
+#define RV32I_QNANF                                    0x7fc00000
+#define RV32I_SNANF                                    0x7f800001
 
 // -------------------------------------------------------------------------
 // MACROS

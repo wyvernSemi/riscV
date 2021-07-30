@@ -252,6 +252,12 @@
 #define RV32CSR_FRM_WR_MASK                            0x00000007
 #define RV32CSR_FCSR_WR_MASK                           0x000000ff
 
+#define RV32CSR_MSTATUS_FS_MASK                        0x00006000
+#define RV32CSR_MSTATUS_FS_OFF                         0x00000000
+#define RV32CSR_MSTATUS_FS_INITIAL                     0x00002000
+#define RV32CSR_MSTATUS_FS_CLEAN                       0x00004000
+#define RV32CSR_MSTATUS_FS_DIRTY                       0x00006000
+
 // CSR memory protection registers are implemented but currently hardwired to 0
 #define RV32CSR_PMPX_WR_MASK                           0x00000000
 

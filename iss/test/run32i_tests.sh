@@ -90,4 +90,16 @@ do
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32ua FNAME=$tst.S
     $EXE_DIR/rv32 -b -t $tst.exe
+done
+
+#
+# RV32F tests
+#
+for tst in fadd fclass fcmp fcvt fcvt_w fdiv fmadd fmin ldst move recoding
+do
+    echo
+    echo
+    echo Running test for $tst instruction...
+    make $MAKE_ARGS SUBDIR=rv32uf FNAME=$tst.S
+    $EXE_DIR/rv32 -b -t $tst.exe
 done 

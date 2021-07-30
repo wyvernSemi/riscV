@@ -218,7 +218,7 @@ int main(int argc, char** argv)
         // Print result
         if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
         {
-            printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10), pCpu->regi_val(17));
+            printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
         }
         else
         {

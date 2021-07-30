@@ -96,9 +96,6 @@ public:
     // ------------------------------------------------
 public:
 
-    // Load/store or jump target address (for trap handling)
-    uint32_t              access_addr;
-
     // ------------------------------------------------
     // Protected member variables
     // ------------------------------------------------
@@ -206,7 +203,7 @@ protected:
     bool                  disassemble;               // Dissassemble mode
     bool                  rt_disassem;               // Disassemble during runtime
 
-    // Flag to halt on a reserved instriction
+    // Flag to halt on a reserved instruction
     bool                  halt_rsvd_instr;
 
     // Holds CSR and HART (pc and regs) state
@@ -217,6 +214,9 @@ protected:
 
     // File pointer for disassembler (and other debug) output
     FILE*                 dasm_fp;
+
+    // Load/store or jump target address (for trap handling)
+    uint32_t              access_addr;
 
     // RV32I Decode tables
     rv32i_decode_table_t  primary_tbl    [RV32I_NUM_PRIMARY_OPCODES];
@@ -259,7 +259,7 @@ protected:
     char                  str            [NUM_DISASSEM_BUFS][DISASSEM_STR_SIZE];
     int                   str_idx;
 
-    // Pointer to external menory callback function
+    // Pointer to external memory callback function
     p_rv32i_memcallback_t p_mem_callback;
 
     // Current instruction
@@ -284,6 +284,10 @@ protected:
     {
         state.hart[curr_hart].pc += 4;
     }
+
+    // Place holder virtual methods for overloading with CSR access functoinality
+    virtual uint32_t access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t value) { return 1;}
+    virtual uint32_t csr_wr_mask(const uint32_t addr, bool& unimp) { unimp = true; return 0;}
 
 private:
     // RV32I trap processing. Since CSR registers not implemented,
