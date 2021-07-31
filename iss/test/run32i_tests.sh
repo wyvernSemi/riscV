@@ -105,7 +105,7 @@ do
 done
 
 #
-# RV32F tests
+# RV32D tests
 #
 for tst in fadd fclass fcmp fcvt fcvt_w fdiv fmadd fmin ldst recoding
 do

@@ -41,6 +41,7 @@ public:
              LIBRISCV32_API      rv32f_cpu      (FILE* dbgfp = stdout);
     virtual  LIBRISCV32_API      ~rv32f_cpu()   { };
 
+protected:
     // Add an RV32F instruction secondary table here.
     rv32i_decode_table_t  fsop_tbl      [RV32I_NUM_SECONDARY_OPCODES];
 

@@ -37,6 +37,7 @@ public:
              LIBRISCV32_API      rv32a_cpu      (FILE* dbgfp = stdout);
     virtual  LIBRISCV32_API      ~rv32a_cpu()   { };
 
+protected:
     // Add an AMO instruction secondary table here. Make public to allow
     // RV64A instructions to be added in a future derived class.
     rv32i_decode_table_t  amo_tbl        [RV32I_NUM_SECONDARY_OPCODES];
