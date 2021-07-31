@@ -283,7 +283,7 @@ void rv32f_cpu::flw(const p_rv32i_decode_t d)
     {
         access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
-        uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault);
+        uint64_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault) | 0xffffffff00000000UL;
 
         if (!access_fault)
         {
@@ -310,7 +310,7 @@ void rv32f_cpu::fsw(const p_rv32i_decode_t d)
         {
             access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
 
-            write_mem(access_addr, state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
+            write_mem(access_addr, (uint32_t)state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
         }
     }
 
@@ -615,7 +615,7 @@ void rv32f_cpu::fsqrts(const p_rv32i_decode_t d)
 
         try
         {
-            rd_val = sqrtf(rs1_val);
+            rd_val = sqrt(rs1_val);
         }
         catch (...)
         {
@@ -806,7 +806,7 @@ void rv32f_cpu::fclasss(const p_rv32i_decode_t d)
         state.hart[curr_hart].x[d->rd] = (rs1_val == INFINITY) ? (1 << 7) : (1 << 0);
         break;
     case FP_NAN:
-        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint == RV32I_QNANF) ? (1 << 9) : (1 << 8);
+        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint == (uint32_t)RV32I_QNANF) ? (1 << 9) : (1 << 8);
         break;
     case FP_ZERO: 
         state.hart[curr_hart].x[d->rd] = (*p_rs1_uint & SIGN32_BIT) ? (1 << 3) : (1 << 4);
@@ -881,7 +881,7 @@ void rv32f_cpu::fmvxw(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); // TODO: needs mix of f and r registers display
 
-    state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].f[d->rs1];
+    state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].f[d->rs1];
 
     increment_pc();
 }

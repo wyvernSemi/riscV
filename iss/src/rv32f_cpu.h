@@ -54,9 +54,6 @@ public:
     rv32i_decode_table_t  fmv_tbl       [RV32I_NUM_SECONDARY_OPCODES];
 
 private:
-    // ------------------------------------------------
-    // Internal Type definitions
-    // ------------------------------------------------
 
     // ------------------------------------------------
     // Private member variables
@@ -90,13 +87,25 @@ private:
     int        curr_rnd_method;
 
     // ------------------------------------------------
-    // Private member functions
+    // Virtual member functions
     // ------------------------------------------------
 
-    uint32_t csr_wr_mask(const uint32_t addr, bool& unimp);
-    uint32_t access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm);
+    // These functions are virtual so that they can be overridden,
+    // if need be, by the rv32d_cpu class, which implements its own
+    // versions (even when the same functionality) so that it does
+    // not rely on the presence of this class in the class hierarchy.
 
-    void decode_exception(rv32i_decode_table_t*& p_entry, rv32i_decode_t& d)
+    // CSR access routines
+    virtual uint32_t csr_wr_mask   (const uint32_t addr, bool& unimp);
+    virtual uint32_t access_csr    (const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm);
+
+    // Updates the floating point rounding method
+    virtual void update_rm         (int req_rnd_method);
+
+    // Handles floating point exceptions
+    virtual void handle_fexceptions();
+
+    virtual void decode_exception  (rv32i_decode_table_t*& p_entry, rv32i_decode_t& d)
     {
         // Have the possibility of a fourth level decode on funct3
         if (p_entry->sub_table)
@@ -109,7 +118,11 @@ private:
         }
     }
 
-    float map_uint_to_float(uint32_t& num)
+    // ------------------------------------------------
+    // Private member functions
+    // ------------------------------------------------
+
+    float map_uint_to_float(uint64_t& num)
     {
         return *((float*)&num);
     }
@@ -120,11 +133,7 @@ private:
         return *((uint32_t*)&num) & ((std::isnan(num) & make_pos )? 0x7fffffff : 0xffffffff);
     }
 
-    // Updates the floating point rounding method
-    void update_rm(int req_rnd_method);
-
-    // Handles flotaing point exceptions
-    void handle_fexceptions();
+protected:
 
     // RV32F extension instruction methods
     void flw                             (const p_rv32i_decode_t);

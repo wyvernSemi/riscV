@@ -120,4 +120,24 @@ for %%i in (^
     echo Running test for %%i instruction...
     make SUBDIR=rv32uf FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  )
+  
+  for %%i in (^
+  fadd^
+  fclass^
+  fcmp^
+  fcvt^
+  fcvt_w^
+  fdiv^
+  fmadd^
+  fmin^
+  ldst^
+  recoding^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%id instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32ud FNAME=%%i.S
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   ) 

@@ -47,7 +47,7 @@
 
 // Inheritance for a G spec processor should have all the above
 // classes inherited, without skips
-#define RV32_G_INHERITANCE_CLASS         rv32f_cpu
+#define RV32_G_INHERITANCE_CLASS         rv32d_cpu
 
 // Uncomment the following to compile for RV32E base class,
 // or define it when compiling rv32i_cpu.cpp
@@ -67,9 +67,9 @@
 
 // Define the extension spec for the target model. Chose the
 // highest order class that's needed. Currently Zicsr extensions.
-#define RV32_TARGET_INHERITANCE_CLASS    rv32f_cpu
+#define RV32_TARGET_INHERITANCE_CLASS    rv32d_cpu
 
 // Define target include: must match include of RV32_TARGET_INHERITANCE_CLASS
-#define RV32_TARGET_INCLUDE             "rv32f_cpu.h"
+#define RV32_TARGET_INCLUDE             "rv32d_cpu.h"
 
 #endif

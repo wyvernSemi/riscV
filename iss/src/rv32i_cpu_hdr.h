@@ -89,6 +89,7 @@
 #define MEM_DBG_MASK                                   0x10
 
 #define SIGN32_BIT                                     0x80000000U
+#define SIGN64_BIT                                     0x8000000000000000L
 
 // External memory callback return values
 #define RV32I_EXT_MEM_NOT_PROCESSED                    (-1)
@@ -271,8 +272,10 @@
 #define RV32I_DZ                                       0x08
 #define RV32I_NV                                       0x10
 
-#define RV32I_QNANF                                    0x7fc00000
-#define RV32I_SNANF                                    0x7f800001
+#define RV32I_QNANF                                    0xffffffff7fc00000UL
+#define RV32I_SNANF                                    0xffffffff7f800001UL
+#define RV32I_QNAND                                    0x7ff8000000000000UL
+#define RV32I_SNAND                                    0x7ff0000000000001UL
 
 // -------------------------------------------------------------------------
 // MACROS

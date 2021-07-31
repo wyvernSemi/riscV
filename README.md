@@ -1,16 +1,18 @@
 # riscV
 An open source C++ Instruction Set Simulator and logic RISC-V 32 bit project. Currently the repository is for just the ISS (see iss/doc), but with plans for an FPGA targetted open-source softcore. The project is meant to be an informative and educational exercise in the contruction of processor models and logic implementations, using the RISC-V open-source architecture as a base, as a modern, relevant, processor architecture.
 
-The project, at this time, limits itself to the 32 bit specifications, but the ISS is architected to be an expandable implementation that can mix and match the various RIC-V expansion specifications (see iss/doc/iss_manual.pdf).
+The project, at this time, limits itself to the 32 bit specifications, but the ISS is architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see iss/doc/iss_manual.pdf).
 
 The ISS has the following features:
 
 *	RV32I ISA model
 *	Support for RV32E via compile option
 *	CSR instructions and registers
-*	RV32M extensions
-*	RV32A extensions
-*	RV32F extensions
+*	RV32G extensions
+	*	RV32M
+	*	RV32A
+	*	RV32F
+	*	RV32G
 *	Single HART
 *	Only Machine (M) privilege currently mode supported
 *	Trap handling

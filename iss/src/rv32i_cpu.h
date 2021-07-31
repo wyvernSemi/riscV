@@ -176,8 +176,8 @@ protected:
         // General purpose registers
         uint32_t x[RV32I_NUM_OF_REGISTERS];
 
-        // Floating point registers (for RV32F)
-        uint32_t f[RV32I_NUM_OF_REGISTERS];
+        // Floating point registers (for RV32F/RV32D)
+        uint64_t f[RV32I_NUM_OF_REGISTERS];
 
         // CSR registrs
         uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };

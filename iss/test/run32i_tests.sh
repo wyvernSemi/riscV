@@ -99,7 +99,20 @@ for tst in fadd fclass fcmp fcvt fcvt_w fdiv fmadd fmin ldst move recoding
 do
     echo
     echo
-    echo Running test for $tst instruction...
+    echo "Running test for $tst (single) instruction..."
     make $MAKE_ARGS SUBDIR=rv32uf FNAME=$tst.S
     $EXE_DIR/rv32 -b -t $tst.exe
-done 
+done
+
+#
+# RV32F tests
+#
+for tst in fadd fclass fcmp fcvt fcvt_w fdiv fmadd fmin ldst recoding
+do
+    echo
+    echo
+    echo "Running test for $tst (double) instruction..."
+    rm -rf obj/$tst.o
+    make $MAKE_ARGS SUBDIR=rv32ud FNAME=$tst.S
+    $EXE_DIR/rv32 -b -t $tst.exe
+done
