@@ -77,12 +77,14 @@ private:
     const char fmins_str         [DISASSEM_STR_SIZE] = "fmin.s   ";
     const char fmaxs_str         [DISASSEM_STR_SIZE] = "fmax.s   ";
     const char fcvtws_str        [DISASSEM_STR_SIZE] = "fcvt.w.s ";
+    const char fcvtwus_str       [DISASSEM_STR_SIZE] = "fcvt.wu.s";
     const char fmvxw_str         [DISASSEM_STR_SIZE] = "fmv.x.w  ";
     const char feqs_str          [DISASSEM_STR_SIZE] = "feq.s    ";
     const char flts_str          [DISASSEM_STR_SIZE] = "flt.s    ";
     const char fles_str          [DISASSEM_STR_SIZE] = "fle.s    ";
     const char fclasss_str       [DISASSEM_STR_SIZE] = "fclass.s ";
     const char fcvtsw_str        [DISASSEM_STR_SIZE] = "fcvt.s.w ";
+    const char fcvtswu_str       [DISASSEM_STR_SIZE] = "fcvt.s.wu";
     const char fmvwx_str         [DISASSEM_STR_SIZE] = "fmv.w.x  ";
 
     int        curr_rnd_method;

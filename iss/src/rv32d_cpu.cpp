@@ -2,13 +2,13 @@
 // 
 // Copyright (c) 2021 Simon Southwell. All rights reserved.
 //
-// Date: 26th July 2021
+// Date: 30th July 2021
 //
 // Contains the instruction execution methods for the
-// rv32f_cpu derived class
+// rv32d_cpu derived class
 //
 // This file is part of the base RISC-V instruction set simulator
-// (rv32f_cpu).
+// (rv32d_cpu).
 //
 // This code is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,18 +25,18 @@
 //
 //=============================================================
 
-#include "rv32f_cpu.h"
+#include "rv32d_cpu.h"
 
 // -----------------------------------------------------------
 // Constructor
 // -----------------------------------------------------------
 
-rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
+rv32d_cpu::rv32d_cpu(FILE* dbgfp) : RV32_D_INHERITANCE_CLASS(dbgfp)
 {
     int idx;
 
     // Advertise 'F' extensions
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA]   |=  RV32CSR_EXT_F;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA]   |=  RV32CSR_EXT_D;
 
     // Initialise FS field to Initial
     state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = RV32CSR_MSTATUS_FS_INITIAL;
@@ -51,72 +51,66 @@ rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
     // Initialise quarternary table to reserved instruction method
     for (int i = 0; i < RV32I_NUM_SECONDARY_OPCODES; i++)
     {
-        fsgnjs_tbl[i]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
-        fminmaxs_tbl[i] = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
-        fmv_tbl[i]      = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
-        fcmp_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
+        fsgnjd_tbl[i]   = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
+        fminmaxd_tbl[i] = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
+        fclassd_tbl[i]  = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
+        fcmpd_tbl[i]    = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
     }
 
     // Setup quarternary tables (decoded on funct3 via decode_exception method)
     idx = 0;
-    fsgnjs_tbl[idx++]   = { false, fsgnjs_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fsgnjs };
-    fsgnjs_tbl[idx++]   = { false, fsgnjns_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fsgnjns };
-    fsgnjs_tbl[idx++]   = { false, fsgnjxs_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fsgnjxs };
+    fsgnjd_tbl[idx++]   = { false, fsgnjd_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fsgnjd };
+    fsgnjd_tbl[idx++]   = { false, fsgnjnd_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fsgnjnd };
+    fsgnjd_tbl[idx++]   = { false, fsgnjxd_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fsgnjxd };
 
     idx = 0;
-    fminmaxs_tbl[idx++] = { false, fmins_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fmins };
-    fminmaxs_tbl[idx++] = { false, fmaxs_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fmaxs };
+    fminmaxd_tbl[idx++] = { false, fmind_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fmind };
+    fminmaxd_tbl[idx++] = { false, fmaxd_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fmaxd };
+
+    fclassd_tbl[0x01]   = { false, fclassd_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fclassd };
 
     idx = 0;
-    fmv_tbl[idx++]      = { false, fmvxw_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fmvxw };
-    fmv_tbl[idx++]      = { false, fclasss_str, RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fclasss };
-
-    idx = 0;
-    fcmp_tbl[idx++]     = { false, fles_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fles };
-    fcmp_tbl[idx++]     = { false, flts_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::flts };
-    fcmp_tbl[idx++]     = { false, feqs_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::feqs };
+    fcmpd_tbl[idx++]     = { false, fled_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fled };
+    fcmpd_tbl[idx++]     = { false, fltd_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fltd };
+    fcmpd_tbl[idx++]     = { false, feqd_str,    RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::feqd };
 
     // Tertiary table for OP-FP
-    fs_tbl[0x00]        = { false, fadds_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fadds };
-    fs_tbl[0x04]        = { false, fsubs_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fsubs };
-    fs_tbl[0x08]        = { false, fmuls_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fmuls };
-    fs_tbl[0x0c]        = { false, fdivs_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fdivs };
-    fs_tbl[0x2c]        = { false, fsqrts_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fsqrts };
-    INIT_TBL_WITH_SUBTBL(fs_tbl[0x10], fsgnjs_tbl);
-    INIT_TBL_WITH_SUBTBL(fs_tbl[0x14], fminmaxs_tbl);
-    fs_tbl[0x60]        = { false, fcvtws_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fcvtws };  // FCVT.W.S and FCVT.WU.S
-    INIT_TBL_WITH_SUBTBL(fs_tbl[0x70], fmv_tbl);
-    INIT_TBL_WITH_SUBTBL(fs_tbl[0x50], fcmp_tbl);
-    fs_tbl[0x68]        = { false, fcvtsw_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fcvtsw };  // FCVT.S.W and FCVT.S.WU
-    fs_tbl[0x78]        = { false, fmvwx_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32f_cpu::fmvwx };
+    fs_tbl[0x01]        = { false, faddd_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::faddd };
+    fs_tbl[0x05]        = { false, fsubd_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fsubd };
+    fs_tbl[0x09]        = { false, fmuld_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fmuld };
+    fs_tbl[0x0d]        = { false, fdivd_str,   RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fdivd };
+    fs_tbl[0x2d]        = { false, fsqrtd_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fsqrtd };
+    INIT_TBL_WITH_SUBTBL(fs_tbl[0x11], fsgnjd_tbl);
+    INIT_TBL_WITH_SUBTBL(fs_tbl[0x15], fminmaxd_tbl);
+    fs_tbl[0x61]        = { false, fcvtwd_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fcvtwd };  // FCVT.W.D and FCVT.WU.D
+    INIT_TBL_WITH_SUBTBL(fs_tbl[0x71], fclassd_tbl);
+    INIT_TBL_WITH_SUBTBL(fs_tbl[0x51], fcmpd_tbl);
+    fs_tbl[0x69]        = { false, fcvtdw_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fcvtdw };  // FCVT.D.W and FCVT.D.WU
 
-    // For all combinations of funct3, point to the tertiary fsop_tbl. 
-    // Will decode funct3 in quarternary tables. Avoids large
-    // and complex table initialisation on all combinations of rm.
-    // This effectively pushes funct3 decode to a quarternary decode
-    // from secondary.
-    for (int i = 0; i < RV32I_NUM_SECONDARY_OPCODES; i++)
-    {
-        INIT_TBL_WITH_SUBTBL(fsop_tbl[i], fs_tbl);
-    }
+    fs_tbl[0x20]        = { false, fcvtsd_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fcvtsd };
+    fs_tbl[0x21]        = { false, fcvtds_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fcvtds };
 
-    primary_tbl[0x01]  = {false, flw_str,          RV32I_INSTR_FMT_I, (pFunc_t)&rv32f_cpu::flw};      /*LOAD-FP*/
-    primary_tbl[0x09]  = {false, fsw_str,          RV32I_INSTR_FMT_S, (pFunc_t)&rv32f_cpu::fsw};      /*STORE-FP*/
+    // Update the primary table for non OP-FP RV32D instructions, overriding
+    // the entries set by rv32f_cpu class (if present). The D instrcutions
+    // do final decode, and call single precision methods, if available (else reserved).
+    primary_tbl[0x01]  = {false, fld_str,          RV32I_INSTR_FMT_I, (pFunc_t)&rv32d_cpu::fld};      //LOAD-FP
+    primary_tbl[0x09]  = {false, fsd_str,          RV32I_INSTR_FMT_S, (pFunc_t)&rv32d_cpu::fsd};      //STORE-FP
 
     idx = 0x10;
-    primary_tbl[idx++] = {false, fmadds_str,       RV32I_INSTR_FMT_R4, (pFunc_t)&rv32f_cpu::fmadds};  /*MADD*/
-    primary_tbl[idx++] = {false, fmsubs_str,       RV32I_INSTR_FMT_R4, (pFunc_t)&rv32f_cpu::fmsubs};  /*MSUB*/
-    primary_tbl[idx++] = {false, fnmsubs_str,      RV32I_INSTR_FMT_R4, (pFunc_t)&rv32f_cpu::fnmsubs}; /*NMSUB*/
-    primary_tbl[idx++] = {false, fnmadds_str,      RV32I_INSTR_FMT_R4, (pFunc_t)&rv32f_cpu::fnmadds}; /*NMADD*/
+    primary_tbl[idx++] = {false, fmaddd_str,       RV32I_INSTR_FMT_R4, (pFunc_t)&rv32d_cpu::fmaddd};  //MADD (both .S and .D)
+    primary_tbl[idx++] = {false, fmsubd_str,       RV32I_INSTR_FMT_R4, (pFunc_t)&rv32d_cpu::fmsubd};  //MSUB (both .S and .D)
+    primary_tbl[idx++] = {false, fnmsubd_str,      RV32I_INSTR_FMT_R4, (pFunc_t)&rv32d_cpu::fnmsubd}; //NMSUB (both .S and .D)
+    primary_tbl[idx++] = {false, fnmaddd_str,      RV32I_INSTR_FMT_R4, (pFunc_t)&rv32d_cpu::fnmaddd}; //NMADD (both .S and .D)
 
     INIT_TBL_WITH_SUBTBL(primary_tbl[idx], fsop_tbl); idx++;
+
 }
 
 // -----------------------------------------------------------
 // Floating point CSR register access methods
 // -----------------------------------------------------------
 
-uint32_t rv32f_cpu::access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm)
+uint32_t rv32d_cpu::access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t rs1_uimm)
 {
     uint32_t error = 0;
     
@@ -153,7 +147,7 @@ uint32_t rv32f_cpu::access_csr(const unsigned funct3, const uint32_t addr, const
 // Overloaded CSR write mask method
 // -----------------------------------------------------------
 
-uint32_t rv32f_cpu::csr_wr_mask(const uint32_t addr, bool& unimp)
+uint32_t rv32d_cpu::csr_wr_mask(const uint32_t addr, bool& unimp)
 {
     // Offer the access to the ancestor classes first
     uint32_t mask =  RV32_F_INHERITANCE_CLASS::csr_wr_mask(addr, unimp);
@@ -197,7 +191,7 @@ uint32_t rv32f_cpu::csr_wr_mask(const uint32_t addr, bool& unimp)
 // RV32F floating point control and exception methods
 // -----------------------------------------------------------
 
-void rv32f_cpu::update_rm(int req_rnd_method)
+void rv32d_cpu::update_rm(int req_rnd_method)
 {
     // If requested method is dynamic, get dynamic setting from FRM,
     // else use argument value.
@@ -231,7 +225,7 @@ void rv32f_cpu::update_rm(int req_rnd_method)
     }
 }
 
-void rv32f_cpu::handle_fexceptions()
+void rv32d_cpu::handle_fexceptions()
 {
     // Update the CSR status, mapping from underlying exception
     // values to the flags in FCSR and FFLAGS.
@@ -273,70 +267,97 @@ void rv32f_cpu::handle_fexceptions()
 // RV32F instruction methods
 // -----------------------------------------------------------
 
-void rv32f_cpu::flw(const p_rv32i_decode_t d)
+void rv32d_cpu::fld(const p_rv32i_decode_t d)
 {
     bool access_fault = false;
 
-    RV32I_DISASSEM_IFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
-
-    if (!disassemble)
+    if (d->funct3 != 0x3)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
-
-        uint64_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault) | 0xffffffff00000000UL;
-
-        if (!access_fault)
-        {
-            state.hart[curr_hart].f[d->rd] = rd_val;
-        }
-    }
-
-    if (!access_fault)
-    {
-        increment_pc();
-    }
-}
-
-void rv32f_cpu::fsw(const p_rv32i_decode_t d)
-{
-    bool access_fault = false;
-
-    RV32I_DISASSEM_SFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
-
-    if (!disassemble)
-    {
-        // Enabling stores only when MSTATUS FS bits != 0 (off)
-        if (state.hart->csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MSTATUS_FS_MASK)
-        {
-            access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
-
-            write_mem(access_addr, (uint32_t)state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
-        }
-    }
-
-    if (!access_fault)
-    {
-        increment_pc();
-    }
-}
-
-void rv32f_cpu::fmadds(const p_rv32i_decode_t d)
-{
-    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
-
-    // Make sure this is a 32 bit single precision instruction (botttom 2 bits of funct7)
-    if (d->funct7 & BIT2_MASK)
-    {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::flw(d);
+#else
         reserved(d);
+#endif
     }
     else
     {
-        float rd_val;
+        RV32I_DISASSEM_IFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+
+        if (!disassemble)
+        {
+            access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+
+            uint64_t rd_val = (uint64_t)read_mem(access_addr+4, MEM_RD_ACCESS_WORD, access_fault);
+                     rd_val = (rd_val << 32) | (uint64_t)read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault);
+
+            if (!access_fault)
+            {
+                state.hart[curr_hart].f[d->rd] = rd_val;
+            }
+        }
+
+        if (!access_fault)
+        {
+            increment_pc();
+        }
+    }
+}
+
+void rv32d_cpu::fsd(const p_rv32i_decode_t d)
+{
+    bool access_fault = false;
+
+    if (d->funct3 != 0x3)
+    {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::fsw(d);
+#else
+        reserved(d);
+#endif
+    }
+    else
+    {
+        RV32I_DISASSEM_SFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+
+        if (!disassemble)
+        {
+            // Enabling stores only when MSTATUS FS bits != 0 (off)
+            if (state.hart->csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MSTATUS_FS_MASK)
+            {
+                access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+
+                write_mem(access_addr,   (uint32_t)state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
+                write_mem(access_addr+4, (uint32_t)(state.hart[curr_hart].f[d->rs2] >> 32), MEM_WR_ACCESS_WORD, access_fault);
+            }
+        }
+
+        if (!access_fault)
+        {
+            increment_pc();
+        }
+    }
+}
+
+void rv32d_cpu::fmaddd(const p_rv32i_decode_t d)
+{
+    if (!(d->funct7 & BIT2_MASK))
+    {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::fmadds(d);
+#else
+        reserved(d);
+#endif
+    }
+    else
+    {
+        RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
+
+        double rd_val;
 
         // Map register values stored in uint32_t types to floats
-        float rs1_val = map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val = map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
-        float rs3_val = map_uint_to_float(state.hart[curr_hart].f[d->funct7 >> 2]);
+        double rs1_val = map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val = map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
+        double rs3_val = map_uint_to_double(state.hart[curr_hart].f[d->funct7 >> 2]);
 
         update_rm(d->funct3);
 
@@ -351,29 +372,32 @@ void rv32f_cpu::fmadds(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
-    }
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
 
-    increment_pc();
+        increment_pc();
+    }
 }
 
-void rv32f_cpu::fmsubs (const p_rv32i_decode_t d)
+void rv32d_cpu::fmsubd (const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)& BIT5_MASK));
-
-    update_rm(d->funct3);
-
-    // Make sure this is a 32 bit single precision instrucions
-    if (d->funct7 & BIT2_MASK)
+    if (!(d->funct7 & BIT2_MASK))
     {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::fmsubs(d);
+#else
         reserved(d);
+#endif
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
-        float rs3_val =  map_uint_to_float(state.hart[curr_hart].f[d->funct7 >> 2]);
+        RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
+
+        update_rm(d->funct3);
+
+        double rd_val;
+        double rs1_val = map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val = map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
+        double rs3_val = map_uint_to_double(state.hart[curr_hart].f[d->funct7 >> 2]);
 
         update_rm(d->funct3);
 
@@ -383,32 +407,35 @@ void rv32f_cpu::fmsubs (const p_rv32i_decode_t d)
         }
         catch (...)
         {
-            
+
         }
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
-    }
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
 
-    increment_pc();
+        increment_pc();
+    }
 }
 
-void rv32f_cpu::fnmsubs(const p_rv32i_decode_t d)
+void rv32d_cpu::fnmsubd(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
-    
-    // Make sure this is a 32 bit single precision instrucions
-    if (d->funct7 & BIT2_MASK)
+    if (!(d->funct7 & BIT2_MASK))
     {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::fnmsubs(d);
+#else
         reserved(d);
+#endif
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
-        float rs3_val =  map_uint_to_float(state.hart[curr_hart].f[d->funct7 >> 2]);
+        RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
+
+        double rd_val;
+        double rs1_val = map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val = map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
+        double rs3_val = map_uint_to_double(state.hart[curr_hart].f[d->funct7 >> 2]);
 
         update_rm(d->funct3);
 
@@ -423,27 +450,30 @@ void rv32f_cpu::fnmsubs(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
-    }
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
 
-    increment_pc();
+        increment_pc();
+    }
 }
 
-void rv32f_cpu::fnmadds(const p_rv32i_decode_t d)
+void rv32d_cpu::fnmaddd(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2)& BIT5_MASK));
-
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    if (!(d->funct7 & BIT2_MASK))
     {
+#if RV32_D_INHERITANCE_CLASS == rv32f_cpu
+        RV32_D_INHERITANCE_CLASS::fnmadds(d);
+#else
         reserved(d);
+#endif
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
-        float rs3_val =  map_uint_to_float(state.hart[curr_hart].f[d->funct7 >> 2]);
+        RV32I_DISASSEM_R4_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2, ((d->imm_s >> 2) & BIT5_MASK));
+
+        double rd_val;
+        double rs1_val = map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val = map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
+        double rs3_val = map_uint_to_double(state.hart[curr_hart].f[d->funct7 >> 2]);
 
         update_rm(d->funct3);
 
@@ -458,26 +488,26 @@ void rv32f_cpu::fnmadds(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
-    }
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
 
-    increment_pc();
+        increment_pc();
+    }
 }
 
-void rv32f_cpu::fadds(const p_rv32i_decode_t d)
+void rv32d_cpu::faddd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    // Make sure this is a double precision instruction
+    if ((d->funct7 & BIT2_MASK) != 0x01)
     {
         reserved(d);
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+        double rd_val;
+        double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
         update_rm(d->funct3);
 
@@ -492,26 +522,26 @@ void rv32f_cpu::fadds(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
     }
 
     increment_pc();
 }
 
-void rv32f_cpu::fsubs(const p_rv32i_decode_t d)
+void rv32d_cpu::fsubd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    // Make sure this is a double precision instruction
+    if ((d->funct7 & BIT2_MASK) != 0x01)
     {
         reserved(d);
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+        double rd_val;
+        double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
         update_rm(d->funct3);
 
@@ -525,26 +555,26 @@ void rv32f_cpu::fsubs(const p_rv32i_decode_t d)
 
         handle_fexceptions(); 
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
     }
 
     increment_pc();
 }
 
-void rv32f_cpu::fmuls(const p_rv32i_decode_t d)
+void rv32d_cpu::fmuld(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    // Make sure this is a double precision instruction
+    if ((d->funct7 & BIT2_MASK) != 0x01)
     {
         reserved(d);
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+        double rd_val;
+        double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
         update_rm(d->funct3);
 
@@ -558,26 +588,26 @@ void rv32f_cpu::fmuls(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
     }
 
     increment_pc();
 }
 
-void rv32f_cpu::fdivs(const p_rv32i_decode_t d)
+void rv32d_cpu::fdivd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
     
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    // Make sure this is a double precision instruction
+    if ((d->funct7 & BIT2_MASK) != 0x01)
     {
         reserved(d);
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-        float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+        double rd_val;
+        double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+        double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
         update_rm(d->funct3);
 
@@ -591,25 +621,25 @@ void rv32f_cpu::fdivs(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+        state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
     }
 
     increment_pc();
 }
 
-void rv32f_cpu::fsqrts(const p_rv32i_decode_t d)
+void rv32d_cpu::fsqrtd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    // Make sure this is a 32 bit single precision instruction
-    if (d->funct7 & BIT2_MASK)
+    // Make sure this is a double precision instruction
+    if ((d->funct7 & BIT2_MASK) != 0x01)
     {
         reserved(d);
     }
     else
     {
-        float rd_val;
-        float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
+        double rd_val;
+        double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
 
         update_rm(d->funct3);
 
@@ -623,13 +653,13 @@ void rv32f_cpu::fsqrts(const p_rv32i_decode_t d)
 
         handle_fexceptions();
 
-        state.hart[curr_hart].f[d->rd] =  map_float_to_uint(rd_val);
+        state.hart[curr_hart].f[d->rd] =  map_double_to_uint(rd_val);
     }
 
     increment_pc();
 }
 
-void rv32f_cpu::fsgnjs(const p_rv32i_decode_t d)
+void rv32d_cpu::fsgnjd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -639,7 +669,7 @@ void rv32f_cpu::fsgnjs(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fsgnjns(const p_rv32i_decode_t d)
+void rv32d_cpu::fsgnjnd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
@@ -649,7 +679,7 @@ void rv32f_cpu::fsgnjns(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fsgnjxs(const p_rv32i_decode_t d)
+void rv32d_cpu::fsgnjxd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
     state.hart[curr_hart].f[d->rd] = (state.hart[curr_hart].f[d->rs1] & ~SIGN32_BIT) | 
@@ -658,19 +688,19 @@ void rv32f_cpu::fsgnjxs(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fmins(const p_rv32i_decode_t d)
+void rv32d_cpu::fmind(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rd_val;
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+    double rd_val;
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
     if (std::isnan(rs1_val) && std::isnan(rs2_val))
     {
-        rd_val = NAN;
+        rd_val = nan("");
     }
-    else if (state.hart[curr_hart].f[d->rs1] == RV32I_SNANF && !std::isnan(rs2_val))
+    else if (state.hart[curr_hart].f[d->rs1] == RV32I_SNAND && !std::isnan(rs2_val))
     {
         rd_val = rs1_val;
 
@@ -686,24 +716,24 @@ void rv32f_cpu::fmins(const p_rv32i_decode_t d)
         rd_val = (rs1_val < rs2_val) ? rs1_val : rs2_val;
     }
 
-    state.hart[curr_hart].f[d->rd] =  map_float_to_uint(rd_val);
+    state.hart[curr_hart].f[d->rd] =  map_double_to_uint(rd_val);
 
     increment_pc();
 }
 
-void rv32f_cpu::fmaxs(const p_rv32i_decode_t d)
+void rv32d_cpu::fmaxd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rd_val;
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+    double rd_val;
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
     if (std::isnan(rs1_val) && std::isnan(rs2_val))
     {
-        rd_val = NAN;
+        rd_val = nan("");
     }
-    else if (state.hart[curr_hart].f[d->rs1] == RV32I_SNANF && !std::isnan(rs2_val))
+    else if (state.hart[curr_hart].f[d->rs1] == RV32I_SNAND && !std::isnan(rs2_val))
     {
         rd_val = rs2_val;
 
@@ -719,23 +749,23 @@ void rv32f_cpu::fmaxs(const p_rv32i_decode_t d)
         rd_val = (rs1_val > rs2_val) ? rs1_val : rs2_val;
     }
 
-    state.hart[curr_hart].f[d->rd] =  map_float_to_uint(rd_val);
+    state.hart[curr_hart].f[d->rd] =  map_double_to_uint(rd_val);
 
     increment_pc();
 }
 
-void rv32f_cpu::feqs(const p_rv32i_decode_t d)
+void rv32d_cpu::feqd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
     if (std::isnan(rs1_val) || std::isnan(rs2_val))
     {
         state.hart[curr_hart].x[d->rd] = 0;
 
-        if (state.hart[curr_hart].f[d->rs1] == RV32I_SNANF)
+        if (state.hart[curr_hart].f[d->rs1] == RV32I_SNAND)
         {
             state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   |= RV32I_NV;
             state.hart[curr_hart].csr[RV32CSR_ADDR_FFLAGS] |= RV32I_NV;
@@ -749,12 +779,12 @@ void rv32f_cpu::feqs(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::flts(const p_rv32i_decode_t d)
+void rv32d_cpu::fltd(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
     if (std::isnan(rs1_val) || std::isnan(rs2_val))
     {
@@ -771,12 +801,12 @@ void rv32f_cpu::flts(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fles   (const p_rv32i_decode_t d)
+void rv32d_cpu::fled(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_RF_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    float rs2_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs2]);
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    double rs2_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs2]);
 
     if (std::isnan(rs1_val) || std::isnan(rs2_val))
     {
@@ -793,12 +823,12 @@ void rv32f_cpu::fles   (const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fclasss(const p_rv32i_decode_t d)
+void rv32d_cpu::fclassd(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_RFCVT1_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); 
+    RV32I_DISASSEM_RFCVT1_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float      rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
-    uint32_t* p_rs1_uint = (uint32_t*)&rs1_val;
+    double      rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
+    uint64_t* p_rs1_uint = (uint64_t*)&rs1_val;
 
     switch (std::fpclassify(rs1_val))
     {
@@ -806,10 +836,10 @@ void rv32f_cpu::fclasss(const p_rv32i_decode_t d)
         state.hart[curr_hart].x[d->rd] = (rs1_val == INFINITY) ? (1 << 7) : (1 << 0);
         break;
     case FP_NAN:
-        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint == (uint32_t)RV32I_QNANF) ? (1 << 9) : (1 << 8);
+        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint == RV32I_QNAND) ? (1 << 9) : (1 << 8);
         break;
     case FP_ZERO: 
-        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint & SIGN32_BIT) ? (1 << 3) : (1 << 4);
+        state.hart[curr_hart].x[d->rd] = (*p_rs1_uint & SIGN64_BIT) ? (1 << 3) : (1 << 4);
         break;
     case FP_SUBNORMAL:
         state.hart[curr_hart].x[d->rd] = (rs1_val < 0.0) ? (1 << 2) : (1 << 5);
@@ -822,38 +852,38 @@ void rv32f_cpu::fclasss(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fcvtsw(const p_rv32i_decode_t d)
+void rv32d_cpu::fcvtdw(const p_rv32i_decode_t d)
 {
     if (d->rs2)
     {
-        d->entry.instr_name = fcvtswu_str;
+        d->entry.instr_name = fcvtdwu_str;
     }
     RV32I_DISASSEM_RFCVT2_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     update_rm(d->funct3);
 
-    float rd_val = d->rs2 ? (float)state.hart[curr_hart].x[d->rs1] : (float((int32_t)state.hart[curr_hart].x[d->rs1]));
+    double rd_val = d->rs2 ? (double)state.hart[curr_hart].x[d->rs1] : (double((int32_t)state.hart[curr_hart].x[d->rs1]));
 
-    state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+    state.hart[curr_hart].f[d->rd] = map_double_to_uint(rd_val);
 
     increment_pc();
 }
 
-void rv32f_cpu::fcvtws(const p_rv32i_decode_t d)
+void rv32d_cpu::fcvtwd(const p_rv32i_decode_t d)
 {
     if (d->rs2)
     {
-        d->entry.instr_name = fcvtwus_str;
+        d->entry.instr_name = fcvtwud_str;
     }
     RV32I_DISASSEM_RFCVT1_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    float rs1_val =  map_uint_to_float(state.hart[curr_hart].f[d->rs1]);
+    double rs1_val =  map_uint_to_double(state.hart[curr_hart].f[d->rs1]);
 
     update_rm(d->funct3);
 
     state.hart[curr_hart].x[d->rd] = (d->rs2 ? ((uint32_t)rs1_val) : ((int32_t)rs1_val));
 
-    float cmp = nearbyintf(rs1_val);
+    double cmp = nearbyint(rs1_val);
 
     if (d->rs2 && (cmp < 0 || cmp > (powf(2.0, 32.0) - 1.0) || std::isnan(rs1_val) || rs1_val == INFINITY || rs1_val == -INFINITY))
     {
@@ -876,20 +906,50 @@ void rv32f_cpu::fcvtws(const p_rv32i_decode_t d)
     increment_pc();
 }
 
-void rv32f_cpu::fmvwx(const p_rv32i_decode_t d)
+void rv32d_cpu::fcvtsd(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_RFCVT2_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_RFCVT3_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2); 
 
-    state.hart[curr_hart].f[d->rd] = state.hart[curr_hart].x[d->rs1];
+    update_rm(d->funct3);
+
+    // Point to rs1 as a double
+    double* prs1_d = (double*)&state.hart[curr_hart].f[d->rs1];
+
+    // Convert rs1 to single precision
+    float   rd_f  = (float)*prs1_d;
+
+    // Point to result as a 32 bit integer
+    uint32_t* prd_uint = (uint32_t*)&rd_f;
+
+    // Save in rd register
+    state.hart[curr_hart].f[d->rd] = (uint64_t)*prd_uint | 0xffffffff00000000UL;
 
     increment_pc();
 }
 
-void rv32f_cpu::fmvxw(const p_rv32i_decode_t d)
+void rv32d_cpu::fcvtds(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_RFCVT1_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_RFCVT3_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
-    state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].f[d->rs1];
+    uint32_t rs1 = (uint32_t)(state.hart[curr_hart].f[d->rs1] & 0xffffffffUL);
+
+    // Point to rs1 as a float
+    float* prs1_d = (float*)&rs1;
+
+    // Convert rs1 to double precision
+    double   rd_d  = (double)*prs1_d;
+
+    // Point to result as a 64 bit integer
+    uint64_t* prd_uint = (uint64_t*)&rd_d;
+
+    // [1] Sec 12.2
+    if (std::isnan(rd_d))
+    {
+        *prd_uint = RV32I_QNAND;
+    }
+
+    // Save in rd register
+    state.hart[curr_hart].f[d->rd] = *prd_uint;
 
     increment_pc();
 }

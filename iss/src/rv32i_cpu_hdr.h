@@ -348,9 +348,24 @@
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s (%s)\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs2), rmap_str[_rs1]); \
 }
 
-#define RV32I_DISASSEM_RF_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                           \
+#define RV32I_DISASSEM_RF_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                          \
     if (disassemble || rt_disassem)                                                                                                      \
         fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,fmap(_rd),fmap(_rs1), fmap_str[_rs2]); \
+}
+
+#define RV32I_DISASSEM_RFCVT1_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                      \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),fmap_str[_rs1]);                \
+}
+
+#define RV32I_DISASSEM_RFCVT2_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                      \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,fmap(_rd), rmap_str[_rs1]); \
+}
+
+#define RV32I_DISASSEM_RFCVT3_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                      \
+    if (disassemble || rt_disassem)                                                                                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,fmap(_rd), fmap_str[_rs1]); \
 }
 
 #define RV32I_DISASSEM_R4_TYPE(_instr,_str,_rd,_rs1,_rs2,_rs3)     {                                                                     \
