@@ -26,3 +26,4 @@ The ISS has the following features:
 *	External interrupt callback feature
 *	Disassembler, both run-time and static
 *	Loading of ELF programs to memory
+*	Co-simulation support for connecting to a Verilog or mixed signal logic simulator
