@@ -15,6 +15,8 @@
 // I'm node 0
 int node = 0;
 
+static bool vproc_interrupt_seen = false;
+
 // ---------------------------------------------
 // External memory map access
 // callback function
@@ -175,6 +177,40 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
 }
 
 // ---------------------------------------------
+// Interrupt callback functions
+// ---------------------------------------------
+
+// Note: the VProc CB function can only be active when the main thread
+// is stalled on a read, write or tick, so it is safe to modify shared
+// variables. Also, it is not valid to make further VProc calls from
+// this CB, but updating state here should instigate required functionality
+// in the main program flow.
+int vproc_int_callback()
+{
+    vproc_interrupt_seen = true;
+}
+
+// The ISS interrupt callback will return an interrupt when vproc_interrupt_seen
+// is true, else it returns 0. The wakeup time in this model is always the next
+// cycle. The vproc_interrupt_seen flag is always cleared down, but the interrupt
+// is level sensitive and the vproc_int_callback will be called every cycle an
+// interrupt is active.
+uint32_t iss_int_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
+{
+    *wakeup_time = time + 1;
+    
+    if (vproc_interrupt_seen)
+    {
+        vproc_interrupt_seen = false;
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }    
+}
+
+// ---------------------------------------------
 // Main entry point for node 0 VPRoc
 // ---------------------------------------------
 
@@ -206,6 +242,10 @@ extern "C" void VUserMain0()
 
         // Register external memory callback function
         pCpu->register_ext_mem_callback(ext_mem_access);
+        
+        // Register interrupt callbacks
+        VRegInterrupt (1, vproc_int_callback, node);
+        pCpu->register_int_callback(iss_int_callback);
 
         // Load an executable
         if (!pCpu->read_elf(cfg.exec_fname))
@@ -215,11 +255,11 @@ extern "C" void VUserMain0()
             
             if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
             {
-                printf("*FAIL*: exit code = 0x%08x finish code = 0x%08x running %s\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17), cfg.exec_fname);
+                VPrint("*FAIL*: exit code = 0x%08x finish code = 0x%08x running %s\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17), cfg.exec_fname);
             }
             else
             {
-                printf("PASS: exit code = 0x%08x running %s\n", pCpu->regi_val(10), cfg.exec_fname);
+                VPrint("PASS: exit code = 0x%08x running %s\n", pCpu->regi_val(10), cfg.exec_fname);
             }
         }
 
@@ -230,6 +270,8 @@ extern "C" void VUserMain0()
         }
         delete pCpu;
     }
+    
+    VTick(20, node);
 
     // Halt simulation
     write_word(HALT_ADDR, 0);
