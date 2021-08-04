@@ -41,9 +41,9 @@
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32_extensions.h</locationURI>
 		</link>
 		<link>
-			<name>src/rv32a_cpu .cpp</name>
+			<name>src/rv32a_cpu.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/src/rv32a_cpu%20.cpp</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32a_cpu.cpp</locationURI>
 		</link>
 		<link>
 			<name>src/rv32a_cpu.h</name>

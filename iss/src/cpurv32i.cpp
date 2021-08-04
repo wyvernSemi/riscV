@@ -201,28 +201,34 @@ int main(int argc, char** argv)
         pCpu->register_ext_mem_callback(ext_mem_access);
 
         // Load an executable
-        pCpu->read_elf(cfg.exec_fname);
-
-        // Run processor
-        pCpu->run(cfg);
-
-#ifdef RV32_DEBUG
-        for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
+        if (pCpu->read_elf(cfg.exec_fname))
         {
-            printf("%sx%d=0x%08x\n", (idx <10) ? " " : "", idx, pCpu->regi_val(idx));
-        }
-
-        printf(" pc=0x%08x\n", pCpu->pc_val());
-#endif
-
-        // Print result
-        if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
-        {
-            printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
+            error = 1;
         }
         else
         {
-            printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+
+            // Run processor
+            pCpu->run(cfg);
+
+#ifdef RV32_DEBUG
+            for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
+            {
+                printf("%sx%d=0x%08x\n", (idx < 10) ? " " : "", idx, pCpu->regi_val(idx));
+            }
+
+            printf(" pc=0x%08x\n", pCpu->pc_val());
+#endif
+
+            // Print result
+            if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+            {
+                printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
+            }
+            else
+            {
+                printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+            }
         }
 
         // Clean up

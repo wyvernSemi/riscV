@@ -32,7 +32,7 @@
     <ClInclude Include="..\src\rv32_extensions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\rv32a_cpu .cpp" />
+    <ClCompile Include="..\src\rv32a_cpu.cpp" />
     <ClCompile Include="..\src\rv32csr_cpu.cpp" />
     <ClCompile Include="..\src\rv32d_cpu.cpp" />
     <ClCompile Include="..\src\rv32f_cpu.cpp" />

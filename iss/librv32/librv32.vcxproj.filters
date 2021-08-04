@@ -58,13 +58,13 @@
     <ClCompile Include="..\src\rv32m_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rv32a_cpu .cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\rv32f_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rv32d_cpu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rv32a_cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

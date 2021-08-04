@@ -67,7 +67,7 @@ public:
     LIBRISCV32_API int         run                            (const rv32i_cfg_s &cfg);
 
     // Read executable
-    LIBRISCV32_API void        read_elf                       (const char* const filename);
+    LIBRISCV32_API int         read_elf                       (const char* const filename);
                                                               
     // External direct memory access
     LIBRISCV32_API uint32_t    read_mem                       (const uint32_t byte_addr, const int type, bool &fault);

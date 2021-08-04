@@ -40,7 +40,7 @@
 // Read ELF formatted executable from
 // filename, and load to memory
 //
-void rv32i_cpu::read_elf (const char * const filename)
+int rv32i_cpu::read_elf (const char * const filename)
 {
     unsigned    i;
     int         c;
@@ -59,7 +59,7 @@ void rv32i_cpu::read_elf (const char * const filename)
     if ((elf_fp = fopen(filename, "rb")) == NULL)
     {
         fprintf(stderr, "*** ReadElf(): Unable to open file %s for reading\n", filename); //LCOV_EXCL_LINE
-        exit(USER_ERROR);                                                           //LCOV_EXCL_LINE
+        return USER_ERROR;                                                           //LCOV_EXCL_LINE
     }
 
     // Read elf header
@@ -71,7 +71,7 @@ void rv32i_cpu::read_elf (const char * const filename)
         if (buf[i] == EOF) 
         {
             fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                           //LCOV_EXCL_LINE
-            exit(USER_ERROR);                                                       //LCOV_EXCL_LINE
+           return USER_ERROR;                                                       //LCOV_EXCL_LINE
         } 
     }
 
@@ -83,26 +83,26 @@ void rv32i_cpu::read_elf (const char * const filename)
         if (h->e_ident[i] != ptr[i])
         {
             fprintf(stderr, "*** ReadElf(): not an ELF file\n");
-            exit(USER_ERROR);
+            return USER_ERROR;
         }
     }
 
     if (h->e_type != ET_EXEC)
     {
         fprintf(stderr, "*** ReadElf(): not an executable ELF file\n");
-        exit(USER_ERROR);
+        return USER_ERROR;
     }
 
     if (h->e_machine != EM_RISCV)
     {
         fprintf(stderr, "*** ReadElf(): not a RISC-V ELF file (e_machine=0x%03x)\n", h->e_machine);
-        exit(USER_ERROR);
+        return USER_ERROR;
     }
 
     if (h->e_phnum > ELF_MAX_NUM_PHDR)
     {
         fprintf(stderr, "*** ReadElf(): Number of Phdr (%d) exceeds maximum supported (%d)\n", h->e_phnum, ELF_MAX_NUM_PHDR);
-        exit(USER_ERROR);
+        return USER_ERROR;
     }
     //LCOV_EXCL_STOP
 
@@ -115,7 +115,7 @@ void rv32i_cpu::read_elf (const char * const filename)
             if (c == EOF)
             {
                 fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                         //LCOV_EXCL_LINE
-                exit(USER_ERROR);                                                     //LCOV_EXCL_LINE
+                return USER_ERROR;                                                     //LCOV_EXCL_LINE
             } 
             buf2[i+(pcount * sizeof(Elf32_Phdr))] = c;
             bytecount++;
@@ -133,7 +133,7 @@ void rv32i_cpu::read_elf (const char * const filename)
             c = fgetc(elf_fp);
             if (c == EOF) {
                 fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                         //LCOV_EXCL_LINE
-                exit(USER_ERROR);                                                      //LCOV_EXCL_LINE
+                return USER_ERROR;                                                      //LCOV_EXCL_LINE
             }
         }
 
@@ -141,7 +141,7 @@ void rv32i_cpu::read_elf (const char * const filename)
         if ((h2[pcount]->p_vaddr + h2[pcount]->p_memsz) >= (1U << MEM_SIZE_BITS))
         {
             fprintf(stderr, "*** ReadElf(): segment memory footprint outside of internal memory range\n"); //LCOV_EXCL_LINE
-            exit(USER_ERROR);                                                                        //LCOV_EXCL_LINE
+            return USER_ERROR;                                                                        //LCOV_EXCL_LINE
         }
 
         // For p_filesz bytes ...
@@ -152,7 +152,7 @@ void rv32i_cpu::read_elf (const char * const filename)
             if ((c = fgetc(elf_fp)) == EOF)
             {
                 fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                          //LCOV_EXCL_LINE
-                exit(USER_ERROR);                                                      //LCOV_EXCL_LINE
+                return USER_ERROR;                                                      //LCOV_EXCL_LINE
             }
 
             // Little endian
@@ -160,17 +160,19 @@ void rv32i_cpu::read_elf (const char * const filename)
 
             if ((bytecount&3) == 3)
             {
-                write_mem(h2[pcount]->p_vaddr + i, word, (h2[pcount]->p_flags& PF_X) ? MEM_WR_ACCESS_INSTR : MEM_WR_ACCESS_WORD, access_fault);
+                write_mem(h2[pcount]->p_vaddr + i, word, MEM_WR_ACCESS_INSTR, access_fault);
                 i+=4;
                 word = 0;
 
                 if (access_fault)
                 {
                     fprintf(stderr, "*** ReadElf(): memory access fault loading program\n");
-                    exit(USER_ERROR);
+                    return USER_ERROR;
                 }
             }
         }
     }
+
+    return 0;
 }
 
