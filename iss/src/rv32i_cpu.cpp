@@ -261,26 +261,30 @@ int rv32i_cpu::run(const rv32i_cfg_s &cfg)
          (cfg.num_instr == 0 || instr_count < cfg.num_instr) && !error && !(cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc);
          instr_count++)
     {
-        // Fetch instruction
-        curr_instr = fetch_instruction();
-
-        // Decode
-        p_entry = primary_decode(curr_instr, decode);
-
-        // Execute
-        if (p_entry != NULL)
+        // Firstly, check interrupt status
+        if (!process_interrupts())
         {
-            error = execute(decode, p_entry);
-        }
-        else
-        {
-            if (!halt_rsvd_instr)
+            // Fetch instruction
+            curr_instr = fetch_instruction();
+
+            // Decode
+            p_entry = primary_decode(curr_instr, decode);
+
+            // Execute
+            if (p_entry != NULL)
             {
-                process_trap(RV32I_ILLEGAL_INSTR);
+                error = execute(decode, p_entry);
             }
             else
             {
-                error = 1;
+                if (!halt_rsvd_instr)
+                {
+                    process_trap(RV32I_ILLEGAL_INSTR);
+                }
+                else
+                {
+                    error = 1;
+                }
             }
         }
     }
@@ -295,21 +299,17 @@ int rv32i_cpu::run(const rv32i_cfg_s &cfg)
 int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
 {
     int error = 0;
-
-    // Firstly, check interrupt status
-    if (!process_interrupts())
+ 
+    // If an illegal/unimplemented instruction, flag to calling function
+    if (halt_rsvd_instr && trap)
     {
-
-        // If an illegal/unimplemented instruction, flag to calling function
-        if (halt_rsvd_instr && trap)
-        {
-            error = trap;
-        }
-
-        (this->*p_entry->p)(&decode);
-
-        cycle_count += 1;
+        error = trap;
     }
+ 
+    (this->*p_entry->p)(&decode);
+ 
+    cycle_count += 1;
+ 
 
     return error;
 }
