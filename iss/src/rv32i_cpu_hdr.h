@@ -429,6 +429,10 @@
     if (rt_disassem)                                                                                                                     \
         fprintf(dasm_fp, "    *\n");                                                                                                     \
 }
+#define RV32I_DISASSEM_INT_PC_JUMP                               {                                                                           \
+    if (rt_disassem)                                                                                                                     \
+        fprintf(dasm_fp, "   -*-\n");                                                                                                     \
+}
 
 // -------------------------------------------------------------------------
 // TYPEDEFS

@@ -49,11 +49,15 @@ extern "C" {
 #define MEM_SIZE                           (1024*1024)
 #define MEM_OFFSET                         0
 
+#define INT_ADDR                           0xaffffffc
+
 // ------------------------------------------------
 // LOCAL VARIABLES
 // ------------------------------------------------
 
 static uint8_t mem[MEM_SIZE+4];
+
+static uint32_t irq = 0;
 
 // ------------------------------------------------
 // TYPE DEFINITIONS
@@ -177,8 +181,22 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
             break;
         }
     }
+    else if ((type & MEM_NOT_DBG_MASK) == MEM_WR_ACCESS_WORD && byte_addr == INT_ADDR)
+    {
+        irq       = data & 0x1;
+        processed = 1;
+    }
 
     return processed;
+}
+
+// ------------------------------
+// Interrupt callback function
+//
+uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
+{
+    *wakeup_time = time + 1;
+    return irq;
 }
 
 // -------------------------------
@@ -199,6 +217,9 @@ int main(int argc, char** argv)
 
         // Register external memory callback function
         pCpu->register_ext_mem_callback(ext_mem_access);
+
+        // Register interrupt callback functions
+        pCpu->register_int_callback(interrupt_callback);
 
         // Load an executable
         if (pCpu->read_elf(cfg.exec_fname))

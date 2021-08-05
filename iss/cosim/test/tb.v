@@ -37,6 +37,7 @@
 
 `define BE_ADDR         32'hAFFFFFF0
 `define HALT_ADDR       32'hAFFFFFF8
+`define INT_ADDR        32'hAFFFFFFC
 
 module tb
 #(parameter GUI_RUN          = 0,
@@ -58,6 +59,8 @@ wire           read;
 wire [31:0]    readdata;
 wire           readdatavalid;
 
+reg            irq;
+
 // -----------------------------------------------
 // Initialisation, clock and reset
 // -----------------------------------------------
@@ -66,6 +69,7 @@ initial
 begin
    count                               = -1;
    clk                                 = 1'b1;
+   irq                                 = 1'b0;
 end
 
 // Generate a clock
@@ -95,9 +99,21 @@ begin
   end
 end
 
-  // -----------------------------------------------
-  // Virtual CPU
-  // -----------------------------------------------
+// -----------------------------------------------
+// IRQ generation
+// -----------------------------------------------
+
+always @(posedge clk)
+begin
+  if (write == 1'b1 && address == `INT_ADDR && byteenable[0] == 1'b1)
+  begin
+      irq                  <= writedata[0];
+  end
+end 
+
+// -----------------------------------------------
+// Virtual CPU
+// -----------------------------------------------
 
  riscVsim  #(.BE_ADDR(`BE_ADDR)) cpu
  (
@@ -111,12 +127,12 @@ end
    .readdata                (readdata),
    .readdatavalid           (readdatavalid),
 
-   .irq                     (1'b0)
+   .irq                     (irq)
  );
 
-  // -----------------------------------------------
-  // Memory model
-  // -----------------------------------------------
+// -----------------------------------------------
+// Memory model
+// -----------------------------------------------
   
   mem_model mem
   (

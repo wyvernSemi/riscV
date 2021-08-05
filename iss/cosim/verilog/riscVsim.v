@@ -49,6 +49,7 @@ module riscVsim
     input             irq
 );
 
+reg         irqDly;
 reg         UpdateResponse;
 wire        Update;
 wire        WE;
@@ -56,6 +57,8 @@ wire [31:0] nodenum = NODE;
 
 initial
 begin
+  irqDly          <= 1'b0;
+
   UpdateResponse  <= 1'b1;
   byteenable      <= 4'hf;
 end
@@ -70,7 +73,7 @@ end
             .DataIn                  (readdata),
             .WRAck                   (WE),
             .RDAck                   (readdatavalid),
-            .Interrupt               ({2'b00, irq}),
+            .Interrupt               (3'b000),
             .Update                  (Update),
             .UpdateResponse          (UpdateResponse),
             .Node                    (nodenum[3:0])
@@ -89,7 +92,16 @@ begin
     write              <= WE;
   end
   
+  irqDly               <= irq;
+  
+  // When the irq state changes, call the user function with the updated value
+  if (irq != irqDly)
+  begin
+     $vprocuser(nodenum, irq);
+  end
+  
   UpdateResponse = ~UpdateResponse;
 end
+
 
 endmodule

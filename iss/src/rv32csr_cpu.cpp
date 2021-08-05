@@ -111,9 +111,14 @@ void rv32csr_cpu::process_trap(int trap_type)
 
     // If this is an asynchronous interrupt and MTVEC is in vectored mode,
     // calculate the offset for the trap.
-    if ((trap_type & RV32CSR_MCAUSE_INT_MASK) && ((state.hart[curr_hart].csr[RV32CSR_ADDR_MTVEC] & RV32CSR_MTVEC_MODE_MASK) == RV32CSR_MTVEC_MODE_VECTORED))
+    if (trap_type & RV32CSR_MCAUSE_INT_MASK)
     {
-        offset = 4 * (trap_type & ~RV32CSR_MCAUSE_INT_MASK);
+        RV32I_DISASSEM_INT_PC_JUMP;
+
+        if ((state.hart[curr_hart].csr[RV32CSR_ADDR_MTVEC] & RV32CSR_MTVEC_MODE_MASK) == RV32CSR_MTVEC_MODE_VECTORED)
+        {
+            offset = 4 * (trap_type & ~RV32CSR_MCAUSE_INT_MASK);
+        }
     }
 
     state.hart[curr_hart].pc = (state.hart[curr_hart].csr[RV32CSR_ADDR_MTVEC] & ~RV32CSR_MTVEC_MODE_MASK) + offset;
@@ -130,7 +135,14 @@ int rv32csr_cpu::process_interrupts()
     if (p_int_callback != NULL && clk_cycles() >=  (uint32_t)interrupt_wakeup_time)
     {
         // Update the MIP CSR MEIP bit with interrupt status
-        state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= (*p_int_callback)(clk_cycles(), &interrupt_wakeup_time) ? RV32CSR_MEIP_BITMASK : 0;
+        if ((*p_int_callback)(clk_cycles(), &interrupt_wakeup_time))
+        {
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
+        }
+        else
+        {
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
+        }
     }
 
     // Check timer compare

@@ -15,7 +15,9 @@
 // I'm node 0
 int node = 0;
 
-static bool vproc_interrupt_seen = false;
+static bool     vproc_interrupt_seen = false;
+
+static uint32_t irq_state            = 0;
 
 // ---------------------------------------------
 // External memory map access
@@ -185,29 +187,19 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
 // variables. Also, it is not valid to make further VProc calls from
 // this CB, but updating state here should instigate required functionality
 // in the main program flow.
-int vproc_int_callback()
+int vproc_user_callback(int val)
 {
-    vproc_interrupt_seen = true;
+    vproc_interrupt_seen = val ? true : false;
 }
 
 // The ISS interrupt callback will return an interrupt when vproc_interrupt_seen
 // is true, else it returns 0. The wakeup time in this model is always the next
-// cycle. The vproc_interrupt_seen flag is always cleared down, but the interrupt
-// is level sensitive and the vproc_int_callback will be called every cycle an
-// interrupt is active.
+// cycle. 
 uint32_t iss_int_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 {
     *wakeup_time = time + 1;
     
-    if (vproc_interrupt_seen)
-    {
-        vproc_interrupt_seen = false;
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }    
+    return vproc_interrupt_seen ? 1 : 0;
 }
 
 // ---------------------------------------------
@@ -242,17 +234,19 @@ extern "C" void VUserMain0()
 
         // Register external memory callback function
         pCpu->register_ext_mem_callback(ext_mem_access);
-        
-        // Register interrupt callbacks
-        VRegInterrupt (1, vproc_int_callback, node);
+
+        // Register ISS interrupt callback
         pCpu->register_int_callback(iss_int_callback);
+
+        // Register VProc user callback, used to update irq status
+        VRegUser(vproc_user_callback, node);
 
         // Load an executable
         if (!pCpu->read_elf(cfg.exec_fname))
         {
             // Run processor
             pCpu->run(cfg);
-            
+
             if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
             {
                 VPrint("*FAIL*: exit code = 0x%08x finish code = 0x%08x running %s\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17), cfg.exec_fname);
@@ -270,7 +264,7 @@ extern "C" void VUserMain0()
         }
         delete pCpu;
     }
-    
+
     VTick(20, node);
 
     // Halt simulation
