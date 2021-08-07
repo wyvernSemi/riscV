@@ -125,8 +125,6 @@ typedef long long rv32gdb_skt_t;
 #define RV32_DIV_ZERO_BREAK                            11
 #define RV32_ILLEGAL_INSTR                             12
 
-#define RV32_DEFAULT_TCP_PORT                          0xc000
-
 // -------------------------------------------------------------------------
 // MACRO DEFINITIONS
 // -------------------------------------------------------------------------                               

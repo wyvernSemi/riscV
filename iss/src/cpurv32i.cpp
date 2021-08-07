@@ -53,7 +53,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbrt:n:a:D:A:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbrt:n:a:D:A:p:"
 #define MEM_SIZE                           (1024*1024)
 #define MEM_OFFSET                         0
 
@@ -126,6 +126,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'g':
             cfg.gdb_mode = true;
             break;
+        case 'p':
+            cfg.gdb_ip_portnum = strtol(optarg, NULL, 0);
+            break;
         case 'h':
         default:
             fprintf(stderr, "Usage: %s -t <test executable> [-hHbdrv][-n <num instructions>]\n      [-a <start addr>][-A <brk addr>][-D <debug o/p filename>]\n", argv[0]);
@@ -139,6 +142,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
+            fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -230,13 +234,14 @@ int main(int argc, char** argv)
         // Register external memory callback function
         pCpu->register_ext_mem_callback(ext_mem_access);
 
-        // Register interrupt callback functions
+        // Register interrupt callback function
         pCpu->register_int_callback(interrupt_callback);
 
+        // If GDB mode, pass execution to the remote GDB interface
         if (cfg.gdb_mode)
         {
             // Start procssing commands from GDB
-            if (rv32gdb_process_gdb(pCpu, RV32_DEFAULT_TCP_PORT, cfg))
+            if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
             {
                 fprintf(stderr, "***ERROR in opening PTY\n");
                 return PTY_ERROR;
@@ -251,7 +256,6 @@ int main(int argc, char** argv)
             }
             else
             {
-
                 // Run processor
                 pCpu->run(cfg);
 

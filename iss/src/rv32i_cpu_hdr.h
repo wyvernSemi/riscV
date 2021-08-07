@@ -104,6 +104,8 @@
 // External memory callback return values
 #define RV32I_EXT_MEM_NOT_PROCESSED                    (-1)
 
+#define RV32_DEFAULT_TCP_PORT                          0xc000
+
 /*
 // Memory tags
 #define MEM_UNUSED                                     0
@@ -500,6 +502,7 @@ struct  rv32i_cfg_s {
     bool           hlt_on_inst_err;
     bool           en_brk_on_addr;
     bool           gdb_mode;
+    uint32_t       gdb_ip_portnum;
     uint32_t       brk_addr;
     FILE*          dbg_fp;
 
@@ -513,6 +516,7 @@ struct  rv32i_cfg_s {
         hlt_on_inst_err  = false;
         en_brk_on_addr   = false;
         gdb_mode         = false;
+        gdb_ip_portnum   = RV32_DEFAULT_TCP_PORT;
         brk_addr         = RISCV_TEST_ENV_TERMINATE_ADDR;
 
         dbg_fp           = stdout;
