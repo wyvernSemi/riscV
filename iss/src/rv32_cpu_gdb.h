@@ -52,6 +52,7 @@
 // -------------------------------------------------------------------------
 
 // Map the socket type for windows  
+#include <Winsock2.h>
 typedef SOCKET rv32gdb_skt_t;
     
 #else
@@ -68,7 +69,7 @@ typedef long long rv32gdb_skt_t;
 // -------------------------------------------------------------------------
 
 # define BAUDRATE             B19200
-# define PTY_HDL              lm32gdb_skt_t
+# define PTY_HDL              rv32gdb_skt_t
 
 // Map some windows function names to the file access Linux equivalents
 # define closesocket         close

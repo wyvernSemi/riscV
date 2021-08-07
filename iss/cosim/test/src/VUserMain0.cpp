@@ -11,6 +11,7 @@
 #include "VUserMain0.h"
 #include "mem_vproc_api.h"
 #include "rv32.h"
+#include "rv32_cpu_gdb.h"
 
 // I'm node 0
 int node = 0;
@@ -157,6 +158,12 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
         case 'a':
             cfg.start_addr = atoi(optarg);
             break;
+        case 'g':
+            cfg.gdb_mode = true;
+            break;
+        case 'p':
+            cfg.gdb_ip_portnum = strtol(optarg, NULL, 0);
+            break;
         case 'h':
         default:
             fprintf(stderr, "Usage: %s -t <test executable> [-hHbdrv][-n <num instructions>]\n      [-a <start addr>][-A <brk addr>][-D <debug o/p filename>]\n", argv[0]);
@@ -169,6 +176,8 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
+            fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
+            fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -194,11 +203,11 @@ int vproc_user_callback(int val)
 
 // The ISS interrupt callback will return an interrupt when vproc_interrupt_seen
 // is true, else it returns 0. The wakeup time in this model is always the next
-// cycle. 
+// cycle.
 uint32_t iss_int_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 {
     *wakeup_time = time + 1;
-    
+
     return vproc_interrupt_seen ? 1 : 0;
 }
 
@@ -241,19 +250,40 @@ extern "C" void VUserMain0()
         // Register VProc user callback, used to update irq status
         VRegUser(vproc_user_callback, node);
 
-        // Load an executable
-        if (!pCpu->read_elf(cfg.exec_fname))
+        // If GDB mode, pass execution to the remote GDB interface
+        if (cfg.gdb_mode)
         {
-            // Run processor
-            pCpu->run(cfg);
-
-            if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+#ifdef __WIN32__
+            WORD versionWanted = MAKEWORD(1, 1);
+            WSADATA wsaData;
+            WSAStartup(versionWanted, &wsaData);
+#endif
+            // Start procssing commands from GDB
+            if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
             {
-                VPrint("*FAIL*: exit code = 0x%08x finish code = 0x%08x running %s\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17), cfg.exec_fname);
+                fprintf(stderr, "***ERROR in opening PTY\n");
             }
-            else
+
+#ifdef __WIN32__
+            WSACleanup;
+#endif
+        }
+        else
+        {
+            // Load an executable
+            if (!pCpu->read_elf(cfg.exec_fname))
             {
-                VPrint("PASS: exit code = 0x%08x running %s\n", pCpu->regi_val(10), cfg.exec_fname);
+                // Run processor
+                pCpu->run(cfg);
+
+                if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+                {
+                    VPrint("*FAIL*: exit code = 0x%08x finish code = 0x%08x running %s\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17), cfg.exec_fname);
+                }
+                else
+                {
+                    VPrint("PASS: exit code = 0x%08x running %s\n", pCpu->regi_val(10), cfg.exec_fname);
+                }
             }
         }
 

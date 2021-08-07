@@ -32,6 +32,7 @@ USRCFLAGS          = "-I${MEMMODELDIR}/src               \
                       -I${ISSDIR}/src                    \
                       -L${ISSDIR}                        \
                       -lrv32                             \
+                      -lws2_32                           \
                       -DINCL_VLOG_MEM_MODEL              \
                       -DMEM_MODEL_DEFAULT_ENDIAN=1"
 
