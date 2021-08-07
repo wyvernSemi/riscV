@@ -36,6 +36,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32.h</locationURI>
 		</link>
 		<link>
+			<name>src/rv32_cpu_gdb.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32_cpu_gdb.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/rv32_cpu_gdb.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/rv32_cpu_gdb.h</locationURI>
+		</link>
+		<link>
 			<name>src/rv32_extensions.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/src/rv32_extensions.h</locationURI>

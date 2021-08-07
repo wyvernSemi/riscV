@@ -61,7 +61,7 @@ typedef SOCKET rv32gdb_skt_t;
 // -------------------------------------------------------------------------
 
 // Map the socket type for Linux  
-typedef long rv32gdb_skt_t;
+typedef long long rv32gdb_skt_t;
 
 // -------------------------------------------------------------------------
 // DEFINITIONS (Linux)

@@ -539,7 +539,6 @@ static int rv32gdb_write_mem (void* fd, rv32* cpu, const char* cmd, const int cm
 static int rv32gdb_run_cpu (rv32* cpu, const rv32i_cfg_s cfg, const char* cmd, const int cmdlen, const int type)
 {
     int  reason      = SIGHUP;
-    bool state_valid = false;
 
     // If there's an address, fetch it and update PC
     if (cmdlen > 1)
@@ -549,7 +548,6 @@ static int rv32gdb_run_cpu (rv32* cpu, const rv32i_cfg_s cfg, const char* cmd, c
         // Retrieve the current CPU state
         cpu_state = cpu->rv32_get_cpu_state();
         cpu_state.pc = 0;
-        state_valid = true;
 
         // Get the address from the command buffer
         while (cdx < cmdlen)
@@ -584,7 +582,6 @@ static int rv32gdb_run_cpu (rv32* cpu, const rv32i_cfg_s cfg, const char* cmd, c
 
 static bool rv32gdb_proc_gdb_cmd (rv32* cpu, rv32i_cfg_s &cfg, const char* cmd, const int cmdlen, void* fd)
 {
-    int           cmd_idx   = 1;
     int           op_idx    = 0;
     unsigned char checksum  = 0;
     bool          rcvd_kill = false;
