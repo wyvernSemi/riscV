@@ -32,7 +32,14 @@
 
 #if !defined _WIN32 && !defined _WIN64
 #include <unistd.h>
-#else 
+#else
+# undef   UNICODE
+# define  WIN32_LEAN_AND_MEAN
+
+# include <windows.h>
+# include <winsock2.h>
+# include <ws2tcpip.h>
+
 extern "C" {
     extern int getopt(int nargc, char** nargv, const char* ostr);
     extern char* optarg;
@@ -40,12 +47,13 @@ extern "C" {
 #endif
 
 #include "rv32.h"
+#include "rv32_cpu_gdb.h"
 
 // ------------------------------------------------
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHdbrt:n:a:D:A:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbrt:n:a:D:A:"
 #define MEM_SIZE                           (1024*1024)
 #define MEM_OFFSET                         0
 
@@ -115,6 +123,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'a':
             cfg.start_addr = atoi(optarg);
             break;
+        case 'g':
+            cfg.gdb_mode = true;
+            break;
         case 'h':
         default:
             fprintf(stderr, "Usage: %s -t <test executable> [-hHbdrv][-n <num instructions>]\n      [-a <start addr>][-A <brk addr>][-D <debug o/p filename>]\n", argv[0]);
@@ -127,6 +138,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
+            fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -221,34 +233,46 @@ int main(int argc, char** argv)
         // Register interrupt callback functions
         pCpu->register_int_callback(interrupt_callback);
 
-        // Load an executable
-        if (pCpu->read_elf(cfg.exec_fname))
+        if (cfg.gdb_mode)
         {
-            error = 1;
+            // Start procssing commands from GDB
+            if (rv32gdb_process_gdb(pCpu, RV32_DEFAULT_TCP_PORT, cfg))
+            {
+                fprintf(stderr, "***ERROR in opening PTY\n");
+                return PTY_ERROR;
+            }
         }
         else
         {
-
-            // Run processor
-            pCpu->run(cfg);
-
-#ifdef RV32_DEBUG
-            for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
+            // Load an executable
+            if (pCpu->read_elf(cfg.exec_fname))
             {
-                printf("%sx%d=0x%08x\n", (idx < 10) ? " " : "", idx, pCpu->regi_val(idx));
-            }
-
-            printf(" pc=0x%08x\n", pCpu->pc_val());
-#endif
-
-            // Print result
-            if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
-            {
-                printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
+                error = 1;
             }
             else
             {
-                printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+
+                // Run processor
+                pCpu->run(cfg);
+
+#ifdef RV32_DEBUG
+                for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
+                {
+                    printf("%sx%d=0x%08x\n", (idx < 10) ? " " : "", idx, pCpu->regi_val(idx));
+                }
+
+                printf(" pc=0x%08x\n", pCpu->pc_val());
+#endif
+
+                // Print result
+                if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+                {
+                    printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
+                }
+                else
+                {
+                    printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+                }
             }
         }
 

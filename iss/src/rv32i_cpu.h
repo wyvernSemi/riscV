@@ -51,6 +51,43 @@ class rv32i_cpu
 public:
 
     // ------------------------------------------------
+    // Public class definitions
+    // ------------------------------------------------
+
+    // Define a class to hold all of the CPU registers. This makes it easier
+    // to access all of the state as a single unit for debug purposes, and
+    // save & restore features.
+    class rv32i_hart_state
+    {
+    public:
+
+        // General purpose registers
+        uint32_t x[RV32I_NUM_OF_REGISTERS];
+
+        // Floating point registers (for RV32F/RV32D)
+        uint64_t f[RV32I_NUM_OF_REGISTERS];
+
+        // CSR registrs
+        uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
+
+        // Control and status registers
+        uint32_t pc;                                // Program counter
+
+    };
+
+    // Define a class to hold the registers (times the number of 
+    // supported harts) and other internal state
+    class rv32i_state
+    {
+    public:
+        rv32i_hart_state  hart[RV32I_NUM_OF_HARTS];
+
+        // Current privilege level
+        uint32_t          priv_lvl;
+
+    };
+
+    // ------------------------------------------------
     // Constructors/destructors
     // ------------------------------------------------
 
@@ -90,6 +127,9 @@ public:
     {
         return state.hart[curr_hart].pc;
     };
+
+    LIBRISCV32_API rv32i_hart_state rv32_get_cpu_state(int hart_num = 0)                            { return state.hart[hart_num]; }
+    LIBRISCV32_API void             rv32_set_cpu_state(rv32i_hart_state &s, int hart_num = 0)       { state.hart[hart_num] = s; }
 
     // ------------------------------------------------
     // Public member variables
@@ -165,39 +205,6 @@ protected:
     // ------------------------------------------------
 
     typedef uint32_t opcode_t;
-
-    // Define a class to hold all of the CPU registers. This makes it easier
-    // to access all of the state as a single unit for debug purposes, and
-    // save & restore features.
-    class rv32i_hart_state
-    {
-    public:
-
-        // General purpose registers
-        uint32_t x[RV32I_NUM_OF_REGISTERS];
-
-        // Floating point registers (for RV32F/RV32D)
-        uint64_t f[RV32I_NUM_OF_REGISTERS];
-
-        // CSR registrs
-        uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
-
-        // Control and status registers
-        uint32_t pc;                                // Program counter
-
-    };
-
-    // Define a class to hold the registers (times the number of 
-    // supported harts) and other internal state
-    class rv32i_state
-    {
-    public:
-        rv32i_hart_state  hart[RV32I_NUM_OF_HARTS];
-
-        // Current privilege level
-        uint32_t          priv_lvl;
-
-    };
 
     // Disassembly enable flags
     bool                  disassemble;               // Dissassemble mode

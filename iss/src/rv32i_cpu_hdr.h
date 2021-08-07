@@ -33,6 +33,7 @@
 
 #include <cstdio>
 #include <cstdint>
+#include <csignal>
 
 // -------------------------------------------------------------------------
 // DEFINES
@@ -41,6 +42,13 @@
 // --------------------------------
 // RISC-V non-specific definitions
 //
+
+// Map some signals undefined in windows to linux values
+#if defined (_WIN32) || defined (_WIN64)
+# define SIGTRAP                                       5
+# define SIGHUP                                        1
+#endif
+
 #define DISASSEM_STR_SIZE                              100
 #define NUM_DISASSEM_BUFS                              6
 
@@ -68,7 +76,9 @@
 #define MAXCODEMEM                                     (0x1ULL << MEM_SIZE_BITS)
 
 // Exit code types
+#ifndef NO_ERROR
 #define NO_ERROR                                       0
+#endif
 #define USER_ERROR                                     1
 #define INSTR_ERROR                                    2
 #define INTERNAL_ERROR                                 3
@@ -108,38 +118,7 @@
 #define RV32I_VERBOSITY_LVL_OFF                        0
 #define RV32I_VERBOSITY_LVL_1                          1
 
-#define RV32I_MEM_NOT_DBG_MASK                         0x0f
-#define RV32I_MEM_DBG_MASK                             0x10
-
-#define RV32I_MEM_RD_GDB_BYTE                          (RV32I_MEM_RD_ACCESS_BYTE | RV32I_MEM_DBG_MASK) 
-#define RV32I_MEM_RNW_MASK                             0x4
-
 #define RV32I_MEM_DISABLE_CYCLE_COUNT                  true
-
-// Break point types
-#define RV32I_USER_BREAK                               1
-#define RV32I_LOCK_BREAK                               2
-#define RV32I_DISASSEMBLE_BREAK                        3
-#define RV32I_HW_BREAKPOINT_BREAK                      4
-#define RV32I_HW_WATCHPOINT_BREAK                      5
-#define RV32I_SINGLE_STEP_BREAK                        6
-#define RV32I_TICK_BREAK                               7
-#define RV32I_RESET_BREAK                              8
-#define RV32I_INT_BREAK                                9
-#define RV32I_BUS_ERROR_BREAK                          10
-#define RV32I_DIV_ZERO_BREAK                           11
-
-// Execution types
-#define RV32I_FOREVER                                  (-1)
-#define RV32I_ONCE                                     1
-
-#define RV32I_RUN_FROM_RESET                           0
-#define RV32I_RUN_CONTINUE                             1
-#define RV32I_RUN_SINGLE_STEP                          2
-#define RV32I_RUN_TICK                                 3
-
-#define RV32I_DEFAULT_COM_PORT                         6
-#define RV32I_DEFAULT_TCP_PORT                         0xc000
 */
 
 // --------------------------------
@@ -520,6 +499,7 @@ struct  rv32i_cfg_s {
     bool           dis_en;
     bool           hlt_on_inst_err;
     bool           en_brk_on_addr;
+    bool           gdb_mode;
     uint32_t       brk_addr;
     FILE*          dbg_fp;
 
@@ -532,6 +512,7 @@ struct  rv32i_cfg_s {
         dis_en           = false;
         hlt_on_inst_err  = false;
         en_brk_on_addr   = false;
+        gdb_mode         = false;
         brk_addr         = RISCV_TEST_ENV_TERMINATE_ADDR;
 
         dbg_fp           = stdout;

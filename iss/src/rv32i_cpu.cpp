@@ -283,10 +283,19 @@ int rv32i_cpu::run(const rv32i_cfg_s &cfg)
                 }
                 else
                 {
-                    error = 1;
+                    error = SIGILL;
                 }
             }
         }
+    }
+
+    if (cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc)
+    {
+        error = SIGTERM;
+    }
+    else if (cfg.num_instr != 0 && instr_count >= cfg.num_instr)
+    {
+        error = SIGTRAP;
     }
 
     return error;
@@ -304,6 +313,7 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
     if (halt_rsvd_instr && trap)
     {
         error = trap;
+        trap = 0;
     }
  
     (this->*p_entry->p)(&decode);
@@ -595,7 +605,7 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
     fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
-    trap = RV32I_ILLEGAL_INSTR;
+    trap = SIGILL;
 
     increment_pc();
 }
@@ -1326,6 +1336,7 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
+        trap = SIGTRAP;
         process_trap(RV32I_BREAK_POINT);
     }
     else
