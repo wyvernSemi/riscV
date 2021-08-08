@@ -27,3 +27,4 @@ The ISS has the following features:
 *	Disassembler, both run-time and static
 *	Loading of ELF programs to memory
 *	Co-simulation support for connecting to a Verilog or mixed signal logic simulator
+*	Remote gdb debug interface for connection to gdb/IDEs
