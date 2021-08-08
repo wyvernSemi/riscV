@@ -101,7 +101,7 @@ public:
     // Public methods (user interface)
     // ------------------------------------------------
     
-    LIBRISCV32_API int         run                            (const rv32i_cfg_s &cfg);
+    LIBRISCV32_API int         run                            (rv32i_cfg_s &cfg);
 
     // Read executable
     LIBRISCV32_API int         read_elf                       (const char* const filename);
@@ -213,6 +213,9 @@ protected:
     // Flag to halt on a reserved instruction
     bool                  halt_rsvd_instr;
 
+    // Flag to halt on ecall
+    bool                  halt_ecall;
+
     // Holds CSR and HART (pc and regs) state
     rv32i_state           state;
 
@@ -271,6 +274,9 @@ protected:
 
     // Current instruction
     uint32_t              curr_instr;
+
+    // Reset vector
+    uint32_t              reset_vector;
 
     // ------------------------------------------------
     // Virtual methods

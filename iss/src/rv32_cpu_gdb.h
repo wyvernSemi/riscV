@@ -183,6 +183,6 @@ enum lm32gdb_regs_e
 // PUBLIC PROTOTYPES
 // -------------------------------------------------------------------------
 
-extern int rv32gdb_process_gdb (rv32* cpu, int port_num, rv32i_cfg_s cfg);
+extern int rv32gdb_process_gdb (rv32* cpu, int port_num, rv32i_cfg_s &cfg);
 
 #endif   

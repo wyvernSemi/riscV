@@ -41,10 +41,6 @@
 // Constructor
 rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
 {
-
-    // Reset state
-    reset();
-
     // No callback functions registered by default
     p_mem_callback     = NULL;
 
@@ -56,6 +52,11 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
 
     // Default the load/store address
     access_addr        = 0x00000000;
+
+    reset_vector       = RV32I_RESET_VECTOR;
+
+    // Reset state
+    reset();
 
     // Set up decode tables for RV32I, as per The RISC-V Instruction Set Manual,
     // Volume I: RISC-V Unprivileged ISA V20191213 chapter 24
@@ -233,7 +234,7 @@ void rv32i_cpu::reset()
     // Initialise register state for each supported HART
     for (unsigned idx = 0; idx < RV32I_NUM_OF_HARTS; idx++)
     {
-        state.hart[curr_hart].pc   = RV32I_RESET_VECTOR;
+        state.hart[curr_hart].pc   = reset_vector;
     }
 
 }
@@ -242,7 +243,7 @@ void rv32i_cpu::reset()
 // Entry point to run code
 //-----------------------------------------------------------
 
-int rv32i_cpu::run(const rv32i_cfg_s &cfg)
+int rv32i_cpu::run(rv32i_cfg_s &cfg)
 {
     int error = 0;
     unsigned instr_count;
@@ -251,8 +252,19 @@ int rv32i_cpu::run(const rv32i_cfg_s &cfg)
     rt_disassem = cfg.rt_dis;
     disassemble = cfg.dis_en;
 
-    // Set halt switch
+    // Set halt switches
     halt_rsvd_instr = cfg.hlt_on_inst_err;
+    halt_ecall      = cfg.hlt_on_ecall;
+
+    // If a new start address specified, update the reset vector
+    if (cfg.update_rst_vec)
+    {
+        reset_vector             = cfg.new_rst_vec;
+        state.hart[curr_hart].pc = reset_vector;
+
+        // Should only do this once
+        cfg.update_rst_vec       = false;
+    }
 
     rv32i_decode_t        decode;
     rv32i_decode_table_t* p_entry;
@@ -308,18 +320,18 @@ int rv32i_cpu::run(const rv32i_cfg_s &cfg)
 int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
 {
     int error = 0;
+
  
+    (this->*p_entry->p)(&decode);
+ 
+    cycle_count += 1;
+
     // If an illegal/unimplemented instruction, flag to calling function
     if (halt_rsvd_instr && trap)
     {
         error = trap;
         trap = 0;
     }
- 
-    (this->*p_entry->p)(&decode);
- 
-    cycle_count += 1;
- 
 
     return error;
 }
@@ -1321,7 +1333,14 @@ void rv32i_cpu::ecall(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        process_trap(RV32I_ENV_CALL_M_MODE);
+        if (halt_ecall)
+        {
+            trap = SIGTERM;
+        }
+        else
+        {
+            process_trap(RV32I_ENV_CALL_M_MODE);
+        }
     }
     else
     {
@@ -1336,8 +1355,14 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        trap = SIGTRAP;
-        process_trap(RV32I_BREAK_POINT);
+        if (halt_ecall)
+        {
+            trap = SIGTRAP;
+        }
+        else
+        {
+            process_trap(RV32I_BREAK_POINT);
+        }
     }
     else
     {

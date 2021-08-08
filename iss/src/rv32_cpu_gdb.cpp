@@ -536,7 +536,7 @@ static int rv32gdb_write_mem (void* fd, rv32* cpu, const char* cmd, const int cm
 //
 // -------------------------------------------------------------------------
 
-static int rv32gdb_run_cpu (rv32* cpu, const rv32i_cfg_s cfg, const char* cmd, const int cmdlen, const int type)
+static int rv32gdb_run_cpu (rv32* cpu, rv32i_cfg_s &cfg, const char* cmd, const int cmdlen, const int type)
 {
     int  reason      = SIGHUP;
 
@@ -793,7 +793,7 @@ static rv32gdb_skt_t rv32gdb_connect_skt (const int portno)
 //
 // -------------------------------------------------------------------------
 
-int rv32gdb_process_gdb (rv32* cpu, int port_num, rv32i_cfg_s cfg)
+int rv32gdb_process_gdb (rv32* cpu, int port_num, rv32i_cfg_s &cfg)
 {
     int   idx      = 0;
     bool  active   = false;

@@ -53,7 +53,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbrt:n:a:D:A:p:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:"
 #define MEM_SIZE                           (1024*1024)
 #define MEM_OFFSET                         0
 
@@ -113,6 +113,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'H':
             cfg.hlt_on_inst_err = true;
             break;
+        case 'e':
+            cfg.hlt_on_ecall = true;
+            break;
         case 'D':
             if ((cfg.dbg_fp = fopen(optarg, "wb")) == NULL)
             {
@@ -120,29 +123,31 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
                 error = 1;
             }
             break;
-        case 'a':
-            cfg.start_addr = atoi(optarg);
-            break;
         case 'g':
             cfg.gdb_mode = true;
             break;
         case 'p':
             cfg.gdb_ip_portnum = strtol(optarg, NULL, 0);
             break;
+        case 'S':
+            cfg.update_rst_vec = true;
+            cfg.new_rst_vec    = strtol(optarg, NULL, 0);
+            break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s -t <test executable> [-hHbdrv][-n <num instructions>]\n      [-a <start addr>][-A <brk addr>][-D <debug o/p filename>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s -t <test executable> [-hHebdrg][-n <num instructions>]\n      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n", argv[0]);
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
-            fprintf(stderr, "   -a specify  address to start executing (default 0x00000000)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
             fprintf(stderr, "   -H Halt on unimplemented instructions (default trap)\n");
+            fprintf(stderr, "   -e Halt on ecall/ebreak instruction (default trap)\n");
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
+            fprintf(stderr, "   -S Specify start address (default 0)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -161,7 +166,8 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
     // If in bounds, access memory
-    if (byte_addr >= MEM_OFFSET && byte_addr < (MEM_OFFSET + MEM_SIZE))
+    //if (byte_addr >= MEM_OFFSET && byte_addr < (MEM_OFFSET + MEM_SIZE))
+    if (byte_addr != INT_ADDR)
     {
         uint32_t addr = (byte_addr - MEM_OFFSET) % (MEM_SIZE);
         processed = 1;

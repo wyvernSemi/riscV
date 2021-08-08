@@ -235,8 +235,8 @@
 #define RV32I_RESET_VECTOR                             0x00000000
 
 // Memory mapped mtime and mtimecmp register offsets 
-#define RV32I_RTCLOCK_ADDRESS                          0xfffffff0
-#define RV32I_RTCLOCK_CMP_ADDRESS                      0xfffffff8
+#define RV32I_RTCLOCK_ADDRESS                          0xafffffe0
+#define RV32I_RTCLOCK_CMP_ADDRESS                      0xafffffe8
 
 // FP rounding modes
 #define RV32I_RNE                                      0
@@ -496,29 +496,32 @@ typedef struct rv32i_decode_table_t
 struct  rv32i_cfg_s {
     const char*    exec_fname;
     unsigned       num_instr;
-    uint32_t       start_addr;
     bool           rt_dis;
     bool           dis_en;
     bool           hlt_on_inst_err;
+    bool           hlt_on_ecall;
     bool           en_brk_on_addr;
     bool           gdb_mode;
     uint32_t       gdb_ip_portnum;
     uint32_t       brk_addr;
+    bool           update_rst_vec;
+    uint32_t       new_rst_vec;
     FILE*          dbg_fp;
 
     rv32i_cfg_s()
     {
         exec_fname       = "test.exe";
         num_instr        = 0;
-        start_addr       = 0x00000000;
         rt_dis           = false;
         dis_en           = false;
         hlt_on_inst_err  = false;
+        hlt_on_ecall     = false;
         en_brk_on_addr   = false;
         gdb_mode         = false;
         gdb_ip_portnum   = RV32_DEFAULT_TCP_PORT;
         brk_addr         = RISCV_TEST_ENV_TERMINATE_ADDR;
-
+        update_rst_vec   = false;
+        new_rst_vec      = RV32I_RESET_VECTOR;
         dbg_fp           = stdout;
     }
 };
