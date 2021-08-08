@@ -41,10 +41,15 @@
 # include <ws2tcpip.h>
 
 extern "C" {
+
     extern int getopt(int nargc, char** nargv, const char* ostr);
     extern char* optarg;
 }
 #endif
+
+extern "C" {
+#include "mem.h"
+}
 
 #include "rv32.h"
 #include "rv32_cpu_gdb.h"
@@ -54,16 +59,12 @@ extern "C" {
 // ------------------------------------------------
 
 #define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:"
-#define MEM_SIZE                           (1024*1024)
-#define MEM_OFFSET                         0
 
 #define INT_ADDR                           0xaffffffc
 
 // ------------------------------------------------
 // LOCAL VARIABLES
 // ------------------------------------------------
-
-static uint8_t mem[MEM_SIZE+4];
 
 static uint32_t irq = 0;
 
@@ -165,38 +166,33 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
 {
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
-    // If in bounds, access memory
-    //if (byte_addr >= MEM_OFFSET && byte_addr < (MEM_OFFSET + MEM_SIZE))
+    // If not interrupt address, access memory model
     if (byte_addr != INT_ADDR)
     {
-        uint32_t addr = (byte_addr - MEM_OFFSET) % (MEM_SIZE);
+        uint32_t addr = byte_addr;
         processed = 1;
 
         switch (type & MEM_NOT_DBG_MASK)
         {
         case MEM_RD_ACCESS_BYTE:
-            data = mem[addr];
+            data = ReadRamByte(addr, 0);
             break;
         case MEM_RD_ACCESS_HWORD:
-            data = (mem[addr + 0] << 0) | (mem[addr + 1] << 8);
+            data = ReadRamHWord(addr, true, 0);
             break;
         case MEM_RD_ACCESS_INSTR:
         case MEM_RD_ACCESS_WORD:
-            data = (mem[addr + 0] << 0) | (mem[addr + 1] << 8) | (mem[addr + 2] << 16) | (mem[addr + 3] << 24);
+            data = ReadRamWord(addr, true, 0);
             break;
         case MEM_WR_ACCESS_BYTE:
-            mem[addr]     = data;
+            WriteRamByte(addr, data, 0);
             break;
         case MEM_WR_ACCESS_HWORD:
-            mem[addr + 0] = (data >> 0);
-            mem[addr + 1] = (data >> 8);
+            WriteRamHWord(addr, data, true, 0);
             break;
         case MEM_WR_ACCESS_INSTR:
         case MEM_WR_ACCESS_WORD:
-            mem[addr + 0] = (data >>  0);
-            mem[addr + 1] = (data >>  8);
-            mem[addr + 2] = (data >> 16);
-            mem[addr + 3] = (data >> 24);
+            WriteRamWord(addr, data, true, 0);
             break;
         default:
             processed = RV32I_EXT_MEM_NOT_PROCESSED;

@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\cpurv32i.cpp" />
     <ClCompile Include="..\src\getopt.c" />
+    <ClCompile Include="..\src\mem.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\librv32\librv32.vcxproj">
@@ -158,6 +159,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\mem.h" />
     <ClInclude Include="..\src\rv32.h" />
     <ClInclude Include="..\src\rv32_cpu_gdb.h" />
   </ItemGroup>
