@@ -145,7 +145,7 @@ int rv32i_cpu::read_elf (const char * const filename)
         }
 
         // For p_filesz bytes ...
-        i = 0;
+        i = (bytecount - h2[pcount]->p_offset);
         word = 0;
         for (; bytecount < h2[pcount]->p_offset + h2[pcount]->p_filesz; bytecount++)
         {

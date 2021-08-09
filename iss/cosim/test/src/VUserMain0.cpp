@@ -129,6 +129,7 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
         {
         case 't':
             cfg.exec_fname = optarg;
+            cfg.user_fname = true;
             break;
         case 'n':
             cfg.num_instr = atoi(optarg);
@@ -263,10 +264,24 @@ extern "C" void VUserMain0()
             WSADATA wsaData;
             WSAStartup(versionWanted, &wsaData);
 #endif
-            // Start procssing commands from GDB
-            if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
+            int error = 0;
+            
+            // Load an executable if specified on the command line
+            if (cfg.user_fname)
             {
-                fprintf(stderr, "***ERROR in opening PTY\n");
+                if (pCpu->read_elf(cfg.exec_fname))
+                {
+                    error = 1;
+                }
+            }
+
+            if (!error)
+            {
+                // Start procssing commands from GDB
+                if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
+                {
+                    fprintf(stderr, "***ERROR in opening PTY\n");
+                }
             }
 
 #ifdef __WIN32__

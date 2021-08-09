@@ -495,6 +495,7 @@ typedef struct rv32i_decode_table_t
 
 struct  rv32i_cfg_s {
     const char*    exec_fname;
+    bool           user_fname;
     unsigned       num_instr;
     bool           rt_dis;
     bool           dis_en;
@@ -511,6 +512,7 @@ struct  rv32i_cfg_s {
     rv32i_cfg_s()
     {
         exec_fname       = "test.exe";
+        user_fname       = false;
         num_instr        = 0;
         rt_dis           = false;
         dis_en           = false;

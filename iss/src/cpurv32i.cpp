@@ -95,6 +95,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         {
         case 't':
             cfg.exec_fname = optarg;
+            cfg.user_fname = true;
             break;
         case 'n':
             cfg.num_instr = atoi(optarg);
@@ -242,11 +243,23 @@ int main(int argc, char** argv)
         // If GDB mode, pass execution to the remote GDB interface
         if (cfg.gdb_mode)
         {
-            // Start procssing commands from GDB
-            if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
+            // Load an executable if specified on the command line
+            if (cfg.user_fname)
             {
-                fprintf(stderr, "***ERROR in opening PTY\n");
-                return PTY_ERROR;
+                if (pCpu->read_elf(cfg.exec_fname))
+                {
+                    error = 1;
+                }
+            }
+
+            if (!error)
+            {
+                // Start procssing commands from GDB
+                if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
+                {
+                    fprintf(stderr, "***ERROR in opening PTY\n");
+                    return PTY_ERROR;
+                }
             }
         }
         else
