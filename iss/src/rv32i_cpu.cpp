@@ -326,8 +326,8 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
  
     cycle_count += 1;
 
-    // If an illegal/unimplemented instruction, flag to calling function
-    if (halt_rsvd_instr && trap)
+    // If an illegal/unimplemented instruction, or halt on a system instruction, flag to calling function
+    if ((halt_rsvd_instr && trap) || (halt_ecall && (trap == SIGTERM || trap == SIGTRAP)))
     {
         error = trap;
         trap = 0;
