@@ -114,6 +114,14 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
 
         while((argvBuf[argc] = strtok(NULL, " ")) != NULL && argc < MAXARGS)
         {
+            unsigned lastchar = argvBuf[argc][strlen(argvBuf[argc])-1];
+            
+            // If last character is CR or LF, delete it
+            if (lastchar == '\r' || lastchar == '\n')
+            {
+                argvBuf[argc][strlen(argvBuf[argc])-1] = 0;
+            }
+
             argc++;
         }
 
@@ -265,7 +273,7 @@ extern "C" void VUserMain0()
             WSAStartup(versionWanted, &wsaData);
 #endif
             int error = 0;
-            
+
             // Load an executable if specified on the command line
             if (cfg.user_fname)
             {
