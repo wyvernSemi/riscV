@@ -4,7 +4,7 @@
 #
 # Date: 14th August 2021
 #
-# Make file for test assembly code
+# Make file for test C code
 #
 # This file is part of the base RISC-V instruction set simulator
 # (rv32_cpu).
@@ -51,11 +51,12 @@ TMPFILE        = tmp
 .PHONY: all
 all: ${TGT} start_addr
 
-# Recipe for target executable
+# Recipe for compiling target executable and saving off address of _start symbol
 ${TGT}: ${SRC} ${INCL}
-	@${PREFIX}gcc -g -march=rv32im -mabi=ilp32 ${SRC} -o ${TGT}
-	@${PREFIX}nm ${TGT} | grep "\<_start\>" | cut -d ' ' -f1 > ${TMPFILE}
+	@${PREFIX}gcc -g -march=rv32im -mabi=ilp32 ${SRC} -o $@
+	@${PREFIX}nm $@ | awk '/\y_start\y/{print $$1}' > ${TMPFILE}
 
+# Recipe to display value of _start symbol
 .PHONY: start_addr
 start_addr: ${TGT}
 	@echo _start = 0x$(shell cat ${TMPFILE})
