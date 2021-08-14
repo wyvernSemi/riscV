@@ -61,6 +61,7 @@ extern "C" {
 #define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:"
 
 #define INT_ADDR                           0xaffffffc
+#define UART_TX_ADDR                       0x80000000
 
 // ------------------------------------------------
 // LOCAL VARIABLES
@@ -168,7 +169,12 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
     // If not interrupt address, access memory model
-    if (byte_addr != INT_ADDR)
+    if (byte_addr == UART_TX_ADDR && type == MEM_WR_ACCESS_BYTE)
+    {
+        processed = 1;
+        putchar(data & 0xff);
+    }
+    else if (byte_addr != INT_ADDR)
     {
         uint32_t addr = byte_addr;
         processed = 1;
