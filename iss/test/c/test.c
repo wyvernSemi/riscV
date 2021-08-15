@@ -74,7 +74,7 @@ int main (int args, int**argv)
 {
     unsigned val = 0;
     
-    // Accumulate the squarts of integers 1 to 10 inclusive
+    // Accumulate the squares of integers 1 to 10 inclusive
     for (int i = 1; i <= 10; i++)
     {
         val += func(i);
@@ -84,5 +84,4 @@ int main (int args, int**argv)
     printf("val = %d\n", val);
 
     return 0;
-
 }
