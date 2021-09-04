@@ -1314,7 +1314,7 @@ void rv32i_cpu::jalr(const p_rv32i_decode_t d)
 // Note that in this ISS, all instructions are completed
 // before executing the next, so no out-of-order memory
 // accesses can occur between harts or external models. Thus
-// FENCE does nothing.
+// FENCE/FENCE.I route here and does nothing.
 //
 void rv32i_cpu::fence(const p_rv32i_decode_t d)
 {
