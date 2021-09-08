@@ -49,26 +49,27 @@ module rv32i_decode
   input      [31:0]                    rs1_rtn,
   input      [31:0]                    rs2_rtn,
 
-  // Pipeline outputs to ALU
+  input       [4:0]                    fb_rd,
+  input      [31:0]                    fb_rd_val,
+
+  // ALU data
   output reg  [4:0]                    rd,           // 0 if no writeback
+  output reg [31:0]                    a,
+  output reg [31:0]                    b,
+  output reg [31:0]                    offset,
+  output reg [31:0]                    pc,
+
+  // A and B source indexes for ALU rd feedback control
+  output reg  [4:0]                    a_rs_idx,
+  output reg  [4:0]                    b_rs_idx,
+  
+  // ALU control
   output reg                           branch,       // a is pc, b is imm
   output reg                           jump,         // a is pc/0, b is imm
   output reg                           system,       // a is 0, b is trap vector
   output reg                           load,         // a is rs1, b is imm
   output reg                           store,        // a is rs1, b is imm
   output reg  [1:0]                    ld_st_width,  // 0 = byte, 1 = hword, 2 = word
-
-  input       [4:0]                    fb_rd,
-  input      [31:0]                    fb_rd_val,
-
-  // ALU control
-  output reg [31:0]                    a,
-  output reg [31:0]                    b,
-  output reg [31:0]                    offset,
-  output reg [31:0]                    pc,
-
-  output reg  [4:0]                    a_rs_idx,
-  output reg  [4:0]                    b_rs_idx,
 
   // Add/sub control
   output reg                           add_nsub,

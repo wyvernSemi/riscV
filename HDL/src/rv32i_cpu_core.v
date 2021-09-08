@@ -34,7 +34,7 @@
 module rv32i_cpu_core
 #(parameter
    RV32I_RESET_VECTOR          = 0,
-   RV32I_TRAP_VECTOR           = 32'h00000040,
+   RV32I_TRAP_VECTOR           = 32'h00000004,
    RV32I_REGFILE_ENTRIES       = 32
 )
 (

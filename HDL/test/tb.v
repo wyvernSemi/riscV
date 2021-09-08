@@ -41,10 +41,12 @@
 
 `define RESET_PERIOD                   10
 `define HALT_COUNT                     100
+`define HALT_ADDR                      32'h00000040
 `define IMEM_SIZE_WORDS                2048
 `define DMEM_SIZE_WORDS                2048
 
 `define RV32I_NOP                      32'h00000013
+`define RV32I_UNIMP                    32'hc0001073
 
 // ========================================================
 // Test bench module
@@ -54,7 +56,8 @@ module tb
 #(parameter
     GUI_RUN                          = 0,
     CLK_FREQ_MHZ                     = 100,
-    RESET_ADDR                       = 0
+    RESET_ADDR                       = 0,
+    HALT_ON_ADDR                     = 0
 )
 (/* no ports */);
 
@@ -112,7 +115,9 @@ begin
 
   // Stop or finish the simulation on reaching the HALT count or reading
   // an all zero (illegal) instruction.
-  if (count == `HALT_COUNT || (ireaddatavalid == 1'b1 && ireaddata == 32'h0))
+  if (count == `HALT_COUNT || 
+     (ireaddatavalid == 1'b1 && (ireaddata == 32'h0 || ireaddata == `RV32I_UNIMP)) ||
+     (HALT_ON_ADDR && iread && iaddress == `HALT_ADDR))
   begin
     // In batch mode finish the simulation. In GUI mode stop it to allow inspection of signals.
     if (GUI_RUN == 0)

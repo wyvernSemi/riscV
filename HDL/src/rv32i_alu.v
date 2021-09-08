@@ -148,6 +148,8 @@ wire        [31:0] next_pc      = (jump_in | system_in) ? add :
 
 wire        [31:0] next_addr    = a + offset_decode;
 
+wire        [31:0] ld_data_shift = ld_data >> {addr[1:0], 3'b000};
+
 always @(posedge clk)
 begin
   if (reset_n == 1'b0)
@@ -179,7 +181,8 @@ begin
     end
     else if (load_in)
     begin
-      c                         <= ld_data;
+      // Clear the unused bits of the shifted load data, based on load width (byte, hword, word)
+      c                         <= ld_data_shift & {{16{ld_store_width[1]}}, {8{|ld_store_width}}, 8'hff};
     end
     else if (jump_in)
     begin
