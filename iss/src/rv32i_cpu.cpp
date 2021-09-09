@@ -42,18 +42,21 @@
 rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
 {
     // No callback functions registered by default
-    p_mem_callback     = NULL;
+    p_mem_callback           = NULL;
 
     // Cycle count set to 0
-    cycle_count        = 0;
+    cycle_count              = 0;
 
     // Default the current instruction to an unimplemented instruction
-    curr_instr         = 0x00000000;
+    curr_instr               = 0x00000000;
 
     // Default the load/store address
-    access_addr        = 0x00000000;
+    access_addr              = 0x00000000;
 
-    reset_vector       = RV32I_RESET_VECTOR;
+    reset_vector             = RV32I_RESET_VECTOR;
+
+    cmp_instr                = false;
+    RV32_IADDR_ALIGN_MASK = 0x00000003;
 
     // Reset state
     reset();
@@ -627,7 +630,7 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 //
 void rv32i_cpu::addi(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
 
     if (d->rd)
     {
@@ -687,7 +690,7 @@ void rv32i_cpu::ori(const p_rv32i_decode_t d)
 
 void rv32i_cpu::andi(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
 
     if (d->rd)
     {
@@ -699,7 +702,7 @@ void rv32i_cpu::andi(const p_rv32i_decode_t d)
 
 void rv32i_cpu::slli(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
 
     if (d->instr & RV32I_SHIFT_RSVD_BIT_MASK)
     {
@@ -718,7 +721,7 @@ void rv32i_cpu::slli(const p_rv32i_decode_t d)
 
 void rv32i_cpu::srli(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
 
     if (d->instr & RV32I_SHIFT_RSVD_BIT_MASK)
     {
@@ -737,7 +740,7 @@ void rv32i_cpu::srli(const p_rv32i_decode_t d)
 
 void rv32i_cpu::srai(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i & RV32I_MASK_IMM_I_SHAMT);
 
     if (d->instr & RV32I_SHIFT_RSVD_BIT_MASK)
     {
@@ -760,7 +763,7 @@ void rv32i_cpu::srai(const p_rv32i_decode_t d)
 //
 void rv32i_cpu::addr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_R_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     if (d->rd)
     {
@@ -772,7 +775,7 @@ void rv32i_cpu::addr(const p_rv32i_decode_t d)
 
 void rv32i_cpu::subr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_R_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     if (d->rd)
     {
@@ -820,7 +823,7 @@ void rv32i_cpu::sltur(const p_rv32i_decode_t d)
 
 void rv32i_cpu::xorr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_R_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     if (d->rd)
     {
@@ -857,7 +860,7 @@ void rv32i_cpu::srar(const p_rv32i_decode_t d)
 
 void rv32i_cpu::orr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_R_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     if (d->rd)
     {
@@ -869,7 +872,7 @@ void rv32i_cpu::orr(const p_rv32i_decode_t d)
 
 void rv32i_cpu::andr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_R_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
+    RV32I_DISASSEM_R_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->rs2);
 
     if (d->rd)
     {
@@ -896,7 +899,7 @@ void rv32i_cpu::auipc(const p_rv32i_decode_t d)
 
 void rv32i_cpu::lui(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_U_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_u);
+    RV32I_DISASSEM_U_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->imm_u);
 
     if (d->rd)
     {
@@ -963,7 +966,7 @@ void rv32i_cpu::lw(const p_rv32i_decode_t d)
 {
     bool access_fault = false;
 
-    RV32I_DISASSEM_IL_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_IL_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
 
     if (!disassemble)
     {
@@ -1073,7 +1076,7 @@ void rv32i_cpu::sw(const p_rv32i_decode_t d)
 {
     bool access_fault = false;
 
-    RV32I_DISASSEM_S_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_s);
+    RV32I_DISASSEM_S_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_s);
 
     if (!disassemble)
     {
@@ -1093,14 +1096,14 @@ void rv32i_cpu::sw(const p_rv32i_decode_t d)
 //
 void rv32i_cpu::beq(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
+    RV32I_DISASSEM_B_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
     access_addr = state.hart[curr_hart].pc + d->imm_b;
 
     if (!disassemble && state.hart[curr_hart].x[d->rs1] == state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1118,14 +1121,14 @@ void rv32i_cpu::beq(const p_rv32i_decode_t d)
 
 void rv32i_cpu::bne(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
+    RV32I_DISASSEM_B_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
     access_addr = state.hart[curr_hart].pc + d->imm_b;
 
     if (!disassemble && state.hart[curr_hart].x[d->rs1] != state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1150,7 +1153,7 @@ void rv32i_cpu::blt(const p_rv32i_decode_t d)
     if (!disassemble && (int32_t)state.hart[curr_hart].x[d->rs1] < (int32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1175,7 +1178,7 @@ void rv32i_cpu::bge(const p_rv32i_decode_t d)
     if (!disassemble && (int32_t)state.hart[curr_hart].x[d->rs1] >= (int32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1200,7 +1203,7 @@ void rv32i_cpu::bltu(const p_rv32i_decode_t d)
     if (!disassemble && state.hart[curr_hart].x[d->rs1] < state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1225,7 +1228,7 @@ void rv32i_cpu::bgeu(const p_rv32i_decode_t d)
     if (!disassemble && state.hart[curr_hart].x[d->rs1] >= state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1246,7 +1249,7 @@ void rv32i_cpu::bgeu(const p_rv32i_decode_t d)
 //
 void rv32i_cpu::jal(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_J_TYPE(d->instr, d->entry.instr_name, d->rd, d->imm_j);
+    RV32I_DISASSEM_J_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->imm_j);
     RV32I_DISASSEM_PC_JUMP;
 
     if (!disassemble)
@@ -1255,7 +1258,7 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
         access_addr = state.hart[curr_hart].pc + d->imm_j;
 
         // Check for misalignment on target address
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1263,7 +1266,7 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
         {
             if (d->rd)
             {
-                state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].pc + 4;
+                state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
             }
 
             state.hart[curr_hart].pc = access_addr;
@@ -1277,17 +1280,17 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
 
 void rv32i_cpu::jalr(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_I_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_I_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
     RV32I_DISASSEM_PC_JUMP;
 
     if (!disassemble)
     {
-        uint32_t next_pc = state.hart[curr_hart].pc + 4;
+        uint32_t next_pc = state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
 
         access_addr = (state.hart[curr_hart].x[d->rs1] + d->imm_i) & 0xfffffffe;  // Clear bottom bit
 
         // Check for address misalignment
-        if (access_addr & 0x00000003)
+        if (access_addr & RV32_IADDR_ALIGN_MASK)
         {
             process_trap(RV32I_IADDR_MISALIGNED);
         }
@@ -1350,7 +1353,7 @@ void rv32i_cpu::ecall(const p_rv32i_decode_t d)
 
 void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
 {
-    RV32I_DISASSEM_SYS_TYPE(d->instr, d->entry.instr_name);
+    RV32I_DISASSEM_SYS_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name);
     RV32I_DISASSEM_PC_JUMP;
 
     if (!disassemble)

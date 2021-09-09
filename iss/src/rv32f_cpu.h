@@ -38,28 +38,7 @@
 class rv32f_cpu : public RV32_F_INHERITANCE_CLASS
 {
 public:
-             LIBRISCV32_API      rv32f_cpu      (FILE* dbgfp = stdout);
-    virtual  LIBRISCV32_API      ~rv32f_cpu()   { };
 
-protected:
-    // Add an RV32F instruction secondary table here.
-    rv32i_decode_table_t  fsop_tbl      [RV32I_NUM_SECONDARY_OPCODES];
-
-    // OP-FP tertiary table (decoded on funct7)
-    rv32i_decode_table_t  fs_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-
-    // Quarternary table (decoded on funct3 via decode_exception method)
-    rv32i_decode_table_t  fsgnjs_tbl    [RV32I_NUM_SECONDARY_OPCODES];
-    rv32i_decode_table_t  fminmaxs_tbl  [RV32I_NUM_SECONDARY_OPCODES];
-    rv32i_decode_table_t  fcmp_tbl      [RV32I_NUM_SECONDARY_OPCODES];
-    rv32i_decode_table_t  fmv_tbl       [RV32I_NUM_SECONDARY_OPCODES];
-
-private:
-
-    // ------------------------------------------------
-    // Private member variables
-    // ------------------------------------------------
-    
     const char flw_str           [DISASSEM_STR_SIZE] = "flw      ";
     const char fsw_str           [DISASSEM_STR_SIZE] = "fsw      ";
     const char fmadds_str        [DISASSEM_STR_SIZE] = "fmadd.s  ";
@@ -86,6 +65,28 @@ private:
     const char fcvtsw_str        [DISASSEM_STR_SIZE] = "fcvt.s.w ";
     const char fcvtswu_str       [DISASSEM_STR_SIZE] = "fcvt.s.wu";
     const char fmvwx_str         [DISASSEM_STR_SIZE] = "fmv.w.x  ";
+
+             LIBRISCV32_API      rv32f_cpu      (FILE* dbgfp = stdout);
+    virtual  LIBRISCV32_API      ~rv32f_cpu()   { };
+
+protected:
+    // Add an RV32F instruction secondary table here.
+    rv32i_decode_table_t  fsop_tbl      [RV32I_NUM_SECONDARY_OPCODES];
+
+    // OP-FP tertiary table (decoded on funct7)
+    rv32i_decode_table_t  fs_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+
+    // Quarternary table (decoded on funct3 via decode_exception method)
+    rv32i_decode_table_t  fsgnjs_tbl    [RV32I_NUM_SECONDARY_OPCODES];
+    rv32i_decode_table_t  fminmaxs_tbl  [RV32I_NUM_SECONDARY_OPCODES];
+    rv32i_decode_table_t  fcmp_tbl      [RV32I_NUM_SECONDARY_OPCODES];
+    rv32i_decode_table_t  fmv_tbl       [RV32I_NUM_SECONDARY_OPCODES];
+
+private:
+
+    // ------------------------------------------------
+    // Private member variables
+    // ------------------------------------------------
 
     int        curr_rnd_method;
 

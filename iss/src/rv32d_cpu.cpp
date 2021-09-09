@@ -91,7 +91,7 @@ rv32d_cpu::rv32d_cpu(FILE* dbgfp) : RV32_D_INHERITANCE_CLASS(dbgfp)
     fs_tbl[0x21]        = { false, fcvtds_str,  RV32I_INSTR_FMT_R, (pFunc_t)&rv32d_cpu::fcvtds };
 
     // Update the primary table for non OP-FP RV32D instructions, overriding
-    // the entries set by rv32f_cpu class (if present). The D instrcutions
+    // the entries set by rv32f_cpu class (if present). The D instructions
     // do final decode, and call single precision methods, if available (else reserved).
     primary_tbl[0x01]  = {false, fld_str,          RV32I_INSTR_FMT_I, (pFunc_t)&rv32d_cpu::fld};      //LOAD-FP
     primary_tbl[0x09]  = {false, fsd_str,          RV32I_INSTR_FMT_S, (pFunc_t)&rv32d_cpu::fsd};      //STORE-FP
@@ -274,14 +274,16 @@ void rv32d_cpu::fld(const p_rv32i_decode_t d)
     if (d->funct3 != 0x3)
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::flw(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = flw_str;
+        RV32_D_INHERITANCE_CLASS::flw(&d_f);
 #else
         reserved(d);
 #endif
     }
     else
     {
-        RV32I_DISASSEM_IFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+        RV32I_DISASSEM_IFS_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
 
         if (!disassemble)
         {
@@ -310,14 +312,16 @@ void rv32d_cpu::fsd(const p_rv32i_decode_t d)
     if (d->funct3 != 0x3)
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::fsw(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = fsw_str;
+        RV32_D_INHERITANCE_CLASS::fsw(&d_f);
 #else
         reserved(d);
 #endif
     }
     else
     {
-        RV32I_DISASSEM_SFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+        RV32I_DISASSEM_SFS_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_s);
 
         if (!disassemble)
         {
@@ -343,7 +347,9 @@ void rv32d_cpu::fmaddd(const p_rv32i_decode_t d)
     if (!(d->funct7 & BIT2_MASK))
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::fmadds(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = fmadds_str;
+        RV32_D_INHERITANCE_CLASS::fmadds(&d_f);
 #else
         reserved(d);
 #endif
@@ -383,7 +389,9 @@ void rv32d_cpu::fmsubd (const p_rv32i_decode_t d)
     if (!(d->funct7 & BIT2_MASK))
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::fmsubs(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = fmsubs_str;
+        RV32_D_INHERITANCE_CLASS::fmsubs(&d_f);
 #else
         reserved(d);
 #endif
@@ -423,7 +431,9 @@ void rv32d_cpu::fnmsubd(const p_rv32i_decode_t d)
     if (!(d->funct7 & BIT2_MASK))
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::fnmsubs(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = fnmsubs_str;
+        RV32_D_INHERITANCE_CLASS::fnmsubs(&d_f);
 #else
         reserved(d);
 #endif
@@ -461,7 +471,9 @@ void rv32d_cpu::fnmaddd(const p_rv32i_decode_t d)
     if (!(d->funct7 & BIT2_MASK))
     {
 #if RV32_D_INHERITANCE_CLASS == rv32f_cpu
-        RV32_D_INHERITANCE_CLASS::fnmadds(d);
+        rv32i_decode_t d_f = *d;
+        d_f.entry.instr_name = fnmadds_str;
+        RV32_D_INHERITANCE_CLASS::fnmadds(&d_f);
 #else
         reserved(d);
 #endif

@@ -62,16 +62,16 @@ public:
     public:
 
         // General purpose registers
-        uint32_t x[RV32I_NUM_OF_REGISTERS];
+        uint32_t x[RV32I_NUM_OF_REGISTERS] = { 0 };
 
         // Floating point registers (for RV32F/RV32D)
-        uint64_t f[RV32I_NUM_OF_REGISTERS];
+        uint64_t f[RV32I_NUM_OF_REGISTERS] = { 0 };
 
-        // CSR registrs
+        // CSR registers
         uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
 
-        // Control and status registers
-        uint32_t pc;                                // Program counter
+        // Program counter
+        uint32_t pc;
 
     };
 
@@ -80,10 +80,11 @@ public:
     class rv32i_state
     {
     public:
+
         rv32i_hart_state  hart[RV32I_NUM_OF_HARTS];
 
         // Current privilege level
-        uint32_t          priv_lvl;
+        uint32_t          priv_lvl = RV32_PRIV_MACHINE;
 
     };
 
@@ -92,10 +93,10 @@ public:
     // ------------------------------------------------
 
     // Constructor, with default configuration values
-            LIBRISCV32_API      rv32i_cpu                     (FILE* dbgfp = stdout);
+            LIBRISCV32_API     rv32i_cpu                     (FILE* dbgfp = stdout);
 
     // Virtual destructor for polymorphic class
-    virtual LIBRISCV32_API      ~rv32i_cpu                    (){/* No dynamic allocation yet */}
+    virtual LIBRISCV32_API     ~rv32i_cpu                    (){/* No dynamic allocation yet */}
 
     // ------------------------------------------------
     // Public methods (user interface)
@@ -228,6 +229,11 @@ protected:
     // Load/store or jump target address (for trap handling)
     uint32_t              access_addr;
 
+    // Flag to say a compressed instruction being processed (for use by rv32c_cpu)
+    bool                  cmp_instr;
+    uint32_t              cmp_instr_code;
+    uint32_t              RV32_IADDR_ALIGN_MASK;
+
     // RV32I Decode tables
     rv32i_decode_table_t  primary_tbl    [RV32I_NUM_PRIMARY_OPCODES];
     rv32i_decode_table_t  load_tbl       [RV32I_NUM_SECONDARY_OPCODES];
@@ -244,7 +250,6 @@ protected:
     rv32i_decode_table_t  xor_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  or_tbl         [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  and_tbl        [RV32I_NUM_TERTIARY_OPCODES];
-
 
     // Decode table for SYSTEM instructions
     rv32i_decode_table_t  sys_tbl        [RV32I_NUM_SECONDARY_OPCODES];
@@ -285,7 +290,7 @@ public:
     // Instruction for illegal/unimplemented instructions. Public
     // so derived classes can use same function, and virtual so
     // can be overloaded.
-    virtual void reserved                 (const p_rv32i_decode_t);
+    virtual void     reserved             (const p_rv32i_decode_t);
 
 protected:
     // State reset
@@ -298,9 +303,18 @@ protected:
         state.hart[curr_hart].pc += 4;
     }
 
-    // Place holder virtual methods for overloading with CSR access functoinality
+    // Place holder virtual methods for overloading with CSR access functionality
     virtual uint32_t access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t value) { return 1;}
     virtual uint32_t csr_wr_mask(const uint32_t addr, bool& unimp) { unimp = true; return 0;}
+
+    // Fetch next instruction. For RV32I, always a simple 32 bit read.
+    // Can be overridden to support compressed instructions (RV32C),
+    // expanding to 32 bits, and managing half word PC increments. 
+    virtual uint32_t fetch_instruction()
+    {
+        bool fault;
+        return read_mem(state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
+    }
 
 private:
     // RV32I trap processing. Since CSR registers not implemented,
@@ -314,15 +328,6 @@ private:
     // Virtual place holder for adding interrupt features
     // (external time and software. Called once per execute() cycle.
     virtual int process_interrupts() { return 0; };
-
-    // Fetch next instruction. For RV32I, always a simple 32 bit read.
-    // Can be overridden to support compressed instructions (RV32C),
-    // expanding to 32 bits, and managing half word PC increments. 
-    virtual uint32_t fetch_instruction()
-    {
-        bool fault;
-        return read_mem(state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
-    }
 
     virtual void decode_exception(rv32i_decode_table_t*& pEntry, rv32i_decode_t& d)
     {
