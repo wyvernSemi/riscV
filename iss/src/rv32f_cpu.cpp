@@ -277,7 +277,7 @@ void rv32f_cpu::flw(const p_rv32i_decode_t d)
 {
     bool access_fault = false;
 
-    RV32I_DISASSEM_IFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_IFS_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
 
     if (!disassemble)
     {
@@ -301,7 +301,7 @@ void rv32f_cpu::fsw(const p_rv32i_decode_t d)
 {
     bool access_fault = false;
 
-    RV32I_DISASSEM_SFS_TYPE(d->instr, d->entry.instr_name, d->rd, d->rs1, d->imm_i);
+    RV32I_DISASSEM_SFS_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_s);
 
     if (!disassemble)
     {

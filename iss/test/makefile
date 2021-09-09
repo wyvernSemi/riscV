@@ -44,8 +44,10 @@ LD            = ${ARCHCHAIN}ld
 INCLPATHS     = -I.                                     \
                 -I${TESTENVDIR}/p                       \
                 -I${TESTDIR}/isa/macros/scalar
+                
+ARCHSPEC      = rv32g
 
-COPTS         = -c -g -fpic -march=rv32g -mabi=ilp32 ${INCLPATHS}
+COPTS         = -c -g -fpic -march=${ARCHSPEC} -mabi=ilp32 ${INCLPATHS}
 LDOPTS        = -melf32lriscv -Ttext ${START_ADDR}
 
 OBJDIR        = obj

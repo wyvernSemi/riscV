@@ -140,4 +140,15 @@ for %%i in (^
     rm -f obj\%%i.o
     make SUBDIR=rv32ud FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
-  ) 
+  )
+  
+  for %%i in (^
+  rvc^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32uc FNAME=%%i.S ARCHSPEC=rv32gc
+    ..\visualstudio\x64\Debug\rv32.exe -b -A0x36 -t %%i.exe
+  )

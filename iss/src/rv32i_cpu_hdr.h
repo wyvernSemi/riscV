@@ -54,10 +54,15 @@
 
 // General bit position masks
 #define MASK_BIT31                                     0x80000000
+#define MASK_SIGN_BIT6                                 0x00000020
 #define MASK_SIGN_BYTE                                 0x00000080
+#define MASK_SIGN_BIT9                                 0x00000100
+#define MASK_SIGN_BIT10                                0x00000200
 #define MASK_SIGN_BIT12                                0x00000800
 #define MASK_SIGN_BIT13                                0x00001000
 #define MASK_SIGN_HWORD                                0x00008000
+#define MASK_SIGN_BIT17                                0x00010000
+#define MASK_SIGN_BIT18                                0x00020000
 #define MASK_SIGN_BIT21                                0x00100000
 #define MASK_SIGN_BIT32                                MASK_BIT31
 
@@ -65,10 +70,15 @@
 #define MASK_INSTR_ADDR                                0xfffffffc
 #define BIT2_MASK                                      0x00000003
 #define BIT5_MASK                                      0x0000001f
+#define BIT6_MASK                                      0x0000003f
 #define BYTE_MASK                                      0x000000ff
+#define BIT9_MASK                                      0x000001ff
+#define BIT10_MASK                                     0x000003ff
 #define BIT12_MASK                                     0x00000fff
 #define BIT13_MASK                                     0x00001fff
 #define HWORD_MASK                                     0x0000ffff
+#define BIT17_MASK                                     0x0001ffff
+#define BIT18_MASK                                     0x0003ffff
 #define BIT21_MASK                                     0x001fffff
 #define WORD_MASK                                      0xffffffff
                                                        
@@ -105,23 +115,6 @@
 #define RV32I_EXT_MEM_NOT_PROCESSED                    (-1)
 
 #define RV32_DEFAULT_TCP_PORT                          0xc000
-
-/*
-// Memory tags
-#define MEM_UNUSED                                     0
-#define MEM_INSTRUCTION_WR                             1
-#define MEM_DATA_RD                                    2 
-#define MEM_DATA_WR                                    4
-
-#define RV32I_NO_BREAK_ADDR                            (-1)
-#define RV32I_DEFAULT_BREAKADDR                        RV32I_NO_BREAK_ADDR
-
-// Verbosity levels
-#define RV32I_VERBOSITY_LVL_OFF                        0
-#define RV32I_VERBOSITY_LVL_1                          1
-
-#define RV32I_MEM_DISABLE_CYCLE_COUNT                  true
-*/
 
 // --------------------------------
 // RISC-V specific definitions
@@ -177,13 +170,23 @@
 
 // Decode types
 #define RV32I_INSTR_ILLEGAL                            (-1)
-#define RV32I_INSTR_FMT_R                              0
-#define RV32I_INSTR_FMT_I                              1
-#define RV32I_INSTR_FMT_S                              2
-#define RV32I_INSTR_FMT_B                              3
-#define RV32I_INSTR_FMT_U                              4
-#define RV32I_INSTR_FMT_J                              5
-#define RV32I_INSTR_FMT_R4                             6
+#define RV32I_INSTR_FMT_R                              0x00
+#define RV32I_INSTR_FMT_I                              0x01
+#define RV32I_INSTR_FMT_S                              0x02
+#define RV32I_INSTR_FMT_B                              0x03
+#define RV32I_INSTR_FMT_U                              0x04
+#define RV32I_INSTR_FMT_J                              0x05
+#define RV32I_INSTR_FMT_R4                             0x06
+
+#define RV32C_INSTR_FMT_R                              0x10
+#define RV32C_INSTR_FMT_I                              0x11
+#define RV32C_INSTR_FMT_S                              0x12
+#define RV32C_INSTR_FMT_B                              0x13
+#define RV32C_INSTR_FMT_A                              0x14
+#define RV32C_INSTR_FMT_J                              0x15
+#define RV32C_INSTR_FMT_SS                             0x16
+#define RV32C_INSTR_FMT_IW                             0x17
+#define RV32C_INSTR_FMT_L                              0x18
 
 // Trap types                                          
 #define RV32I_IADDR_MISALIGNED                         0
@@ -200,6 +203,8 @@
 #define RV32I_INSTR_PAGE_FAULT                         12
 #define RV32I_LOAD_PAGE_FAULT                          13
 #define RV32I_ST_AMO_PAGE_FAULT                        15
+
+//#define RV32_IADDR_ALIGN_MASK                          0x00000003
 
 // SYSTEM intructions' opcode
 #define RV32I_SYS_OPCODE                               0x73
@@ -299,10 +304,15 @@
 #define INIT_TBL_WITH_SUBTBL(_a,_b)                    {_a.sub_table=true;_a.ref.p_entry=(_b); _a.p=NULL;}
 
 // Macros to sign extend
+#define SIGN_EXT6(_val)                                ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT6)  ? ~BIT6_MASK  : 0)))
 #define SIGN_EXT8(_val)                                ((int32_t)((_val) | (((_val) & MASK_SIGN_BYTE)  ? ~BYTE_MASK  : 0)))
+#define SIGN_EXT9(_val)                                ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT9)  ? ~BIT9_MASK  : 0)))
+#define SIGN_EXT10(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT10) ? ~BIT10_MASK : 0)))
 #define SIGN_EXT12(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT12) ? ~BIT12_MASK : 0)))
 #define SIGN_EXT13(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT13) ? ~BIT13_MASK : 0)))
 #define SIGN_EXT16(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_HWORD) ? ~HWORD_MASK : 0)))
+#define SIGN_EXT17(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT17) ? ~BIT17_MASK : 0)))
+#define SIGN_EXT18(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT18) ? ~BIT18_MASK : 0)))
 #define SIGN_EXT21(_val)                               ((int32_t)((_val) | (((_val) & MASK_SIGN_BIT21) ? ~BIT21_MASK : 0)))
 
 // --------------------------------
@@ -316,12 +326,12 @@
 // as it is easier to cross-reference to the instruction definitions.
 #define RV32I_DISASSEM_B_TYPE(_instr,_str,_rs1,_rs2,_imm_b)  {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %d\n",  state.hart[curr_hart].pc, _instr, _str, rmap(_rs1), rmap(_rs2),  _imm_b);     \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %s %d\n",  state.hart[curr_hart].pc, _instr, cmp_instr?'\'':' ',_str, rmap(_rs1), rmap(_rs2),  _imm_b);     \
 }
 
 #define RV32I_DISASSEM_R_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, _str,rmap(_rd),rmap(_rs1), rmap_str[_rs2]); \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %s %s\n",  state.hart[curr_hart].pc, _instr, cmp_instr ? '\'':' ',_str,rmap(_rd),rmap(_rs1), rmap_str[_rs2]); \
 }
 
 #define RV32I_DISASSEM_RA_TYPE(_instr,_str,_rd,_rs1,_rs2)     {                                                                          \
@@ -356,22 +366,22 @@
 
 #define RV32I_DISASSEM_I_TYPE(_instr,_str,_rd,_rs1,_imm_i)   {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %s %d\n",  state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  rmap(_rs1),  _imm_i);     \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %s %d\n",  state.hart[curr_hart].pc, _instr, cmp_instr ? '\'' : ' ', _str, rmap(_rd),  rmap(_rs1),  _imm_i);     \
 }
 
 #define RV32I_DISASSEM_S_TYPE(_instr,_str,_rs1,_rs2,_imm_s)  {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, rmap(_rs2), _imm_s, rmap_str[_rs1]);  \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, cmp_instr ? '\'' : ' ', _str, rmap(_rs2), _imm_s, rmap_str[_rs1]);  \
 }
 
 #define RV32I_DISASSEM_SFS_TYPE(_instr,_str,_rs1,_rs2,_imm_s)  {                                                                         \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, fmap(_rs2), _imm_s, rmap_str[_rs1]);      \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, cmp_instr ? '\'' : ' ', _str, fmap(_rs2), _imm_s, rmap_str[_rs1]);      \
 }
 
 #define RV32I_DISASSEM_IL_TYPE(_instr,_str,_rd,_rs1,_imm_i)  {                                                               /* LOAD */  \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  _imm_i, rmap_str[_rs1]);  \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, cmp_instr ? '\'' : ' ', _str, rmap(_rd),  _imm_i, rmap_str[_rs1]);  \
 }
 
 #define RV32I_DISASSEM_IF_TYPE(_instr,_str,_imm_i)           {                                                               /* FENCE */ \
@@ -381,7 +391,7 @@
 
 #define RV32I_DISASSEM_IFS_TYPE(_instr,_str,_rd,_rs1,_imm_i)  {                                                               /* LOAD */ \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, _str, fmap(_rd), _imm_i, rmap_str[_rs1]);   \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %d(%s)\n", state.hart[curr_hart].pc, _instr, cmp_instr ? '\'' : ' ', _str, fmap(_rd), _imm_i, rmap_str[_rs1]);   \
 }
 
 #define RV32I_DISASSEM_ICSR_TYPE(_instr,_str,_rd,_csr,_rs1)  {                                                               /* CSR */   \
@@ -394,17 +404,17 @@
 }
 #define RV32I_DISASSEM_J_TYPE(_instr,_str,_rd,_imm_j)        {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s %d\n",     state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  _imm_j);                  \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s %d\n",     state.hart[curr_hart].pc, _instr, cmp_instr?'\'':' ', _str, rmap(_rd),  _imm_j);                  \
 }
 
 #define RV32I_DISASSEM_U_TYPE(_instr,_str,_rd,_imm_u)        {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s %s 0x%08x\n", state.hart[curr_hart].pc, _instr, _str, rmap(_rd),  _imm_u);                  \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s %s 0x%08x\n", state.hart[curr_hart].pc, _instr, cmp_instr ? '\'':' ',_str, rmap(_rd),  _imm_u >> 12);                  \
 }
 
 #define RV32I_DISASSEM_SYS_TYPE(_instr,_str)                 {                                                                           \
     if (disassemble || rt_disassem)                                                                                                      \
-        fprintf(dasm_fp, "%08x: 0x%08x    %s\n",           state.hart[curr_hart].pc, _instr, _str);                                      \
+        fprintf(dasm_fp, "%08x: 0x%08x%c   %s\n",           state.hart[curr_hart].pc, _instr, cmp_instr?'\'':' ',_str);                                      \
 }
 #define RV32I_DISASSEM_PC_JUMP                               {                                                                           \
     if (rt_disassem)                                                                                                                     \

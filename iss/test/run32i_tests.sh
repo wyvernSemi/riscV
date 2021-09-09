@@ -116,3 +116,16 @@ do
     make $MAKE_ARGS SUBDIR=rv32ud FNAME=$tst.S
     $EXE_DIR/rv32 -b -t $tst.exe
 done
+
+#
+# RV32C tests
+#
+for tst in rvc
+do
+    echo
+    echo
+    echo "Running test for $tst instruction..."
+    rm -rf obj/$tst.o
+    make $MAKE_ARGS SUBDIR=rv32uc FNAME=$tst.S ARCHSPEC=rv32gc
+    $EXE_DIR/rv32 -b -A0x36 -t $tst.exe
+done

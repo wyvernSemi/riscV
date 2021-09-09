@@ -721,7 +721,7 @@ static rv32gdb_skt_t rv32gdb_connect_skt (const int portno)
     rv32gdb_skt_t svrskt;
     if ((svrskt = socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) < 0)
     {
-        fprintf(stderr, "ERROR opening socket (%lld)\n", (uint64_t)svrskt);
+        fprintf(stderr, "ERROR opening socket\n");
         rv32gdb_skt_cleanup();
         return RV32GDB_ERR;
     }

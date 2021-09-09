@@ -111,7 +111,8 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.rt_dis = true;
             break;
         case 'd':
-            cfg.dis_en = true;
+            cfg.dis_en          = true;
+            cfg.hlt_on_inst_err = true;
             break;
         case 'H':
             cfg.hlt_on_inst_err = true;
@@ -290,13 +291,16 @@ int main(int argc, char** argv)
 #endif
 
                 // Print result
-                if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+                if (!cfg.dis_en)
                 {
-                    printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
-                }
-                else
-                {
-                    printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+                    if (pCpu->regi_val(10) || pCpu->regi_val(17) != 93)
+                    {
+                        printf("\n*FAIL*: exit code = 0x%08x finish code = 0x%08x\n", pCpu->regi_val(10) >> 1, pCpu->regi_val(17));
+                    }
+                    else
+                    {
+                        printf("\nPASS: exit code = 0x%08x\n", pCpu->regi_val(10));
+                    }
                 }
             }
         }
