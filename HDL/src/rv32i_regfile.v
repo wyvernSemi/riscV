@@ -59,7 +59,7 @@ reg [31:0] regfile [0:REGFILE_ENTRIES-1];
 assign rs1                    = regfile[rs1_idx];
 assign rs2                    = regfile[rs2_idx];
 
-always @(posedge clk)
+always @(posedge clk /* or negedge reset_n */)
 begin
   if (reset_n == 1'b0)
   begin

@@ -98,9 +98,6 @@ reg                update_rd;
 wire        [31:0] a            = (update_rd == 1'b1 && a_rs_idx == rd) ? c : a_decode;
 wire        [31:0] b            = (update_rd == 1'b1 && b_rs_idx == rd) ? c : b_decode;
 
-// The immediate value is always on the B input
-wire        [31:0] imm          = b;
-
 // ADD/SUB
 wire        [31:0] add          = a + b;
 wire        [31:0] sub          = a - b;
@@ -150,7 +147,7 @@ wire        [31:0] next_addr    = a + offset_decode;
 
 wire        [31:0] ld_data_shift = ld_data >> {addr[1:0], 3'b000};
 
-always @(posedge clk)
+always @(posedge clk /*or negedge reset_n */)
 begin
   if (reset_n == 1'b0)
   begin
