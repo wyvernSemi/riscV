@@ -40,7 +40,10 @@ module dp_ram
   #(
     parameter DATA_WIDTH = 32,
     parameter BE_WIDTH   = (DATA_WIDTH+7)/8,
-    parameter ADDR_WIDTH = 12)
+    parameter ADDR_WIDTH = 12,
+    parameter INIT_FILE  = "UNUSED",
+    parameter OP_REGISTERED = "CLOCK0" // "UNREGISTERED"
+)
 (
     byteena_a,
     clock,
@@ -93,13 +96,14 @@ module dp_ram
         altsyncram_component.clock_enable_input_a = "BYPASS",
         altsyncram_component.clock_enable_input_b = "BYPASS",
         altsyncram_component.clock_enable_output_b = "BYPASS",
+        altsyncram_component.init_file = INIT_FILE,
         altsyncram_component.intended_device_family = "Cyclone V",
         altsyncram_component.lpm_type = "altsyncram",
         altsyncram_component.numwords_a = (1 << ADDR_WIDTH),
         altsyncram_component.numwords_b = (1 << ADDR_WIDTH),
         altsyncram_component.operation_mode = "DUAL_PORT",
         altsyncram_component.outdata_aclr_b = "NONE",
-        altsyncram_component.outdata_reg_b = "CLOCK0",
+        altsyncram_component.outdata_reg_b = OP_REGISTERED,
         altsyncram_component.power_up_uninitialized = "FALSE",
         altsyncram_component.read_during_write_mode_mixed_ports = "DONT_CARE",
         altsyncram_component.widthad_a = ADDR_WIDTH,

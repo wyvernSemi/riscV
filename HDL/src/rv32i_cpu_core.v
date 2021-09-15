@@ -33,9 +33,10 @@
 
 module rv32i_cpu_core
 #(parameter
-   RV32I_RESET_VECTOR          = 0,
+   RV32I_RESET_VECTOR          = 32'h00000000,
    RV32I_TRAP_VECTOR           = 32'h00000004,
-   RV32I_REGFILE_ENTRIES       = 32
+   RV32I_LOG2_REGFILE_ENTRIES  = 5,
+   RV32I_REGFILE_USE_MEM       = 1
 )
 (
   input                        clk,
@@ -44,7 +45,6 @@ module rv32i_cpu_core
   output [31:0]                iaddress,
   output                       iread,
   input  [31:0]                ireaddata,
-  input                        iwaitrequest,
 
   output [31:0]                daddress,
   output                       dwrite,
@@ -94,37 +94,49 @@ wire [31:0] alu_pc;
 wire  [4:0] alu_rd;
 wire        alu_update_pc;
 
-wire  [4:0] decode_rs2_idx;
-wire  [4:0] decode_rs1_idx;
+wire  [4:0] decode_rs2_prefetch;
+wire  [4:0] decode_rs1_prefetch;
 
 wire [31:0] regfile_rs1;
 wire [31:0] regfile_rs2;
 wire [31:0] regfile_pc;
 wire [31:0] regfile_last_pc;
 
-wire        stall              = 1'b0;  // TODO
+wire        ld_early;
+
+wire        stall         = dread & dwaitrequest;
+
+wire        stall_regfile = stall | (decode_load & ~dread);
+wire        stall_decode  = dread;
+wire        stall_alu     = dread;
+wire        clr_load_op   = dread & ~dwaitrequest;
 
 // Fetch instructions from the current PC address
-assign iaddress                =  ~alu_update_pc ? regfile_pc : alu_pc;
-assign iread                   = ~stall;
+assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;
+assign iread                   = reset_n & ~stall;
 
 assign dwritedata              = alu_c;
 
   // ---------------------------------------------------------
   // Decoder
   // ---------------------------------------------------------
-  rv32i_decode #(.RV32I_TRAP_VECTOR(RV32I_TRAP_VECTOR)) decode
+
+  rv32i_decode #(
+    .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR)
+  ) decode
   (
     .clk                       (clk),
     .reset_n                   (reset_n),
+
+    .stall                     (stall_decode),
 
     .instr                     (ireaddata),
 
     .pc_in                     (regfile_last_pc),
     .update_pc                 (alu_update_pc),
 
-    .rs1_idx                   (decode_rs1_idx),
-    .rs2_idx                   (decode_rs2_idx),
+    .rs1_prefetch              (decode_rs1_prefetch),
+    .rs2_prefetch              (decode_rs2_prefetch),
     .rs1_rtn                   (regfile_rs1),
     .rs2_rtn                   (regfile_rs2),
 
@@ -169,18 +181,22 @@ assign dwritedata              = alu_c;
   // Register file
   // ---------------------------------------------------------
 
-  rv32i_regfile #(.RESET_VECTOR(RV32I_RESET_VECTOR), .REGFILE_ENTRIES(RV32I_REGFILE_ENTRIES)) regfile
+  rv32i_regfile #(
+    .RESET_VECTOR              (RV32I_RESET_VECTOR),
+    .LOG2_REGFILE_ENTRIES      (RV32I_LOG2_REGFILE_ENTRIES),
+    .USE_MEM                   (RV32I_REGFILE_USE_MEM)
+  ) regfile
   (
      .clk                      (clk),
      .reset_n                  (reset_n),
 
-     .rs1_idx                  (decode_rs1_idx),
-     .rs2_idx                  (decode_rs2_idx),
+     .rs1_idx                  (decode_rs1_prefetch),
+     .rs2_idx                  (decode_rs1_prefetch),
      .rd_idx                   (alu_rd),
      .new_rd                   (alu_c),
      .new_pc                   (alu_pc),
      .update_pc                (alu_update_pc),
-     .stall                    (stall),
+     .stall                    (stall_regfile),
 
      .rs1                      (regfile_rs1),
      .rs2                      (regfile_rs2),
@@ -196,6 +212,7 @@ assign dwritedata              = alu_c;
   (
     .clk                       (clk),
     .reset_n                   (reset_n),
+    .stall                     (stall_alu),
 
     .a_decode                  (decode_a),
     .b_decode                  (decode_b),
@@ -212,6 +229,7 @@ assign dwritedata              = alu_c;
     .load_in                   (decode_load),
     .store_in                  (decode_store),
     .ld_store_width            (decode_ld_st_width),
+    .clr_load_op               (clr_load_op),
 
     .add_nsub                  (decode_add_nsub),
     .arith                     (decode_arith),

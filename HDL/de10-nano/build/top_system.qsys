@@ -135,6 +135,38 @@
          type = "String";
       }
    }
+   element top_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element top_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element top_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element top_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -206,6 +238,12 @@
  </module>
  <module name="core_0" kind="core" version="0.0" enabled="1">
   <parameter name="CLK_FREQ_MHZ" value="100" />
+  <parameter name="RV32I_DMEM_ADDR_WIDTH" value="12" />
+  <parameter name="RV32I_IMEM_ADDR_WIDTH" value="12" />
+  <parameter name="RV32I_LOG2_REGFILE_ENTRIES" value="5" />
+  <parameter name="RV32I_REGFILE_USE_MEM" value="true" />
+  <parameter name="RV32I_RESET_VECTOR" value="0" />
+  <parameter name="RV32I_TRAP_VECTOR" value="4" />
  </module>
  <module name="hps_0" kind="altera_hps" version="18.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />

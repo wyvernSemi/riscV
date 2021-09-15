@@ -33,17 +33,15 @@
 // Timescale
 // --------------------------------------------------------
 
-`timescale                             1ns/10ps
+`timescale                             1ns / 10ps
 
 // --------------------------------------------------------
 // Definitions
 // --------------------------------------------------------
 
 `define RESET_PERIOD                   10
-`define HALT_COUNT                     100
+`define HALT_TIMEOUT_COUNT             10000
 `define HALT_ADDR                      32'h00000040
-`define IMEM_SIZE_WORDS                2048
-`define DMEM_SIZE_WORDS                2048
 
 `define RV32I_NOP                      32'h00000013
 `define RV32I_UNIMP                    32'hc0001073
@@ -55,9 +53,12 @@
 module tb
 #(parameter
     GUI_RUN                          = 0,
+    HALT_ON_ADDR                     = 1,
     CLK_FREQ_MHZ                     = 100,
-    RESET_ADDR                       = 0,
-    HALT_ON_ADDR                     = 0
+    RESET_ADDR                       = 32'h00000000,
+    TRAP_ADDR                        = 32'h00000004,
+    LOG2_REGFILE_ENTRIES             = 5,               // 5 for RV32I, 4 for RV32E
+    REGFILE_USE_MEM                  = 1
 )
 (/* no ports */);
 
@@ -71,29 +72,27 @@ wire           reset_n;
 integer        count;
 
 // Instruction memory and interface signals
-reg     [31:0] imem [0:`IMEM_SIZE_WORDS-1];
 wire    [31:0] iaddress;
 wire           iread;
 reg            ireaddatavalid;
-reg     [31:0] ireaddata;
+wire    [31:0] ireaddata;
+wire    [31:0] irdata;
 
 // Data memory and interface signals
-reg      [7:0] dmem [0:3][0:`DMEM_SIZE_WORDS-1];
 wire    [31:0] daddress;
 wire           dread;
-reg     [31:0] dreaddata;
+wire    [31:0] dreaddata;
 wire           dwrite;
 wire    [31:0] dwritedata;
 wire     [3:0] dbyteenable;
+wire           dwaitreq;
+reg            dread_dly;
 
 // --------------------------------------------------------
 // Initialisation
 // --------------------------------------------------------
 initial
 begin
-   // Load test program to memory
-   $readmemh("test.hex", imem);
-
    count                               = 0;
    clk                                 = 1'b0;
 end
@@ -115,8 +114,8 @@ begin
 
   // Stop or finish the simulation on reaching the HALT count or reading
   // an all zero (illegal) instruction.
-  if (count == `HALT_COUNT || 
-     (ireaddatavalid == 1'b1 && (ireaddata == 32'h0 || ireaddata == `RV32I_UNIMP)) ||
+  if (count == `HALT_TIMEOUT_COUNT || 
+     (ireaddatavalid == 1'b1 && (ireaddata == 32'h00000000 || ireaddata == `RV32I_UNIMP)) ||
      (HALT_ON_ADDR && iread && iaddress == `HALT_ADDR))
   begin
     // In batch mode finish the simulation. In GUI mode stop it to allow inspection of signals.
@@ -141,39 +140,77 @@ assign reset_n                         = (count >= `RESET_PERIOD) ? 1'b1 : 1'b0;
 // Emulate accesses to memory
 // --------------------------------------------------------
 
-always @(*)
-begin
-
-end
-
 always @(posedge clk)
 begin
-  ireaddatavalid                       <= iread;
-  ireaddata                            <= ireaddatavalid ? imem[iaddress[31:2] % `IMEM_SIZE_WORDS] : `RV32I_NOP;
-
-  dreaddata                            <= {dmem[3][daddress[31:2] % `DMEM_SIZE_WORDS],
-                                           dmem[2][daddress[31:2] % `DMEM_SIZE_WORDS],
-                                           dmem[1][daddress[31:2] % `DMEM_SIZE_WORDS],
-                                           dmem[0][daddress[31:2] % `DMEM_SIZE_WORDS]};
-  
-  if (dwrite)
+  if (reset_n == 1'b0)
   begin
-    if (dbyteenable[0])
-      dmem[0][daddress % `DMEM_SIZE_WORDS]  <= dwritedata[ 7:0];
-    if (dbyteenable[1])
-      dmem[1][daddress % `DMEM_SIZE_WORDS]  <= dwritedata[15:8];
-    if (dbyteenable[2])
-      dmem[2][daddress % `DMEM_SIZE_WORDS]  <= dwritedata[23:16];
-    if (dbyteenable[3])
-      dmem[3][daddress % `DMEM_SIZE_WORDS]  <= dwritedata[31:24];
+    ireaddatavalid                     <= 1'b0;
+    dread_dly                          <= 1'b0;
+  end
+  else
+  begin
+    ireaddatavalid                     <= iread;
+    dread_dly                          <= dread & ~dread_dly;
   end
 end
+
+assign ireaddata                       = ireaddatavalid ? irdata : `RV32I_NOP;
+
+assign dwaitreq                        = dread & ~dread_dly;
+
+// ---------------------------------------------------------
+// Memories
+// ---------------------------------------------------------
+
+  // IMEM
+  dp_ram #(
+    .DATA_WIDTH                        (32),
+    .ADDR_WIDTH                        (12),
+    .OP_REGISTERED                     ("UNREGISTERED"),
+    .INIT_FILE                         ("test.mif")
+  ) imem
+  (
+    .clock                             (clk),
+
+    .wren                              (1'b0),
+    .byteena_a                         (4'b1111),
+    .wraddress                         (12'h0),
+    .data                              (32'h0),
+
+    .rdaddress                         (iaddress[11:0]),
+    .q                                 (irdata)
+  );
+
+  // DMEM
+  dp_ram #(
+    .DATA_WIDTH                        (32),
+    .ADDR_WIDTH                        (12),
+    .OP_REGISTERED                     ("UNREGISTERED"),
+    .INIT_FILE                         ("UNUSED")
+  ) dmem
+  (
+    .clock                             (clk),
+
+    .wren                              (dwrite),
+    .byteena_a                         (dbyteenable),
+    .wraddress                         (daddress[11:0]),
+    .data                              (dwritedata),
+
+    .rdaddress                         (daddress[11:0]),
+    .q                                 (dreaddata)
+  );
 
 // --------------------------------------------------------
 // UUT
 // --------------------------------------------------------
 
-  rv32i_cpu_core #(.RV32I_RESET_VECTOR(RESET_ADDR)) uut
+  rv32i_cpu_core #(
+    .RV32I_RESET_VECTOR                (RESET_ADDR),   
+    .RV32I_TRAP_VECTOR                 (TRAP_ADDR),         
+    .RV32I_LOG2_REGFILE_ENTRIES        (LOG2_REGFILE_ENTRIES),
+    .RV32I_REGFILE_USE_MEM             (REGFILE_USE_MEM)
+    
+  ) uut
   (
     .clk                               (clk),
     .reset_n                           (reset_n),
@@ -181,7 +218,6 @@ end
     .iaddress                          (iaddress),
     .iread                             (iread),
     .ireaddata                         (ireaddata),
-    .iwaitrequest                      (~iread),
   
     .daddress                          (daddress),
     .dwrite                            (dwrite),
@@ -189,7 +225,7 @@ end
     .dbyteenable                       (dbyteenable),
     .dread                             (dread),
     .dreaddata                         (dreaddata),
-    .dwaitrequest                      (~dread),
+    .dwaitrequest                      (dwaitreq),
     
     .irq                               (1'b0)
   );

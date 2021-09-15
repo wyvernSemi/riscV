@@ -29,10 +29,19 @@
 //
 // -----------------------------------------------------------------------------
 
- `timescale 1ns / 10ps
+`timescale 1ns / 10ps
+
+`define RV32I_NOP                       32'h00000013
 
 module core
-#(parameter CLK_FREQ_MHZ = 100)
+#(parameter CLK_FREQ_MHZ               = 100,
+            RV32I_RESET_VECTOR         = 32'h00000000,
+            RV32I_TRAP_VECTOR          = 32'h00000004,
+            RV32I_LOG2_REGFILE_ENTRIES = 5,
+            RV32I_REGFILE_USE_MEM      = 1,
+            RV32I_IMEM_ADDR_WIDTH      = 12,
+            RV32I_DMEM_ADDR_WIDTH      = 12
+)
 (
     input            clk,
     input            clk_x2,
@@ -106,6 +115,12 @@ module core
     output [31:0]    debug_out
 );
 // ---------------------------------------------------------
+// Local parameters
+// ---------------------------------------------------------
+
+localparam MEM_BIT_WIDTH               = 32;
+
+// ---------------------------------------------------------
 // Signal declarations
 // ---------------------------------------------------------
 
@@ -126,8 +141,6 @@ wire  [31:0] imem_waddr;
 wire  [31:0] imem_raddr;
 wire  [31:0] imem_wdata;
 wire  [31:0] imem_rdata;
-reg    [1:0] imem_rd_delay;
-wire         imem_waitreq;
 
 wire         dmem_wr;
 wire         dmem_rd;
@@ -135,12 +148,13 @@ wire  [31:0] dmem_addr;
 wire  [31:0] dmem_wdata;
 wire  [31:0] dmem_rdata;
 wire   [3:0] dmem_be;
-reg    [1:0] dmem_rd_delay;
+reg          dmem_rd_delay;
 wire         dmem_waitreq;
 
 wire         imem_read;
 wire         imem_write;
 wire  [31:0] imem_readdata;
+reg          imem_readdatavalid;
 
 wire         dmem_read;
 wire         dmem_write;
@@ -190,30 +204,32 @@ assign debug_out                       = 32'h0;
 
 assign led                             = {6'h0, ~count[26], count[26]};
 
+// Register controlled core reset
 assign core_rstn                       = scratch[0];
 
-assign imem_waitreq                    = imem_rd & ~imem_rd_delay[0];
-assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay[0];
-
+// Memory control
+assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay;
 assign imem_wdata                      = avs_csr_writedata;
 assign imem_waddr                      = avs_csr_address;
+assign imem_readdata                   = imem_readdatavalid ? imem_rdata : `RV32I_NOP;
 
 // ---------------------------------------------------------
-// Synchronous Logic
+// Local Synchronous Logic
 // ---------------------------------------------------------
+
 always @ (posedge clk)
 begin
   if (~reset_n)
   begin
     count                              <= 0;
-    imem_rd_delay                      <= 2'b00;
-    dmem_rd_delay                      <= 2'b00;
+    imem_readdatavalid                 <= 1'b0;
+    dmem_rd_delay                      <= 1'b0;
   end
   else
   begin
     count                              <= count + 27'd1;
-    imem_rd_delay                      <= {1'b1, imem_rd_delay[1]} & {2{imem_rd & imem_waitreq}};
-    dmem_rd_delay                      <= {1'b1, dmem_rd_delay[1]} & {2{dmem_rd & dmem_waitreq}};
+    imem_readdatavalid                 <= imem_rd;
+    dmem_rd_delay                      <= dmem_rd;
   end
 end
 
@@ -239,7 +255,7 @@ end
     .dmem_write                        (dmem_write),
     .dmem_read                         (dmem_read),
     .dmem_readdata                     (32'h0)
-  );  
+  );
 
 // ---------------------------------------------------------
 // Local control and status registers
@@ -258,20 +274,26 @@ end
     .avs_read                          (local_read),
     .avs_readdata                      (local_readdata)
   );
-  
+
 // ---------------------------------------------------------
 // RV32I RISC-V softcore
 // ---------------------------------------------------------
 
-  rv32i_cpu_core rv32i_cpu_core_inst
- (
+  rv32i_cpu_core #(
+   .RV32I_RESET_VECTOR                 (RV32I_RESET_VECTOR),
+   .RV32I_TRAP_VECTOR                  (RV32I_TRAP_VECTOR),
+   .RV32I_LOG2_REGFILE_ENTRIES         (RV32I_LOG2_REGFILE_ENTRIES),
+   .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM)
+ 
+  )
+  rv32i_cpu_core_inst
+  (
     .clk                               (clk),
     .reset_n                           (core_rstn),
 
     .iaddress                          (imem_raddr),
     .iread                             (imem_rd),
-    .ireaddata                         (imem_rdata),
-    .iwaitrequest                      (imem_waitreq),
+    .ireaddata                         (imem_readdata),
 
     .daddress                          (dmem_addr),
     .dwrite                            (dmem_wr),
@@ -282,13 +304,17 @@ end
     .dwaitrequest                      (dmem_waitreq),
 
     .irq                               (1'b0)
- );
+  );
 
 // ---------------------------------------------------------
 // Memories
 // ---------------------------------------------------------
 
-  dp_ram #(.DATA_WIDTH(32), .ADDR_WIDTH(12)) imem
+  dp_ram #(
+    .DATA_WIDTH                        (MEM_BIT_WIDTH),
+    .ADDR_WIDTH                        (RV32I_IMEM_ADDR_WIDTH),
+    .OP_REGISTERED                     ("UNREGISTERED")
+  ) imem
   (
     .clock                             (clk),
 
@@ -301,7 +327,11 @@ end
     .q                                 (imem_rdata)
   );
 
-  dp_ram #(.DATA_WIDTH(32), .ADDR_WIDTH(12)) dmem
+  dp_ram #(
+    .DATA_WIDTH                        (MEM_BIT_WIDTH),
+    .ADDR_WIDTH                        (RV32I_IMEM_ADDR_WIDTH),
+    .OP_REGISTERED                     ("UNREGISTERED")
+  ) dmem
   (
     .clock                             (clk),
 

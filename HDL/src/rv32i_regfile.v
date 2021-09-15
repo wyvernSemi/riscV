@@ -33,62 +33,133 @@
 
 module rv32i_regfile
 #(parameter
-    REGFILE_ENTRIES           = 32,
-    RESET_VECTOR              = 32'h00000000
+    LOG2_REGFILE_ENTRIES       = 5,
+    RESET_VECTOR               = 32'h00000000,
+    USE_MEM                    = 1
 )
 (
-   input                      clk,
-   input                      reset_n,
-   
-   input       [4:0]          rs1_idx,
-   input       [4:0]          rs2_idx,
-   input       [4:0]          rd_idx,
-   input      [31:0]          new_rd,
-   input      [31:0]          new_pc,
-   input                      update_pc,
-   input                      stall,
-   
-   output     [31:0]          rs1,
-   output     [31:0]          rs2,
-   output reg [31:0]          pc,
-   output reg [31:0]          last_pc
+   input                       clk,
+   input                       reset_n,
+
+   input       [4:0]           rs1_idx,
+   input       [4:0]           rs2_idx,
+   input       [4:0]           rd_idx,
+   input      [31:0]           new_rd,
+   input      [31:0]           new_pc,
+   input                       update_pc,
+   input                       stall,
+
+   output     [31:0]           rs1,
+   output     [31:0]           rs2,
+   output reg [31:0]           pc,
+   output reg [31:0]           last_pc
 );
 
-reg [31:0] regfile [0:REGFILE_ENTRIES-1];
+localparam REGFILE_ENTRIES     = (1 << LOG2_REGFILE_ENTRIES);
 
-assign rs1                    = regfile[rs1_idx];
-assign rs2                    = regfile[rs2_idx];
-
-always @(posedge clk /* or negedge reset_n */)
+// Process to update the program counter
+always @(posedge clk)
 begin
   if (reset_n == 1'b0)
   begin
-    pc                        <= RESET_VECTOR;
-    regfile[0]                <= 32'h00000000;
+    pc                         <= RESET_VECTOR;
   end
   else
   begin
     if (~stall)
     begin
-      // Update PC
-      last_pc                 <= pc;
-      
-      if (update_pc)
-      begin
-        pc                    <= new_pc + 32'h4;
-      end
-      else
-      begin
-        pc                    <= pc + 32'h4;
-      end
-      
-      // Update rd if not x0
-      if (rd_idx != 5'h0)
-      begin
-        regfile[rd_idx]       <= new_rd;
-      end
+      // Because of pipeline delay reading instruction,
+      // last PC for decoder is the address before current PC to align at ALU
+      last_pc                  <= pc - 32'h4;
+
+      // Update PC 
+      pc                       <= (update_pc ? new_pc : pc) + 32'h4;
     end
   end
 end
+
+//
+// Generate to select between memory based or register based implementation
+//
+generate
+  // -------------------------------------------------------
+  // Use memory based register file implementation
+  // -------------------------------------------------------
+  if (USE_MEM == 1)
+  begin
+    // Write to memory when RD index is not 0 zero, or write 0 to index 0 during reset.
+    wire        wr_mem         = (rd_idx != 5'h0 | ~reset_n) ? 1'b1   : 1'b0;
+    wire [31:0] wdata          = reset_n                     ? new_rd : 32'h00000000;
+
+    // RAM for RS1 reads (writes common with RS2)
+    dp_ram #(.DATA_WIDTH(32), .ADDR_WIDTH(5), .OP_REGISTERED("UNREGISTERED")) regfile1
+    (
+      .clock                   (clk),
+
+      .wren                    (wr_mem),
+      .byteena_a               (4'hf),
+      .wraddress               (rd_idx),
+      .data                    (wdata),
+
+      .rdaddress               (rs1_idx),
+      .q                       (rs1)
+    );
+
+    // RAM for RS2 reads (writes common with RS1)
+    dp_ram #(.DATA_WIDTH(32), .ADDR_WIDTH(5), .OP_REGISTERED("UNREGISTERED")) regfile2
+    (
+      .clock                           (clk),
+
+      .wren                    (wr_mem),
+      .byteena_a               (4'hf),
+      .wraddress               (rd_idx),
+      .data                    (wdata),
+
+      .rdaddress               (rs2_idx),
+      .q                       (rs2)
+    );
+
+  end
+  // -------------------------------------------------------
+  // Use register based register file implementation
+  // -------------------------------------------------------
+  else
+  begin
+    // Declare an array of registers (REGFILE_ENTRIES x 32)
+    reg  [31:0] regfile [0:REGFILE_ENTRIES-1];
+
+    // Registers for the returned RS1 and RS2 values
+    reg  [31:0] rs1_reg;
+    reg  [31:0] rs2_reg;
+
+    // Export the registered RS1 and RS2 values to the output ports
+    assign rs1                 = rs1_reg;
+    assign rs2                 = rs2_reg;
+
+    // Process for accessing the register file array
+    always @(posedge clk)
+    begin
+      if (reset_n == 1'b0)
+      begin
+        regfile[0]             <= 32'h00000000;
+        rs1_reg                <= 32'h00000000;
+        rs2_reg                <= 32'h00000000;
+      end
+      else
+      begin
+
+        // Register the read values
+        rs1_reg                <= regfile[rs1_idx];
+        rs2_reg                <= regfile[rs2_idx];
+
+        // Update rd if index is not x0 and not stalled
+        if (rd_idx != 5'h0 && stall == 1'b0)
+        begin
+          regfile[rd_idx]      <= new_rd;
+        end
+      end
+    end
+  end
+endgenerate
 
 endmodule

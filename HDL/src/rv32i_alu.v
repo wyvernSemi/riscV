@@ -35,6 +35,8 @@ module rv32i_alu
 (
   input                        clk,
   input                        reset_n,
+  
+  input                        stall,
 
   input  [31:0]                a_decode,         // rs1
   input  [31:0]                b_decode,         // rs2 or imm
@@ -75,6 +77,7 @@ module rv32i_alu
   input                        shift_right,
 
   // Pipeline control
+  input                        clr_load_op,
   output reg  [4:0]            rd,
   output reg                   update_pc,
   output reg                   load,
@@ -90,7 +93,8 @@ module rv32i_alu
   input      [31:0]            ld_data
 );
 
-reg                update_rd;
+reg                            update_rd;
+reg           [1:0]            ld_width;
 
 // The A and B inputs to the ALU logic come from the ALU output if the source register
 // matches the destination register. Otherwise the regfile value (via decode) is
@@ -147,7 +151,7 @@ wire        [31:0] next_addr    = a + offset_decode;
 
 wire        [31:0] ld_data_shift = ld_data >> {addr[1:0], 3'b000};
 
-always @(posedge clk /*or negedge reset_n */)
+always @(posedge clk)
 begin
   if (reset_n == 1'b0)
   begin
@@ -155,12 +159,17 @@ begin
     load                        <=  1'b0;
     store                       <=  1'b0;
     update_pc                   <=  1'b0;
+    ld_width                    <=  2'b00;
   end
   else
   begin
-
     // Update C output based on active operation
-    if (arith)
+    if (load)
+    begin
+      // Clear the unused bits of the shifted load data, based on load width (byte, hword, word)
+      c                         <= ld_data_shift & {{16{ld_width[1]}}, {8{|ld_width}}, 8'hff};
+    end
+    else if (arith)
     begin
       c                         <= add_sub;
     end
@@ -176,11 +185,6 @@ begin
     begin
       c                         <= shift;
     end
-    else if (load_in)
-    begin
-      // Clear the unused bits of the shifted load data, based on load width (byte, hword, word)
-      c                         <= ld_data_shift & {{16{ld_store_width[1]}}, {8{|ld_store_width}}, 8'hff};
-    end
     else if (jump_in)
     begin
       c                         <= pc_in + 4;
@@ -189,25 +193,27 @@ begin
     begin
       c                         <= b << {next_addr[1:0], 3'b000};
     end
-
+    
     // For load store, address is result of ALU's addition
     if (load_in | store_in)
     begin
       addr                      <= {next_addr[31:2], 2'b00};
     end
-
-    rd                          <=  ~update_pc     ? rd_in : 5'h0;
-    update_rd                   <= (rd_in != 5'h0) ? 1'b1  : 1'b0;
-
+    
+    rd                          <= stall ? rd : (~update_pc ? rd_in : 5'h0);
+    update_rd                   <= stall ? update_rd : ((rd_in != 5'h0) ? 1'b1  : 1'b0);
+    
     pc                          <= next_pc;
     update_pc                   <= jump_in | system_in | branch_taken;
-
-    load                        <= load_in  & ~update_pc;
+    
+    load                        <= (stall ? load : (load_in  & ~update_pc)) & ~clr_load_op;
     store                       <= store_in & ~update_pc;
-
+    
     st_be                       <=  ld_store_width[1] ? 4'b1111 :
                                    (ld_store_width[0] ? 4'b0011 :
                                                         4'b0001) << next_addr[1:0];
+                                                        
+    ld_width                    <= stall ? ld_width : ld_store_width;
   end
 end
 
