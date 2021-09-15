@@ -53,7 +53,7 @@
 module tb
 #(parameter
     GUI_RUN                          = 0,
-    HALT_ON_ADDR                     = 1,
+    HALT_ON_ADDR                     = 0,
     CLK_FREQ_MHZ                     = 100,
     RESET_ADDR                       = 32'h00000000,
     TRAP_ADDR                        = 32'h00000004,

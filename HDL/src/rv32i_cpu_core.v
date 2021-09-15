@@ -106,10 +106,10 @@ wire        ld_early;
 
 wire        stall         = dread & dwaitrequest;
 
-wire        stall_regfile = stall | (decode_load & ~dread);
-wire        stall_decode  = dread;
-wire        stall_alu     = dread;
-wire        clr_load_op   = dread & ~dwaitrequest;
+wire        stall_regfile  = stall | (decode_load & ~dread);
+wire        stall_decode   = dread;
+wire        stall_alu      = dread;
+wire        clr_load_op    = dread & ~dwaitrequest;
 
 // Fetch instructions from the current PC address
 assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;
@@ -128,7 +128,7 @@ assign dwritedata              = alu_c;
     .clk                       (clk),
     .reset_n                   (reset_n),
 
-    .stall                     (stall_decode),
+    .stall                     (stall_decode),,
 
     .instr                     (ireaddata),
 

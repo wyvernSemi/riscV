@@ -95,6 +95,7 @@ module rv32i_alu
 
 reg                            update_rd;
 reg           [1:0]            ld_width;
+reg           [1:0]            addr_lo;
 
 // The A and B inputs to the ALU logic come from the ALU output if the source register
 // matches the destination register. Otherwise the regfile value (via decode) is
@@ -149,7 +150,7 @@ wire        [31:0] next_pc      = (jump_in | system_in) ? add :
 
 wire        [31:0] next_addr    = a + offset_decode;
 
-wire        [31:0] ld_data_shift = ld_data >> {addr[1:0], 3'b000};
+wire        [31:0] ld_data_shift = ld_data >> {addr_lo, 3'b000};
 
 always @(posedge clk)
 begin
@@ -197,7 +198,8 @@ begin
     // For load store, address is result of ALU's addition
     if (load_in | store_in)
     begin
-      addr                      <= {next_addr[31:2], 2'b00};
+      addr                      <= stall ? addr       : {next_addr[31:2], 2'b00};
+      addr_lo                   <= stall ? addr [1:0] : next_addr[1:0];
     end
     
     rd                          <= stall ? rd : (~update_pc ? rd_in : 5'h0);

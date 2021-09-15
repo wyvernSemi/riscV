@@ -45,8 +45,8 @@ module rv32i_decode
   input                                stall,
 
   // GP register read ports
-  output      [4:0]                    rs2_prefetch,
   output      [4:0]                    rs1_prefetch,
+  output      [4:0]                    rs2_prefetch,
   input      [31:0]                    rs1_rtn,
   input      [31:0]                    rs2_rtn,
 
@@ -96,6 +96,8 @@ module rv32i_decode
 
 reg         update_pc_dly;
 reg  [31:0] instr_reg;
+reg   [4:0] rs1_pf_held;
+reg   [4:0] rs2_pf_held;
 
 // Extract all the possible immediate value (sign extended as appropriate
 wire [31:0] imm_i                      = {{20{instr_reg[31]}}, instr_reg[31:20]};
@@ -112,8 +114,8 @@ wire  [4:0] rd_idx                     = instr_reg[11:7];
 wire  [4:0] rs1_idx                    = instr_reg[19:15];
 wire  [4:0] rs2_idx                    = instr_reg[24:20];
 
-assign      rs1_prefetch               = instr[19:15];
-assign      rs2_prefetch               = instr[24:20];
+assign      rs1_prefetch               = stall ? rs1_pf_held : instr[19:15];
+assign      rs2_prefetch               = stall ? rs2_pf_held : instr[24:20];
 
 // Not a 32 bit instruction (16 bits if low two bits not both set),
 // or 48 bits and greater if first 5 bits set)
@@ -211,52 +213,55 @@ begin
     else
     begin
     
+      rs1_pf_held                      <= stall ? rs1_pf_held : rs1_prefetch;
+      rs2_pf_held                      <= stall ? rs2_pf_held : rs2_prefetch;
+    
       if (~stall)
       begin
     
         // Next stage ALU control outputs
-        rd                                 <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
-        branch                             <= branch_instr;
-        jump                               <= jmp_instr;
-        system                             <= system_instr;
-        load                               <= ld_st_instr & ~opcode_32[3];
-        store                              <= ld_st_instr &  opcode_32[3];
-        ld_st_width                        <= funct3[1:0];
-        pc                                 <= pc_in;
+        rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
+        branch                         <= branch_instr;
+        jump                           <= jmp_instr;
+        system                         <= system_instr;
+        load                           <= ld_st_instr & ~opcode_32[3];
+        store                          <= ld_st_instr &  opcode_32[3];
+        ld_st_width                    <= funct3[1:0];
+        pc                             <= pc_in;
         
         // ALU inputs A and B
-        a                                  <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0 :      // LUI and system, A = 0
-                                              ((ui_instr & ~opcode_32[3]) | (jmp_instr & opcode_32[1])) ? pc_in :      // AUIPC and JAL, A = PC
-                                                                                                          rs1;         // all others, A = rs1 value 
+        a                              <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0 :      // LUI and system, A = 0
+                                          ((ui_instr & ~opcode_32[3]) | (jmp_instr & opcode_32[1])) ? pc_in :      // AUIPC and JAL, A = PC
+                                                                                                      rs1;         // all others, A = rs1 value 
         
-        b                                  <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value 
-                                               system_instr                                      ? RV32I_TRAP_VECTOR : // system, B = trap vector
-                                                                                                   imm;                // all others, B = immediate value
+        b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value 
+                                           system_instr                                      ? RV32I_TRAP_VECTOR : // system, B = trap vector
+                                                                                               imm;                // all others, B = immediate value
         // Offset for store and branch instructions
-        offset                             <= imm;
+        offset                         <= imm;
         
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                           <= ~(jmp_instr | system_instr)                       ? rs1_idx : 5'h0;
-        b_rs_idx                           <= ((alu_instr & ~alu_imm)| st_instr | branch_instr) ? rs2_idx : 5'h0;
+        a_rs_idx                       <= ~(jmp_instr | system_instr)                       ? rs1_idx : 5'h0;
+        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr) ? rs2_idx : 5'h0;
         
         // ALU operation control outputs
-        arith                              <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC
-        add_nsub                           <= ~(instr_reg[30] & ~alu_imm) | ~alu_instr;                         // SUB (low) only for non-immediate ALU and instr_reg bit 30 set.
+        arith                          <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC
+        add_nsub                       <= ~(instr_reg[30] & ~alu_imm) | ~alu_instr;                     // SUB (low) only for non-immediate ALU and instr_reg bit 30 set.
         
-        cmp_unsigned                       <= (branch_instr &  funct3[1]) | (alu_instr & funct3[0]);        // a compare unsigned for BLTU/BGEU or SLTU/SLTIU
-        cmp_is_eq                          <= branch_instr  & ~funct3[2] & ~funct3[0];                      // compare == for BEQ
-        cmp_is_ne                          <= branch_instr  & ~funct3[2] &  funct3[0];                      // compare != for BNE
-        cmp_is_ge                          <= branch_instr  &  funct3[2] &  funct3[0];                      // compare >= for BGE/BGEU
-        cmp_is_lt                          <= (branch_instr &  funct3[2] & ~funct3[0]) |                    // compare < for BLT/BLTU, or SLT/SLTU/SLTI/SLTIU
-                                              (alu_instr    & ~funct3[2] & funct3[1]);
+        cmp_unsigned                   <= (branch_instr &  funct3[1]) | (alu_instr & funct3[0]);        // a compare unsigned for BLTU/BGEU or SLTU/SLTIU
+        cmp_is_eq                      <= branch_instr  & ~funct3[2] & ~funct3[0];                      // compare == for BEQ
+        cmp_is_ne                      <= branch_instr  & ~funct3[2] &  funct3[0];                      // compare != for BNE
+        cmp_is_ge                      <= branch_instr  &  funct3[2] &  funct3[0];                      // compare >= for BGE/BGEU
+        cmp_is_lt                      <= (branch_instr &  funct3[2] & ~funct3[0]) |                    // compare < for BLT/BLTU, or SLT/SLTU/SLTI/SLTIU
+                                          (alu_instr    & ~funct3[2] & funct3[1]);
         
-        bit_is_and                         <= alu_instr & funct3 == 3'b111;                                 // ALU bit op is AND when funct3 == 7
-        bit_is_or                          <= alu_instr & funct3 == 3'b110;                                 // ALU bit op is OR  when funct3 == 6
-        bit_is_xor                         <= alu_instr & funct3 == 3'b100;                                 // ALU bit op is XOR when funct3 == 5
+        bit_is_and                     <= alu_instr & funct3 == 3'b111;                                 // ALU bit op is AND when funct3 == 7
+        bit_is_or                      <= alu_instr & funct3 == 3'b110;                                 // ALU bit op is OR  when funct3 == 6
+        bit_is_xor                     <= alu_instr & funct3 == 3'b100;                                 // ALU bit op is XOR when funct3 == 5
         
-        shift_arith                        <= instr_reg[30];                                                    // A shift is arithmetic if instr_reg[30] set
-        shift_left                         <= alu_instr & funct3 == 3'b001;                                 // ALU shift left if funct3 == 1
-        shift_right                        <= alu_instr & funct3 == 3'b101;                                 // ALU shift right if funct3 == 5
+        shift_arith                    <= instr_reg[30];                                                    // A shift is arithmetic if instr_reg[30] set
+        shift_left                     <= alu_instr & funct3 == 3'b001;                                 // ALU shift left if funct3 == 1
+        shift_right                    <= alu_instr & funct3 == 3'b101;                                 // ALU shift right if funct3 == 5
       end
     end
   end
