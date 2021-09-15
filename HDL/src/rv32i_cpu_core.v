@@ -128,7 +128,7 @@ assign dwritedata              = alu_c;
     .clk                       (clk),
     .reset_n                   (reset_n),
 
-    .stall                     (stall_decode),,
+    .stall                     (stall_decode),
 
     .instr                     (ireaddata),
 
