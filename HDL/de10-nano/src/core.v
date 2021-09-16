@@ -40,7 +40,9 @@ module core
             RV32I_LOG2_REGFILE_ENTRIES = 5,
             RV32I_REGFILE_USE_MEM      = 1,
             RV32I_IMEM_ADDR_WIDTH      = 12,
-            RV32I_DMEM_ADDR_WIDTH      = 12
+            RV32I_DMEM_ADDR_WIDTH      = 12,
+            RV32I_IMEM_INIT_FILE       = "UNUSED",
+            RV32I_DMEM_INIT_FILE       = "UNUSED"
 )
 (
     input            clk,
@@ -135,7 +137,6 @@ wire  [31:0] scratch;
 wire         core_rstn;
 
 // Memory signals
-wire         imem_wr;
 wire         imem_rd;
 wire  [31:0] imem_waddr;
 wire  [31:0] imem_raddr;
@@ -158,7 +159,6 @@ reg          imem_readdatavalid;
 
 wire         dmem_read;
 wire         dmem_write;
-wire  [31:0] dmem_readdata;
 
 // ---------------------------------------------------------
 // Tie off unused signals
@@ -205,7 +205,7 @@ assign debug_out                       = 32'h0;
 assign led                             = {6'h0, ~count[26], count[26]};
 
 // Register controlled core reset
-assign core_rstn                       = scratch[0];
+assign core_rstn                       = scratch[0] & reset_n;
 
 // Memory control
 assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay;
@@ -313,34 +313,36 @@ end
   dp_ram #(
     .DATA_WIDTH                        (MEM_BIT_WIDTH),
     .ADDR_WIDTH                        (RV32I_IMEM_ADDR_WIDTH),
-    .OP_REGISTERED                     ("UNREGISTERED")
+    .OP_REGISTERED                     ("UNREGISTERED"),
+    .INIT_FILE                         (RV32I_IMEM_INIT_FILE)
   ) imem
   (
     .clock                             (clk),
 
     .wren                              (imem_write),
     .byteena_a                         (4'b1111),
-    .wraddress                         (imem_waddr[11:0]),
+    .wraddress                         (imem_waddr[RV32I_IMEM_ADDR_WIDTH-1:0]),
     .data                              (imem_wdata),
 
-    .rdaddress                         (imem_raddr[11:0]),
+    .rdaddress                         (imem_raddr[RV32I_IMEM_ADDR_WIDTH-1:0]),
     .q                                 (imem_rdata)
   );
 
   dp_ram #(
     .DATA_WIDTH                        (MEM_BIT_WIDTH),
-    .ADDR_WIDTH                        (RV32I_IMEM_ADDR_WIDTH),
-    .OP_REGISTERED                     ("UNREGISTERED")
+    .ADDR_WIDTH                        (RV32I_DMEM_ADDR_WIDTH),
+    .OP_REGISTERED                     ("UNREGISTERED"),
+    .INIT_FILE                         (RV32I_DMEM_INIT_FILE)
   ) dmem
   (
     .clock                             (clk),
 
     .wren                              (dmem_wr),
     .byteena_a                         (dmem_be),
-    .wraddress                         (dmem_addr[11:0]),
+    .wraddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH-1:0]),
     .data                              (dmem_wdata),
 
-    .rdaddress                         (dmem_addr[11:0]),
+    .rdaddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH-1:0]),
     .q                                 (dmem_rdata)
   );
 

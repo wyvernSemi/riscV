@@ -164,7 +164,7 @@ module core_csr_regs
       // auto-generated
   
       // Reset internal write registers
-      scratch_reg                          <= 32'h0;
+      scratch_reg                          <= 32'h00000001;
   
       // end auto-generated
     end

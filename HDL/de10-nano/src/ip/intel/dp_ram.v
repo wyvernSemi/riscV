@@ -38,10 +38,10 @@
 // synopsys translate_on
 module dp_ram
   #(
-    parameter DATA_WIDTH = 32,
-    parameter BE_WIDTH   = (DATA_WIDTH+7)/8,
-    parameter ADDR_WIDTH = 12,
-    parameter INIT_FILE  = "UNUSED",
+    parameter DATA_WIDTH    = 32,
+    parameter BE_WIDTH      = (DATA_WIDTH+7)/8,
+    parameter ADDR_WIDTH    = 12,
+    parameter INIT_FILE     = "UNUSED",
     parameter OP_REGISTERED = "CLOCK0" // "UNREGISTERED"
 )
 (

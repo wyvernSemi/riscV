@@ -128,7 +128,7 @@ wire        st_instr                   = ~invalid_instr & ld_st_instr &  opcode_
 wire        ui_instr                   = ~invalid_instr & ~opcode_32[4] & &{opcode_32[2:0] ~^ 3'b101};
 wire        branch_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11000};
 wire        jmp_instr                  = ~invalid_instr & &{opcode_32[4:2] ~^ 3'b110} & &{opcode_32[0]};
-wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100};
+wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21];
 wire        fence_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b00011};
 
 // Flag indication that an ALU instruction is I-type

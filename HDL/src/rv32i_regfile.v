@@ -57,6 +57,22 @@ module rv32i_regfile
 
 localparam REGFILE_ENTRIES     = (1 << LOG2_REGFILE_ENTRIES);
 
+wire [31:0] rs1_int;
+wire [31:0] rs2_int;
+
+reg   [4:0] rs1_idx_dly;
+reg   [4:0] rs2_idx_dly;
+reg   [4:0] rd_idx_dly;
+reg  [31:0] new_rd_dly;
+
+assign rs1                     = (|rs1_idx_dly && rs1_idx_dly == rd_idx)     ? new_rd     :
+                                 (|rs1_idx_dly && rs1_idx_dly == rd_idx_dly) ? new_rd_dly :
+                                                                               rs1_int;
+
+assign rs2                     = (|rs2_idx_dly && rs2_idx_dly == rd_idx)     ? new_rd :
+                                 (|rs2_idx_dly && rs2_idx_dly == rd_idx_dly) ? new_rd_dly :
+                                                                               rs2_int;
+
 // Process to update the program counter
 always @(posedge clk)
 begin
@@ -66,6 +82,11 @@ begin
   end
   else
   begin
+    rs1_idx_dly                <= rs1_idx;
+    rs2_idx_dly                <= rs2_idx;
+    rd_idx_dly                 <= rd_idx;
+    new_rd_dly                 <= new_rd;
+    
     if (~stall)
     begin
       // Because of pipeline delay reading instruction,
@@ -102,7 +123,7 @@ generate
       .data                    (wdata),
 
       .rdaddress               (rs1_idx),
-      .q                       (rs1)
+      .q                       (rs1_int)
     );
 
     // RAM for RS2 reads (writes common with RS1)
@@ -116,7 +137,7 @@ generate
       .data                    (wdata),
 
       .rdaddress               (rs2_idx),
-      .q                       (rs2)
+      .q                       (rs2_int)
     );
 
   end
@@ -133,8 +154,8 @@ generate
     reg  [31:0] rs2_reg;
 
     // Export the registered RS1 and RS2 values to the output ports
-    assign rs1                 = rs1_reg;
-    assign rs2                 = rs2_reg;
+    assign rs1_int             = rs1_reg;
+    assign rs2_int             = rs2_reg;
 
     // Process for accessing the register file array
     always @(posedge clk)

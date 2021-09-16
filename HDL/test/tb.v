@@ -40,8 +40,8 @@
 // --------------------------------------------------------
 
 `define RESET_PERIOD                   10
-`define HALT_TIMEOUT_COUNT             10000
-`define HALT_ADDR                      32'h00000040
+`define HALT_TIMEOUT_COUNT             100000
+`define HALT_ADDR                      32'h00000030
 
 `define RV32I_NOP                      32'h00000013
 `define RV32I_UNIMP                    32'hc0001073
@@ -52,13 +52,16 @@
 
 module tb
 #(parameter
-    GUI_RUN                          = 0,
-    HALT_ON_ADDR                     = 0,
-    CLK_FREQ_MHZ                     = 100,
-    RESET_ADDR                       = 32'h00000000,
-    TRAP_ADDR                        = 32'h00000004,
-    LOG2_REGFILE_ENTRIES             = 5,               // 5 for RV32I, 4 for RV32E
-    REGFILE_USE_MEM                  = 1
+  GUI_RUN                              = 0,
+  HALT_ON_ADDR                         = 1,
+  CLK_FREQ_MHZ                         = 100,
+  RESET_ADDR                           = 32'h00000000,
+  TRAP_ADDR                            = 32'h00000004,
+  LOG2_REGFILE_ENTRIES                 = 5,               // 5 for RV32I, 4 for RV32E
+  REGFILE_USE_MEM                      = 1,
+  DMEM_ADDR_WIDTH                      = 16,
+  IMEM_ADDR_WIDTH                      = 16,
+  IMEM_INIT_FILE                       = "test.mif"
 )
 (/* no ports */);
 
@@ -74,19 +77,16 @@ integer        count;
 // Instruction memory and interface signals
 wire    [31:0] iaddress;
 wire           iread;
-reg            ireaddatavalid;
+wire           ireaddatavalid;
 wire    [31:0] ireaddata;
-wire    [31:0] irdata;
 
-// Data memory and interface signals
-wire    [31:0] daddress;
-wire           dread;
-wire    [31:0] dreaddata;
-wire           dwrite;
-wire    [31:0] dwritedata;
-wire     [3:0] dbyteenable;
-wire           dwaitreq;
-reg            dread_dly;
+wire    [31:0] avs_csr_address;
+wire           avs_csr_write;
+wire    [31:0] avs_csr_writedata;
+wire           avs_csr_read;
+wire    [31:0] avs_csr_readdata;
+
+wire    [31:0] gp_reg = tb.uut.rv32i_cpu_core_inst.regfile.genblk1.regfile1.altsyncram_component.m_default.altsyncram_inst.mem_data[3];
 
 // --------------------------------------------------------
 // Initialisation
@@ -114,10 +114,11 @@ begin
 
   // Stop or finish the simulation on reaching the HALT count or reading
   // an all zero (illegal) instruction.
-  if (count == `HALT_TIMEOUT_COUNT || 
+  if (count == `HALT_TIMEOUT_COUNT ||
      (ireaddatavalid == 1'b1 && (ireaddata == 32'h00000000 || ireaddata == `RV32I_UNIMP)) ||
      (HALT_ON_ADDR && iread && iaddress == `HALT_ADDR))
   begin
+    $display("gp = 0x%8x", gp_reg);
     // In batch mode finish the simulation. In GUI mode stop it to allow inspection of signals.
     if (GUI_RUN == 0)
     begin
@@ -137,97 +138,46 @@ end
 assign reset_n                         = (count >= `RESET_PERIOD) ? 1'b1 : 1'b0;
 
 // --------------------------------------------------------
-// Emulate accesses to memory
+// Acccess imem read data bus for test bench control
 // --------------------------------------------------------
 
-always @(posedge clk)
-begin
-  if (reset_n == 1'b0)
-  begin
-    ireaddatavalid                     <= 1'b0;
-    dread_dly                          <= 1'b0;
-  end
-  else
-  begin
-    ireaddatavalid                     <= iread;
-    dread_dly                          <= dread & ~dread_dly;
-  end
-end
+assign iaddress                        = uut.imem_raddr;
+assign ireaddatavalid                  = uut.imem_readdatavalid;
+assign ireaddata                       = uut.imem_rdata;
+assign iread                           = uut.imem_rd;
 
-assign ireaddata                       = ireaddatavalid ? irdata : `RV32I_NOP;
+// --------------------------------------------------------
+// Tie off CSR bus for now (program loaded directly to RAM)
+// --------------------------------------------------------
 
-assign dwaitreq                        = dread & ~dread_dly;
-
-// ---------------------------------------------------------
-// Memories
-// ---------------------------------------------------------
-
-  // IMEM
-  dp_ram #(
-    .DATA_WIDTH                        (32),
-    .ADDR_WIDTH                        (12),
-    .OP_REGISTERED                     ("UNREGISTERED"),
-    .INIT_FILE                         ("test.mif")
-  ) imem
-  (
-    .clock                             (clk),
-
-    .wren                              (1'b0),
-    .byteena_a                         (4'b1111),
-    .wraddress                         (12'h0),
-    .data                              (32'h0),
-
-    .rdaddress                         (iaddress[11:0]),
-    .q                                 (irdata)
-  );
-
-  // DMEM
-  dp_ram #(
-    .DATA_WIDTH                        (32),
-    .ADDR_WIDTH                        (12),
-    .OP_REGISTERED                     ("UNREGISTERED"),
-    .INIT_FILE                         ("UNUSED")
-  ) dmem
-  (
-    .clock                             (clk),
-
-    .wren                              (dwrite),
-    .byteena_a                         (dbyteenable),
-    .wraddress                         (daddress[11:0]),
-    .data                              (dwritedata),
-
-    .rdaddress                         (daddress[11:0]),
-    .q                                 (dreaddata)
-  );
+assign avs_csr_read                    = 1'b0;
+assign avs_csr_write                   = 1'b0;
 
 // --------------------------------------------------------
 // UUT
 // --------------------------------------------------------
 
-  rv32i_cpu_core #(
-    .RV32I_RESET_VECTOR                (RESET_ADDR),   
-    .RV32I_TRAP_VECTOR                 (TRAP_ADDR),         
+  core
+  #(.CLK_FREQ_MHZ                      (CLK_FREQ_MHZ),
+    .RV32I_RESET_VECTOR                (RESET_ADDR),
+    .RV32I_TRAP_VECTOR                 (TRAP_ADDR),
     .RV32I_LOG2_REGFILE_ENTRIES        (LOG2_REGFILE_ENTRIES),
-    .RV32I_REGFILE_USE_MEM             (REGFILE_USE_MEM)
-    
-  ) uut
+    .RV32I_REGFILE_USE_MEM             (REGFILE_USE_MEM),
+    .RV32I_DMEM_ADDR_WIDTH             (DMEM_ADDR_WIDTH),
+    .RV32I_IMEM_ADDR_WIDTH             (IMEM_ADDR_WIDTH),
+    .RV32I_IMEM_INIT_FILE              (IMEM_INIT_FILE),
+    .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE)
+  )
+  uut
   (
     .clk                               (clk),
     .reset_n                           (reset_n),
-  
-    .iaddress                          (iaddress),
-    .iread                             (iread),
-    .ireaddata                         (ireaddata),
-  
-    .daddress                          (daddress),
-    .dwrite                            (dwrite),
-    .dwritedata                        (dwritedata),
-    .dbyteenable                       (dbyteenable),
-    .dread                             (dread),
-    .dreaddata                         (dreaddata),
-    .dwaitrequest                      (dwaitreq),
-    
-    .irq                               (1'b0)
+
+    .avs_csr_address                   (avs_csr_address[17:0]),
+    .avs_csr_write                     (avs_csr_write),
+    .avs_csr_writedata                 (avs_csr_writedata),
+    .avs_csr_read                      (avs_csr_read),
+    .avs_csr_readdata                  (avs_csr_readdata)
   );
 
 endmodule
