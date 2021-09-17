@@ -43,7 +43,9 @@ module core
             RV32I_DMEM_ADDR_WIDTH      = 12,
             RV32I_IMEM_INIT_FILE       = "UNUSED",
             RV32I_DMEM_INIT_FILE       = "UNUSED",
-            RV32I_ENABLE_ECALL         = 1
+            // Next parameters strictly for simulation test purposes only
+            RV32I_ENABLE_ECALL         = 1,
+            RV32I_IMEM_SHADOW_WR       = 0
 )
 (
     input            clk,
@@ -155,6 +157,8 @@ wire         dmem_waitreq;
 
 wire         imem_read;
 wire         imem_write;
+wire         imem_write_csr;
+wire   [3:0] imem_be;
 wire  [31:0] imem_readdata;
 reg          imem_readdatavalid;
 
@@ -210,8 +214,11 @@ assign core_rstn                       = scratch[0] & reset_n;
 
 // Memory control
 assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay;
-assign imem_wdata                      = avs_csr_writedata;
-assign imem_waddr                      = avs_csr_address;
+
+assign imem_write                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) | imem_write_csr;
+assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_wdata : avs_csr_writedata;
+assign imem_be                         = dmem_be;
+assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_addr  : avs_csr_address;
 assign imem_readdata                   = imem_readdatavalid ? imem_rdata : `RV32I_NOP;
 
 // ---------------------------------------------------------
@@ -249,7 +256,7 @@ end
     .local_read                        (local_read),
     .local_readdata                    (local_readdata),
 
-    .imem_write                        (imem_write),
+    .imem_write                        (imem_write_csr),
     .imem_read                         (imem_read),
     .imem_readdata                     (imem_rdata),
 
@@ -321,7 +328,7 @@ end
     .clock                             (clk),
 
     .wren                              (imem_write),
-    .byteena_a                         (4'b1111),
+    .byteena_a                         (imem_be),
     .wraddress                         (imem_waddr[RV32I_IMEM_ADDR_WIDTH-1:0]),
     .data                              (imem_wdata),
 

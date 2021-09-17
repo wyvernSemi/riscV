@@ -63,7 +63,8 @@ module tb
   DMEM_ADDR_WIDTH                      = 16,
   IMEM_ADDR_WIDTH                      = 16,
   IMEM_INIT_FILE                       = "test.mif",
-  ENABLE_ECALL                         = 0
+  ENABLE_ECALL                         = 0,               // **TEST ONLY**: 1 => enable ecall instruction, 0 => ecall is nop
+  IMEM_SHADOW_WR                       = 1                // **TEST ONLY**: 1 => shadow dmem writes to imem, 0 => no shadow writes
 )
 (/* no ports */);
 
@@ -118,7 +119,7 @@ begin
   // Stop or finish the simulation on reaching the HALT count or reading
   // an all zero (illegal) instruction.
   if (count == `HALT_TIMEOUT_COUNT ||
-     (HALT_ON_UNIMP && ireaddatavalid == 1'b1 && (ireaddata == 32'h00000000 || ireaddata == `RV32I_UNIMP)) ||
+     (HALT_ON_UNIMP && ireaddatavalid == 1'b1 && (ireaddata == `RV32I_UNIMP)) ||
      (HALT_ON_ADDR  && iread                  && iaddress == `HALT_ADDR))
   begin
     if (count == `HALT_TIMEOUT_COUNT)
@@ -175,7 +176,8 @@ assign avs_csr_write                   = 1'b0;
     .RV32I_IMEM_ADDR_WIDTH             (IMEM_ADDR_WIDTH),
     .RV32I_IMEM_INIT_FILE              (IMEM_INIT_FILE),
     .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE),
-    .RV32I_ENABLE_ECALL                (ENABLE_ECALL)
+    .RV32I_ENABLE_ECALL                (ENABLE_ECALL),
+    .RV32I_IMEM_SHADOW_WR              (IMEM_SHADOW_WR)
   )
   uut
   (

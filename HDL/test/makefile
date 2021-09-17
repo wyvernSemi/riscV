@@ -73,9 +73,10 @@ help:
 #------------------------------------------------------
 
 clean:
-	@rm -rf "*wlf*"
-	@rm -rf "work"
+	@vsim -c -do cleanvlib.do -do quit
+	@rm -rf vsim.wlf
 	@rm -rf batch.do
 	@rm -rf transcript
-	@rm -rf "*.log"
-	@vsim -c -do cleanvlib.do -do quit
+	@rm -rf *.log
+	@rm -rf transcript
+	@make -f makefile.test clean
