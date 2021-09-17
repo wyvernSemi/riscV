@@ -42,7 +42,8 @@ module core
             RV32I_IMEM_ADDR_WIDTH      = 12,
             RV32I_DMEM_ADDR_WIDTH      = 12,
             RV32I_IMEM_INIT_FILE       = "UNUSED",
-            RV32I_DMEM_INIT_FILE       = "UNUSED"
+            RV32I_DMEM_INIT_FILE       = "UNUSED",
+            RV32I_ENABLE_ECALL         = 1
 )
 (
     input            clk,
@@ -283,8 +284,8 @@ end
    .RV32I_RESET_VECTOR                 (RV32I_RESET_VECTOR),
    .RV32I_TRAP_VECTOR                  (RV32I_TRAP_VECTOR),
    .RV32I_LOG2_REGFILE_ENTRIES         (RV32I_LOG2_REGFILE_ENTRIES),
-   .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM)
- 
+   .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM),
+   .RV32I_ENABLE_ECALL                 (RV32I_ENABLE_ECALL)
   )
   rv32i_cpu_core_inst
   (

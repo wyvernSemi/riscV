@@ -33,7 +33,8 @@
 
 module rv32i_decode
 #(parameter
-   RV32I_TRAP_VECTOR                   = 32'h00000040
+   RV32I_TRAP_VECTOR                   = 32'h00000040,
+   RV32I_ENABLE_ECALL                  = 1
 )
 (
   input                                clk,
@@ -128,7 +129,7 @@ wire        st_instr                   = ~invalid_instr & ld_st_instr &  opcode_
 wire        ui_instr                   = ~invalid_instr & ~opcode_32[4] & &{opcode_32[2:0] ~^ 3'b101};
 wire        branch_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11000};
 wire        jmp_instr                  = ~invalid_instr & &{opcode_32[4:2] ~^ 3'b110} & &{opcode_32[0]};
-wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21];
+wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21] & (RV32I_ENABLE_ECALL | instr_reg[21]);
 wire        fence_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b00011};
 
 // Flag indication that an ALU instruction is I-type
@@ -241,7 +242,7 @@ begin
         offset                         <= imm;
         
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                       <= ~(jmp_instr | system_instr)                       ? rs1_idx : 5'h0;
+        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr)      ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
         b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr) ? rs2_idx : 5'h0;
         
         // ALU operation control outputs

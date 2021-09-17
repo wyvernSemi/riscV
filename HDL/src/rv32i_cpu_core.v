@@ -36,7 +36,8 @@ module rv32i_cpu_core
    RV32I_RESET_VECTOR          = 32'h00000000,
    RV32I_TRAP_VECTOR           = 32'h00000004,
    RV32I_LOG2_REGFILE_ENTRIES  = 5,
-   RV32I_REGFILE_USE_MEM       = 1
+   RV32I_REGFILE_USE_MEM       = 1,
+   RV32I_ENABLE_ECALL          = 1
 )
 (
   input                        clk,
@@ -122,7 +123,8 @@ assign dwritedata              = alu_c;
   // ---------------------------------------------------------
 
   rv32i_decode #(
-    .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR)
+    .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR),
+    .RV32I_ENABLE_ECALL        (RV32I_ENABLE_ECALL)
   ) decode
   (
     .clk                       (clk),

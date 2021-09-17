@@ -107,7 +107,7 @@ generate
   // Use memory based register file implementation
   // -------------------------------------------------------
   if (USE_MEM == 1)
-  begin
+  begin : mem
     // Write to memory when RD index is not 0 zero, or write 0 to index 0 during reset.
     wire        wr_mem         = (rd_idx != 5'h0 | ~reset_n) ? 1'b1   : 1'b0;
     wire [31:0] wdata          = reset_n                     ? new_rd : 32'h00000000;
@@ -145,7 +145,7 @@ generate
   // Use register based register file implementation
   // -------------------------------------------------------
   else
-  begin
+  begin : registers
     // Declare an array of registers (REGFILE_ENTRIES x 32)
     reg  [31:0] regfile [0:REGFILE_ENTRIES-1];
 

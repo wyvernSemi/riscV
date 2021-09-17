@@ -40,8 +40,8 @@
 // --------------------------------------------------------
 
 `define RESET_PERIOD                   10
-`define HALT_TIMEOUT_COUNT             100000
-`define HALT_ADDR                      32'h00000030
+`define HALT_TIMEOUT_COUNT             2000
+`define HALT_ADDR                      32'h00000040
 
 `define RV32I_NOP                      32'h00000013
 `define RV32I_UNIMP                    32'hc0001073
@@ -54,6 +54,7 @@ module tb
 #(parameter
   GUI_RUN                              = 0,
   HALT_ON_ADDR                         = 1,
+  HALT_ON_UNIMP                        = 1,
   CLK_FREQ_MHZ                         = 100,
   RESET_ADDR                           = 32'h00000000,
   TRAP_ADDR                            = 32'h00000004,
@@ -61,7 +62,8 @@ module tb
   REGFILE_USE_MEM                      = 1,
   DMEM_ADDR_WIDTH                      = 16,
   IMEM_ADDR_WIDTH                      = 16,
-  IMEM_INIT_FILE                       = "test.mif"
+  IMEM_INIT_FILE                       = "test.mif",
+  ENABLE_ECALL                         = 0
 )
 (/* no ports */);
 
@@ -86,7 +88,8 @@ wire    [31:0] avs_csr_writedata;
 wire           avs_csr_read;
 wire    [31:0] avs_csr_readdata;
 
-wire    [31:0] gp_reg = tb.uut.rv32i_cpu_core_inst.regfile.genblk1.regfile1.altsyncram_component.m_default.altsyncram_inst.mem_data[3];
+wire    [31:0] gp_reg = tb.uut.rv32i_cpu_core_inst.regfile.mem.regfile1.altsyncram_component.m_default.altsyncram_inst.mem_data[3];
+wire    [31:0] pc     = tb.uut.rv32i_cpu_core_inst.regfile.pc;
 
 // --------------------------------------------------------
 // Initialisation
@@ -115,10 +118,15 @@ begin
   // Stop or finish the simulation on reaching the HALT count or reading
   // an all zero (illegal) instruction.
   if (count == `HALT_TIMEOUT_COUNT ||
-     (ireaddatavalid == 1'b1 && (ireaddata == 32'h00000000 || ireaddata == `RV32I_UNIMP)) ||
-     (HALT_ON_ADDR && iread && iaddress == `HALT_ADDR))
+     (HALT_ON_UNIMP && ireaddatavalid == 1'b1 && (ireaddata == 32'h00000000 || ireaddata == `RV32I_UNIMP)) ||
+     (HALT_ON_ADDR  && iread                  && iaddress == `HALT_ADDR))
   begin
-    $display("gp = 0x%8x", gp_reg);
+    if (count == `HALT_TIMEOUT_COUNT)
+      $display("Test timed out : ***FAIL***");
+    else if (gp_reg == 1)
+      $display("Test exit code = %d : PASS (pc = 0x%08x)", gp_reg[31:1], pc);
+    else
+      $display("Test exit code = %d : ***FAIL***", gp_reg[31:1]);
     // In batch mode finish the simulation. In GUI mode stop it to allow inspection of signals.
     if (GUI_RUN == 0)
     begin
@@ -166,7 +174,8 @@ assign avs_csr_write                   = 1'b0;
     .RV32I_DMEM_ADDR_WIDTH             (DMEM_ADDR_WIDTH),
     .RV32I_IMEM_ADDR_WIDTH             (IMEM_ADDR_WIDTH),
     .RV32I_IMEM_INIT_FILE              (IMEM_INIT_FILE),
-    .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE)
+    .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE),
+    .RV32I_ENABLE_ECALL                (ENABLE_ECALL)
   )
   uut
   (
