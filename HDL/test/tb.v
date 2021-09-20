@@ -52,10 +52,12 @@
 
 module tb
 #(parameter
+  // Test bench parameters
   GUI_RUN                              = 0,
   HALT_ON_ADDR                         = 1,
   HALT_ON_UNIMP                        = 1,
   CLK_FREQ_MHZ                         = 100,
+  // UUT paramters
   RESET_ADDR                           = 32'h00000000,
   TRAP_ADDR                            = 32'h00000004,
   LOG2_REGFILE_ENTRIES                 = 5,               // 5 for RV32I, 4 for RV32E
