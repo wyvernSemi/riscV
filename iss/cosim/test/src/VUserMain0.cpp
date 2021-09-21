@@ -38,6 +38,8 @@ int ext_mem_access(const uint32_t addr, uint32_t& data, const int type, const rv
         data = read_hword(addr);
         break;
     case MEM_RD_ACCESS_INSTR:
+        data = read_instr(addr);
+        break;
     case MEM_RD_ACCESS_WORD:
         data = read_word(addr);
         break;

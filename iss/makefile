@@ -51,7 +51,8 @@ CPP_BASE        = rv32i_cpu_elf.cpp                     \
                   rv32m_cpu.cpp                         \
                   rv32a_cpu.cpp                         \
                   rv32f_cpu.cpp                         \
-                  rv32d_cpu.cpp
+                  rv32d_cpu.cpp                         \
+                  rv32c_cpu.cpp
 
 VOBJS           = ${addprefix ${VOBJDIR}/, ${CPP_BASE:%.cpp=%.o}}
 

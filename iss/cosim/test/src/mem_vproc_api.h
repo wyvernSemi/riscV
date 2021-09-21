@@ -29,12 +29,15 @@ extern "C" {
 #define BYTE_EN_ADDR                            0xAFFFFFF0
 #define HALT_ADDR                               0xAFFFFFF8
 
+#define INSTR_ACCESS                            0x8000000F
+
 extern int      node;
 
 extern void     write_word  (uint32_t addr, uint32_t data);
 extern void     write_hword (uint32_t addr, uint32_t data);
 extern void     write_byte  (uint32_t addr, uint32_t data);
 extern uint32_t read_word   (uint32_t addr);
+extern uint32_t read_instr  (uint32_t addr);
 extern uint32_t read_hword  (uint32_t addr);
 extern uint32_t read_byte   (uint32_t addr);
 

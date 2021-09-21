@@ -32,47 +32,65 @@
 `timescale 1ns / 1ps
 
 module riscVsim
- #(parameter          BE_ADDR = 32'hAFFFFFF0,
-   parameter          NODE    = 0)
+ #(parameter          BE_ADDR     = 32'hAFFFFFF0,
+   parameter          NODE        = 0,
+   parameter          USE_HARVARD = 1)
  (
     input             clk,
 
     // Memory mapped master interface
-    output     [31:0] address,
-    output reg        write,
-    output     [31:0] writedata,
-    output reg  [3:0] byteenable,
-    output            read,
-    input      [31:0] readdata,
-    input             readdatavalid,
+    output     [31:0] daddress,
+    output reg        dwrite,
+    output     [31:0] dwritedata,
+    output reg  [3:0] dbyteenable,
+    output            dread,
+    input      [31:0] dreaddata,
+    input             dwaitrequest,
+    
+    // Interface active if USE_HARVARD is 1 and instr_access set by software
+    output     [31:0] iaddress,
+    output            iread,
+    input      [31:0] ireaddata,
+    input             iwaitrequest,
     
     input             irq
 );
 
 reg         irqDly;
+reg         instr_access;
 reg         UpdateResponse;
 wire        Update;
 wire        WE;
+wire        RDAck;
+wire        read_int;
 wire [31:0] nodenum = NODE;
+wire [31:0] rd_data;
+
+assign      iaddress = daddress;
+assign      iread    = read_int && instr_access && USE_HARVARD;
+assign      dread    = read_int && (instr_access == 1'b0 || USE_HARVARD == 0);
+assign      rd_data  = dread ? dreaddata : ireaddata;
+assign      RDAck    = ((dread & ~dwaitrequest) == 1'b1 || (iread & ~iwaitrequest) == 1'b1) ? 1'b1 : 1'b0;
 
 initial
 begin
   irqDly          <= 1'b0;
+  instr_access    <= 1'b0;
 
   UpdateResponse  <= 1'b1;
-  byteenable      <= 4'hf;
+  dbyteenable     <= 4'hf;
 end
 
 
   VProc vp (
             .Clk                     (clk),
-            .Addr                    (address),
+            .Addr                    (daddress),
             .WE                      (WE),
-            .RD                      (read),
-            .DataOut                 (writedata),
-            .DataIn                  (readdata),
+            .RD                      (read_int),
+            .DataOut                 (dwritedata),
+            .DataIn                  (rd_data),
             .WRAck                   (WE),
-            .RDAck                   (readdatavalid),
+            .RDAck                   (RDAck),
             .Interrupt               (3'b000),
             .Update                  (Update),
             .UpdateResponse          (UpdateResponse),
@@ -82,14 +100,15 @@ end
 
 always @(Update)
 begin
-  if (WE == 1'b1 && address == BE_ADDR)
+  if (WE == 1'b1 && daddress == BE_ADDR)
   begin
-    byteenable         <= writedata[3:0];
-    write              <= 1'b0;
+    dbyteenable        <= dwritedata[3:0];
+    instr_access       <= dwritedata[31];
+    dwrite             <= 1'b0;
   end
   else
   begin
-    write              <= WE;
+    dwrite             <= WE;
   end
   
   irqDly               <= irq;
@@ -102,6 +121,5 @@ begin
   
   UpdateResponse = ~UpdateResponse;
 end
-
 
 endmodule

@@ -31,8 +31,6 @@
 
 `timescale 1ns / 10ps
 
-`define RV32I_NOP                       32'h00000013
-
 module core
 #(parameter CLK_FREQ_MHZ               = 100,
             RV32I_RESET_VECTOR         = 32'h00000000,
@@ -162,6 +160,7 @@ wire   [3:0] imem_be;
 wire  [31:0] imem_readdata;
 reg          imem_readdatavalid;
 
+
 wire         dmem_read;
 wire         dmem_write;
 
@@ -219,7 +218,8 @@ assign imem_write                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) | imem
 assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_wdata : avs_csr_writedata;
 assign imem_be                         = dmem_be;
 assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_addr  : avs_csr_address;
-assign imem_readdata                   = imem_readdatavalid ? imem_rdata : `RV32I_NOP;
+assign imem_readdata                   = imem_rdata;
+assign imem_waitrequest                = imem_read & ~imem_readdatavalid;
 
 // ---------------------------------------------------------
 // Local Synchronous Logic
@@ -302,6 +302,7 @@ end
     .iaddress                          (imem_raddr),
     .iread                             (imem_rd),
     .ireaddata                         (imem_readdata),
+    .iwaitrequest                      (imem_waitrequest),
 
     .daddress                          (dmem_addr),
     .dwrite                            (dmem_wr),

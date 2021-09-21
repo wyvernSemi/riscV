@@ -41,7 +41,8 @@
 
 module tb
 #(parameter GUI_RUN          = 0,
-  parameter CLK_FREQ_MHZ     = 100)
+  parameter CLK_FREQ_MHZ     = 100,
+  parameter USE_HARVARD      = 1)
 ();
 
 
@@ -58,6 +59,10 @@ wire  [3:0]    byteenable;
 wire           read;
 wire [31:0]    readdata;
 wire           readdatavalid;
+
+wire           iread;
+wire [31:0]    iaddress;
+wire [31:0]    readaddress            = (iread == 1'b1) ? iaddress : address;
 
 reg            irq;
 
@@ -115,17 +120,22 @@ end
 // Virtual CPU
 // -----------------------------------------------
 
- riscVsim  #(.BE_ADDR(`BE_ADDR)) cpu
+ riscVsim  #(.BE_ADDR(`BE_ADDR), .USE_HARVARD(USE_HARVARD)) cpu
  (
    .clk                     (clk),
 
-   .address                 (address),
-   .write                   (write),
-   .writedata               (writedata),
-   .byteenable              (byteenable),
-   .read                    (read),
-   .readdata                (readdata),
-   .readdatavalid           (readdatavalid),
+   .daddress                (address),
+   .dwrite                  (write),
+   .dwritedata              (writedata),
+   .dbyteenable             (byteenable),
+   .dread                   (read),
+   .dreaddata               (readdata),
+   .dwaitrequest            (read & ~readdatavalid),
+   
+   .iaddress                (iaddress),
+   .iread                   (iread),
+   .ireaddata               (readdata),
+   .iwaitrequest            (iread & ~readdatavalid),
 
    .irq                     (irq)
  );
@@ -139,11 +149,11 @@ end
     .clk                    (clk),
     .rst_n                  (reset_n),
 
-    .address                (address),
+    .address                (readaddress),
     .write                  (write),
     .writedata              (writedata),
     .byteenable             (byteenable),
-    .read                   (read),
+    .read                   (read | iread),
     .readdata               (readdata),
     .readdatavalid          (readdatavalid),
 

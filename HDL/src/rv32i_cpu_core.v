@@ -30,6 +30,7 @@
 
  `timescale 1ns / 10ps
 
+`define RV32I_NOP                32'h00000013
 
 module rv32i_cpu_core
 #(parameter
@@ -46,6 +47,7 @@ module rv32i_cpu_core
   output [31:0]                iaddress,
   output                       iread,
   input  [31:0]                ireaddata,
+  input                        iwaitrequest,
 
   output [31:0]                daddress,
   output                       dwrite,
@@ -111,6 +113,8 @@ wire        stall_regfile      = stall | (decode_load & ~dread);
 wire        stall_decode       = dread;
 wire        stall_alu          = dread;
 wire        clr_load_op        = dread & ~dwaitrequest;
+
+wire        instr              = (iread & ~iwaitrequest) ? ireaddata : `RV32I_NOP;
 
 // Fetch instructions from the current PC address
 assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;

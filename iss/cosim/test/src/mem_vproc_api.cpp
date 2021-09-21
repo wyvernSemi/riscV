@@ -49,6 +49,21 @@ uint32_t read_word(uint32_t addr)
     return word;
 }
 
+uint32_t read_instr(uint32_t addr)
+{
+    uint32_t word;
+    
+    VWrite(BYTE_EN_ADDR, INSTR_ACCESS, DELTA_UPDATE, node);
+
+    VRead(addr & ~0x3, &word, NORMAL_UPDATE, node);
+    
+    VWrite(BYTE_EN_ADDR, 0xf, DELTA_UPDATE, node);
+    
+    VTick(ACCESS_LEN, node);
+
+    return word;
+}
+
 uint32_t read_hword(uint32_t addr)
 {
     uint32_t word;
