@@ -195,7 +195,7 @@ void rv32d_cpu::update_rm(int req_rnd_method)
 {
     // If requested method is dynamic, get dynamic setting from FRM,
     // else use argument value.
-    int rnd_method = (req_rnd_method == RV32I_DYN) ? state.hart->csr[RV32CSR_ADDR_FRM] : 
+    int rnd_method = (req_rnd_method == RV32I_DYN) ? (uint32_t)state.hart->csr[RV32CSR_ADDR_FRM] : 
                                                      req_rnd_method;
 
     // Only set if there's a change.
@@ -287,7 +287,7 @@ void rv32d_cpu::fld(const p_rv32i_decode_t d)
 
         if (!disassemble)
         {
-            access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+            access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
             uint64_t rd_val = (uint64_t)read_mem(access_addr+4, MEM_RD_ACCESS_WORD, access_fault);
                      rd_val = (rd_val << 32) | (uint64_t)read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault);
@@ -328,7 +328,7 @@ void rv32d_cpu::fsd(const p_rv32i_decode_t d)
             // Enabling stores only when MSTATUS FS bits != 0 (off)
             if (state.hart->csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MSTATUS_FS_MASK)
             {
-                access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+                access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_s;
 
                 write_mem(access_addr,   (uint32_t)state.hart[curr_hart].f[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
                 write_mem(access_addr+4, (uint32_t)(state.hart[curr_hart].f[d->rs2] >> 32), MEM_WR_ACCESS_WORD, access_fault);

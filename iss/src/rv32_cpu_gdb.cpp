@@ -227,13 +227,13 @@ static int rv32gdb_gen_register_reply(rv32* cpu, const char* cmd, char *buf, uns
     {
         if (idx < RV32I_NUM_OF_REGISTERS)
         {
-            val = cpu_state.x[idx];
+            val = (uint32_t)cpu_state.x[idx];
         }
         else
         {
             switch (idx)
             {
-               case RV32_REG_PC  : val = cpu_state.pc;   break;
+               case RV32_REG_PC  : val = (uint32_t)cpu_state.pc;   break;
             }
         }
 

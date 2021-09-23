@@ -117,7 +117,7 @@ protected:
     // Protected methods
     // ------------------------------------------------
 protected:
-    void increment_pc() { state.hart[curr_hart].pc += cmp_instr ? 2 : 4; };
+    void increment_pc() { state.hart[curr_hart].pc = (uint32_t)state.hart[curr_hart].pc + (cmp_instr ? 2 : 4); };
 
     // ------------------------------------------------
     // Private methods

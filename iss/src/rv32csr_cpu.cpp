@@ -91,7 +91,7 @@ void rv32csr_cpu::process_trap(int trap_type)
 {
     uint32_t offset = 0;
 
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MEPC]   = state.hart[curr_hart].pc;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MEPC]   = (uint32_t)state.hart[curr_hart].pc;
     state.hart[curr_hart].csr[RV32CSR_ADDR_MCAUSE] = trap_type;
 
     // Vol2: 3.1.17
@@ -229,7 +229,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
         // Read CSR registers
         if (rd && !unimplemented)
         {
-            prev_rd_value = state.hart[curr_hart].x[rd];
+            prev_rd_value = (uint32_t)state.hart[curr_hart].x[rd];
 
             // Take this opportunity to update the cycle count registers
             state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE]  = clk_cycles() & 0xffffffff;
@@ -250,7 +250,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
                 }
                 else
                 {
-                    value = (rd != rs1_uimm) ? state.hart[curr_hart].x[rs1_uimm] : prev_rd_value;
+                    value = (rd != rs1_uimm) ? (uint32_t)state.hart[curr_hart].x[rs1_uimm] : prev_rd_value;
                 }
 
                 if (RV32CSR_OP_RW(funct3))
@@ -263,7 +263,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
                 }
                 else if (RV32CSR_OP_RC(funct3))
                 {
-                    state.hart[curr_hart].csr[addr & 0xfff] &= ~(value & wr_mask);
+                    state.hart[curr_hart].csr[addr & 0xfff] &= (uint32_t)~(value & wr_mask);
                 }
             }
             // Attempted to write to a read only or unimplemented CSR register

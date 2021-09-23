@@ -61,17 +61,19 @@ public:
     {
     public:
 
+        // Register types set at 64 bit to allow for RV64 extensions
+
         // General purpose registers
-        uint32_t x[RV32I_NUM_OF_REGISTERS] = { 0 };
+        uint64_t x[RV32I_NUM_OF_REGISTERS] = { 0 };
 
         // Floating point registers (for RV32F/RV32D)
         uint64_t f[RV32I_NUM_OF_REGISTERS] = { 0 };
 
         // CSR registers
-        uint32_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
+        uint64_t csr[RV32I_CSR_SPACE_SIZE] = { 0 };
 
         // Program counter
-        uint32_t pc;
+        uint64_t pc;
 
     };
 
@@ -120,13 +122,13 @@ public:
     // Return value of indexed integer register
     LIBRISCV32_API uint32_t    regi_val                       (uint32_t reg_idx)
     {
-        return state.hart[curr_hart].x[reg_idx % RV32I_NUM_OF_REGISTERS];
+        return (uint32_t)state.hart[curr_hart].x[reg_idx % RV32I_NUM_OF_REGISTERS];
     };
 
     // Return value of indexed integer register
     LIBRISCV32_API uint32_t    pc_val                         ()
     {
-        return state.hart[curr_hart].pc;
+        return (uint32_t)state.hart[curr_hart].pc;
     };
 
     LIBRISCV32_API rv32i_hart_state rv32_get_cpu_state(int hart_num = 0)                            { return state.hart[hart_num]; }
@@ -300,7 +302,7 @@ protected:
     // to support compressed instructions (RV32C)
     virtual void increment_pc()
     {
-        state.hart[curr_hart].pc += 4;
+        state.hart[curr_hart].pc = (uint32_t)(state.hart[curr_hart].pc + 4);
     }
 
     // Place holder virtual methods for overloading with CSR access functionality
@@ -313,7 +315,7 @@ protected:
     virtual uint32_t fetch_instruction()
     {
         bool fault;
-        return read_mem(state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
+        return read_mem((uint32_t)state.hart[curr_hart].pc, MEM_RD_ACCESS_INSTR, fault);
     }
 
 private:

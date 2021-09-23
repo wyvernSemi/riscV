@@ -634,7 +634,7 @@ void rv32i_cpu::addi(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
     }
 
     increment_pc();
@@ -670,7 +670,7 @@ void rv32i_cpu::xori(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] ^ d->imm_i;
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] ^ d->imm_i;
     }
 
     increment_pc();
@@ -682,7 +682,7 @@ void rv32i_cpu::ori(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] | d->imm_i;
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] | d->imm_i;
     }
 
     increment_pc();
@@ -694,7 +694,7 @@ void rv32i_cpu::andi(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] & d->imm_i;
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] & d->imm_i;
     }
 
     increment_pc();
@@ -712,7 +712,7 @@ void rv32i_cpu::slli(const p_rv32i_decode_t d)
     {
         if (d->rd)
         {
-            state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] << (d->imm_i & RV32I_MASK_IMM_I_SHAMT);
+            state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] << (d->imm_i & RV32I_MASK_IMM_I_SHAMT);
         }
 
         increment_pc();
@@ -731,7 +731,7 @@ void rv32i_cpu::srli(const p_rv32i_decode_t d)
     {
         if (d->rd)
         {
-            state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] >> (d->imm_i & RV32I_MASK_IMM_I_SHAMT);
+            state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] >> (d->imm_i & RV32I_MASK_IMM_I_SHAMT);
         }
 
         increment_pc();
@@ -750,8 +750,8 @@ void rv32i_cpu::srai(const p_rv32i_decode_t d)
     {
         if (d->rd)
         {
-            state.hart[curr_hart].x[d->rd] = (state.hart[curr_hart].x[d->rs1] >> (d->imm_i & RV32I_MASK_IMM_I_SHAMT)) |
-                ((state.hart[curr_hart].x[d->rs1] & MASK_SIGN_BIT32) ? ~(WORD_MASK >> d->imm_i) : 0);
+            state.hart[curr_hart].x[d->rd] = ((uint32_t)state.hart[curr_hart].x[d->rs1] >> (d->imm_i & RV32I_MASK_IMM_I_SHAMT)) |
+                (((uint32_t)state.hart[curr_hart].x[d->rs1] & MASK_SIGN_BIT32) ? ~(WORD_MASK >> d->imm_i) : 0);
         }
 
         increment_pc();
@@ -767,7 +767,7 @@ void rv32i_cpu::addr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] + state.hart[curr_hart].x[d->rs2];
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] + (uint32_t)state.hart[curr_hart].x[d->rs2];
     }
 
     increment_pc();
@@ -779,7 +779,7 @@ void rv32i_cpu::subr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] - state.hart[curr_hart].x[d->rs2];
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] - (uint32_t)state.hart[curr_hart].x[d->rs2];
     }
 
     increment_pc();
@@ -791,7 +791,7 @@ void rv32i_cpu::sllr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] << (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT);
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] << (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT);
     }
 
     increment_pc();
@@ -827,7 +827,7 @@ void rv32i_cpu::xorr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] ^ state.hart[curr_hart].x[d->rs2];
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] ^ (uint32_t)state.hart[curr_hart].x[d->rs2];
     }
 
     increment_pc();
@@ -839,7 +839,7 @@ void rv32i_cpu::srlr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] >> (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT);
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] >> (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT);
     }
 
     increment_pc();
@@ -851,7 +851,7 @@ void rv32i_cpu::srar(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = (state.hart[curr_hart].x[d->rs1] >> (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT)) |
+        state.hart[curr_hart].x[d->rd] = ((uint32_t)state.hart[curr_hart].x[d->rs1] >> (state.hart[curr_hart].x[d->rs2] & RV32I_MASK_IMM_I_SHAMT)) |
                                         ((state.hart[curr_hart].x[d->rs1] & MASK_SIGN_BIT32) ? ~(WORD_MASK >> state.hart[curr_hart].x[d->rs2]) : 0);
     }
 
@@ -864,7 +864,7 @@ void rv32i_cpu::orr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] | state.hart[curr_hart].x[d->rs2];
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] | (uint32_t)state.hart[curr_hart].x[d->rs2];
     }
 
     increment_pc();
@@ -876,7 +876,7 @@ void rv32i_cpu::andr(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].x[d->rs1] & state.hart[curr_hart].x[d->rs2];
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] & (uint32_t)state.hart[curr_hart].x[d->rs2];
     }
 
     increment_pc();
@@ -891,7 +891,7 @@ void rv32i_cpu::auipc(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = d->imm_u + state.hart[curr_hart].pc;
+        state.hart[curr_hart].x[d->rd] = d->imm_u + (uint32_t)state.hart[curr_hart].pc;
     }
 
     increment_pc();
@@ -920,7 +920,7 @@ void rv32i_cpu::lb(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
         uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_BYTE, access_fault);
 
@@ -945,7 +945,7 @@ void rv32i_cpu::lh(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
         uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_HWORD, access_fault);
 
@@ -970,7 +970,7 @@ void rv32i_cpu::lw(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
         uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_WORD, access_fault);
 
@@ -994,7 +994,7 @@ void rv32i_cpu::lbu(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
         uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_BYTE, access_fault);
 
@@ -1018,7 +1018,7 @@ void rv32i_cpu::lhu(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
 
         uint32_t rd_val = read_mem(access_addr, MEM_RD_ACCESS_HWORD, access_fault);
 
@@ -1042,9 +1042,9 @@ void rv32i_cpu::sb(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_s;
 
-        write_mem(access_addr, state.hart[curr_hart].x[d->rs2] & BYTE_MASK, MEM_WR_ACCESS_BYTE, access_fault);
+        write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] & BYTE_MASK, MEM_WR_ACCESS_BYTE, access_fault);
     }
 
     if (!access_fault)
@@ -1061,9 +1061,9 @@ void rv32i_cpu::sh(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_s;
 
-        write_mem(access_addr, state.hart[curr_hart].x[d->rs2] & HWORD_MASK, MEM_WR_ACCESS_HWORD, access_fault);
+        write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] & HWORD_MASK, MEM_WR_ACCESS_HWORD, access_fault);
     }
 
     if (!access_fault)
@@ -1080,9 +1080,9 @@ void rv32i_cpu::sw(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        access_addr = state.hart[curr_hart].x[d->rs1] + d->imm_s;
+        access_addr = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_s;
 
-        write_mem(access_addr, state.hart[curr_hart].x[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
+        write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
     }
 
     if (!access_fault)
@@ -1098,9 +1098,9 @@ void rv32i_cpu::beq(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
-    if (!disassemble && state.hart[curr_hart].x[d->rs1] == state.hart[curr_hart].x[d->rs2])
+    if (!disassemble && (uint32_t)state.hart[curr_hart].x[d->rs1] == (uint32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
         if (access_addr & RV32_IADDR_ALIGN_MASK)
@@ -1123,9 +1123,9 @@ void rv32i_cpu::bne(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(cmp_instr ? cmp_instr_code : d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
-    if (!disassemble && state.hart[curr_hart].x[d->rs1] != state.hart[curr_hart].x[d->rs2])
+    if (!disassemble && (uint32_t)state.hart[curr_hart].x[d->rs1] != (uint32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
         if (access_addr & RV32_IADDR_ALIGN_MASK)
@@ -1148,7 +1148,7 @@ void rv32i_cpu::blt(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
     if (!disassemble && (int32_t)state.hart[curr_hart].x[d->rs1] < (int32_t)state.hart[curr_hart].x[d->rs2])
     {
@@ -1173,7 +1173,7 @@ void rv32i_cpu::bge(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
     if (!disassemble && (int32_t)state.hart[curr_hart].x[d->rs1] >= (int32_t)state.hart[curr_hart].x[d->rs2])
     {
@@ -1198,9 +1198,9 @@ void rv32i_cpu::bltu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
-    if (!disassemble && state.hart[curr_hart].x[d->rs1] < state.hart[curr_hart].x[d->rs2])
+    if (!disassemble && (uint32_t)state.hart[curr_hart].x[d->rs1] < (uint32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
         if (access_addr & RV32_IADDR_ALIGN_MASK)
@@ -1223,9 +1223,9 @@ void rv32i_cpu::bgeu(const p_rv32i_decode_t d)
 {
     RV32I_DISASSEM_B_TYPE(d->instr, d->entry.instr_name, d->rs1, d->rs2, d->imm_b);
 
-    access_addr = state.hart[curr_hart].pc + d->imm_b;
+    access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_b;
 
-    if (!disassemble && state.hart[curr_hart].x[d->rs1] >= state.hart[curr_hart].x[d->rs2])
+    if (!disassemble && (uint32_t)state.hart[curr_hart].x[d->rs1] >= (uint32_t)state.hart[curr_hart].x[d->rs2])
     {
         // Check for misalignment on target address
         if (access_addr & RV32_IADDR_ALIGN_MASK)
@@ -1255,7 +1255,7 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
     if (!disassemble)
     {
 
-        access_addr = state.hart[curr_hart].pc + d->imm_j;
+        access_addr = (uint32_t)state.hart[curr_hart].pc + d->imm_j;
 
         // Check for misalignment on target address
         if (access_addr & RV32_IADDR_ALIGN_MASK)
@@ -1266,7 +1266,7 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
         {
             if (d->rd)
             {
-                state.hart[curr_hart].x[d->rd] = state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
+                state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
             }
 
             state.hart[curr_hart].pc = access_addr;
@@ -1285,9 +1285,9 @@ void rv32i_cpu::jalr(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        uint32_t next_pc = state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
+        uint32_t next_pc = (uint32_t)state.hart[curr_hart].pc + (cmp_instr ? 2 : 4);
 
-        access_addr = (state.hart[curr_hart].x[d->rs1] + d->imm_i) & 0xfffffffe;  // Clear bottom bit
+        access_addr = ((uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i) & 0xfffffffe;  // Clear bottom bit
 
         // Check for address misalignment
         if (access_addr & RV32_IADDR_ALIGN_MASK)

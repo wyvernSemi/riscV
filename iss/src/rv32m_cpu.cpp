@@ -119,8 +119,8 @@ void rv32m_cpu::div(const p_rv32i_decode_t d)
     {
         int32_t div_result;
 
-        int32_t a = state.hart[curr_hart].x[d->rs1];
-        int32_t b = state.hart[curr_hart].x[d->rs2];
+        int32_t a = (uint32_t)state.hart[curr_hart].x[d->rs1];
+        int32_t b = (uint32_t)state.hart[curr_hart].x[d->rs2];
 
         // Division by zero (Vol1. 7.2)
         if (b == 0)
@@ -150,8 +150,8 @@ void rv32m_cpu::divu(const p_rv32i_decode_t d)
     {
         uint32_t div_result;
 
-        uint32_t a = state.hart[curr_hart].x[d->rs1];
-        uint32_t b = state.hart[curr_hart].x[d->rs2];
+        uint32_t a = (uint32_t)state.hart[curr_hart].x[d->rs1];
+        uint32_t b = (uint32_t)state.hart[curr_hart].x[d->rs2];
 
         // Division by zero (Vol1. 7.2)
         if (b == 0)
@@ -176,8 +176,8 @@ void rv32m_cpu::rem(const p_rv32i_decode_t d)
     {
         int32_t rem_result;
 
-        int32_t a = state.hart[curr_hart].x[d->rs1];
-        int32_t b = state.hart[curr_hart].x[d->rs2];
+        int32_t a = (uint32_t)state.hart[curr_hart].x[d->rs1];
+        int32_t b = (uint32_t)state.hart[curr_hart].x[d->rs2];
 
         // Division by zero (Vol1. 7.2)
         if (b == 0)
@@ -207,8 +207,8 @@ void rv32m_cpu::remu(const p_rv32i_decode_t d)
     {
         uint32_t rem_result;
 
-        uint32_t a = state.hart[curr_hart].x[d->rs1];
-        uint32_t b = state.hart[curr_hart].x[d->rs2];
+        uint32_t a = (uint32_t)state.hart[curr_hart].x[d->rs1];
+        uint32_t b = (uint32_t)state.hart[curr_hart].x[d->rs2];
 
         // Division by zero (Vol1. 7.2)
         if (b == 0)
