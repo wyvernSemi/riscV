@@ -4,11 +4,11 @@
 // -----------------------------------------------------------------------------
 //  File       : core_csr_regs_auto.v
 //  Author     : auto-generated
-//  Created    : 2021-05-30
+//  Created    : 2021-09-27
 //  Standard   : Verilog 2001
 // -----------------------------------------------------------------------------
 //  Description:
-// This is the top level register description for the core block
+// This block is the core registers
 // -----------------------------------------------------------------------------
 //  Copyright (c) 2021 Simon Southwell
 // -----------------------------------------------------------------------------
@@ -48,7 +48,13 @@ module core_csr_regs
     // auto-generated
 
     // Internal signal ports
-    output [31:0] scratch,
+    output        control_halt_on_addr,
+    output        control_halt_on_unimp,
+    output [31:0] halt_addr,
+    output        control_clr_halt,
+    input         status_halted,
+    input         status_reset,
+    input  [31:0] gp,
 
     // end auto-generated
 
@@ -67,8 +73,14 @@ module core_csr_regs
 
   // auto-generated
   
-  reg [31:0] scratch_reg;
-  reg [31:0] next_scratch;
+  reg        control_halt_on_addr_reg;
+  reg        control_halt_on_unimp_reg;
+  reg [31:0] halt_addr_reg;
+  reg        control_clr_halt_reg;
+  reg        next_control_halt_on_addr;
+  reg        next_control_halt_on_unimp;
+  reg [31:0] next_halt_addr;
+  reg        next_control_clr_halt;
   
   // end auto-generated
   
@@ -79,7 +91,10 @@ module core_csr_regs
   // auto-generated
   
   // Export internal write registers to output ports
-  assign scratch                         = scratch_reg;
+  assign control_halt_on_addr            = control_halt_on_addr_reg;
+  assign control_halt_on_unimp           = control_halt_on_unimp_reg;
+  assign halt_addr                       = halt_addr_reg;
+  assign control_clr_halt                = control_clr_halt_reg;
 
   // Export AVS write bus to write pulse register ports
   
@@ -96,9 +111,12 @@ module core_csr_regs
     // auto-generated
   
     // Default the internal write register next values to be current state
-    next_scratch                         <= scratch_reg;
+    next_control_halt_on_addr            <= control_halt_on_addr_reg;
+    next_control_halt_on_unimp           <= control_halt_on_unimp_reg;
+    next_halt_addr                       <= halt_addr_reg;
   
     // Default the write-clear register next values to 0
+    next_control_clr_halt                <= 1'b0;
   
     // Default the read- and write-pulse register pulse outputs to 0
   
@@ -113,9 +131,16 @@ module core_csr_regs
   
         // Write (and write pulse) register case statements
 
-        `CSR_SCRATCH_ADDR :
+        `CSR_CONTROL_ADDR :
         begin
-          next_scratch                   <= avs_writedata[31:0];
+          next_control_clr_halt          <= avs_writedata[0];
+          next_control_halt_on_addr      <= avs_writedata[1];
+          next_control_halt_on_unimp     <= avs_writedata[2];
+        end
+
+        `CSR_HALT_ADDR_ADDR :
+        begin
+          next_halt_addr                 <= avs_writedata[31:0];
         end
         
         default:
@@ -139,9 +164,26 @@ module core_csr_regs
   
         // Write and read (incl. constant) case statements
 
-        `CSR_SCRATCH_ADDR :
+        `CSR_CONTROL_ADDR :
         begin
-          next_avs_readdata[31:0]             <= scratch_reg;
+          next_avs_readdata[1]                <= control_halt_on_addr_reg;
+          next_avs_readdata[2]                <= control_halt_on_unimp_reg;
+        end
+
+        `CSR_GP_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= gp;
+        end
+
+        `CSR_HALT_ADDR_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= halt_addr_reg;
+        end
+
+        `CSR_STATUS_ADDR :
+        begin
+          next_avs_readdata[0]                <= status_halted;
+          next_avs_readdata[1]                <= status_reset;
         end
         // end auto-generated
   
@@ -164,7 +206,10 @@ module core_csr_regs
       // auto-generated
   
       // Reset internal write registers
-      scratch_reg                          <= 32'h00000001;
+      control_halt_on_addr_reg             <= 1'b0;
+      control_halt_on_unimp_reg            <= 1'b0;
+      halt_addr_reg                        <= 32'h00000040;
+      control_clr_halt_reg                 <= 1'b0;
   
       // end auto-generated
     end
@@ -175,7 +220,10 @@ module core_csr_regs
       // auto-generated
   
       // Internal write register state updates
-      scratch_reg                          <= next_scratch;
+      control_halt_on_addr_reg             <= next_control_halt_on_addr;
+      control_halt_on_unimp_reg            <= next_control_halt_on_unimp;
+      halt_addr_reg                        <= next_halt_addr;
+      control_clr_halt_reg                 <= next_control_clr_halt;
   
       // end auto-generated
   

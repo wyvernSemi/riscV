@@ -71,7 +71,7 @@ ${OBJDIR}:
 ${MIFEXE} : ${MIFEXE:%.exe=%.cpp}
 	@gcc -I ../../iss/src $< -o $@
 
-${MIF_FILE} : ${EXEC}
+${MIF_FILE} : ${EXEC} ${MIFEXE}
 	@${MIFEXE} $< ${MIF_FILE}
 
 %.exe: ${OBJDIR}/%.o ${MIFEXE}

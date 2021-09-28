@@ -47,6 +47,7 @@ add_fileset_file rv32i_cpu_core.v VERILOG PATH ../../src/rv32i_cpu_core.v
 add_fileset_file core_auto.vh VERILOG_INCLUDE PATH core_auto.vh
 add_fileset_file core_csr_decode_auto.v VERILOG PATH core_csr_decode_auto.v
 add_fileset_file core_csr_regs_auto.v VERILOG PATH core_csr_regs_auto.v
+add_fileset_file core_test.v VERILOG PATH core_test.v
 add_fileset_file core.v VERILOG PATH core.v TOP_LEVEL_FILE
 
 
@@ -101,13 +102,13 @@ set_parameter_property RV32I_IMEM_ADDR_WIDTH UNITS None
 set_parameter_property RV32I_IMEM_ADDR_WIDTH ALLOWED_RANGES -2147483648:2147483647
 set_parameter_property RV32I_IMEM_ADDR_WIDTH DESCRIPTION "Address width of internal instruction memory"
 set_parameter_property RV32I_IMEM_ADDR_WIDTH HDL_PARAMETER true
-add_parameter RV32I_DMEM_ADDR_WIDTH INTEGER 12 "Address width of data memory"
+add_parameter RV32I_DMEM_ADDR_WIDTH INTEGER 12 "Address width of internal data memory"
 set_parameter_property RV32I_DMEM_ADDR_WIDTH DEFAULT_VALUE 12
 set_parameter_property RV32I_DMEM_ADDR_WIDTH DISPLAY_NAME RV32I_DMEM_ADDR_WIDTH
 set_parameter_property RV32I_DMEM_ADDR_WIDTH TYPE INTEGER
 set_parameter_property RV32I_DMEM_ADDR_WIDTH UNITS None
 set_parameter_property RV32I_DMEM_ADDR_WIDTH ALLOWED_RANGES -2147483648:2147483647
-set_parameter_property RV32I_DMEM_ADDR_WIDTH DESCRIPTION "Address width of data memory"
+set_parameter_property RV32I_DMEM_ADDR_WIDTH DESCRIPTION "Address width of internal data memory"
 set_parameter_property RV32I_DMEM_ADDR_WIDTH HDL_PARAMETER true
 add_parameter RV32I_IMEM_INIT_FILE STRING UNUSED "Specify IMEM initialisation file"
 set_parameter_property RV32I_IMEM_INIT_FILE DEFAULT_VALUE UNUSED
@@ -116,31 +117,40 @@ set_parameter_property RV32I_IMEM_INIT_FILE TYPE STRING
 set_parameter_property RV32I_IMEM_INIT_FILE UNITS None
 set_parameter_property RV32I_IMEM_INIT_FILE DESCRIPTION "Specify IMEM initialisation file"
 set_parameter_property RV32I_IMEM_INIT_FILE HDL_PARAMETER true
-add_parameter RV32I_DMEM_INIT_FILE STRING UNUSED "Specify DMEM initialisation fil"
+add_parameter RV32I_DMEM_INIT_FILE STRING UNUSED "Specify DMEM initialisation file"
 set_parameter_property RV32I_DMEM_INIT_FILE DEFAULT_VALUE UNUSED
 set_parameter_property RV32I_DMEM_INIT_FILE DISPLAY_NAME RV32I_DMEM_INIT_FILE
 set_parameter_property RV32I_DMEM_INIT_FILE TYPE STRING
 set_parameter_property RV32I_DMEM_INIT_FILE UNITS None
-set_parameter_property RV32I_DMEM_INIT_FILE DESCRIPTION "Specify DMEM initialisation fil"
+set_parameter_property RV32I_DMEM_INIT_FILE DESCRIPTION "Specify DMEM initialisation file"
 set_parameter_property RV32I_DMEM_INIT_FILE HDL_PARAMETER true
-add_parameter RV32I_ENABLE_ECALL INTEGER 1 "**TEST ONLY**"
+add_parameter RV32I_ENABLE_ECALL INTEGER 1 "**TEST ONLY**: Enable/disable ECALL instruction"
 set_parameter_property RV32I_ENABLE_ECALL DEFAULT_VALUE 1
 set_parameter_property RV32I_ENABLE_ECALL DISPLAY_NAME RV32I_ENABLE_ECALL
 set_parameter_property RV32I_ENABLE_ECALL TYPE INTEGER
-set_parameter_property RV32I_ENABLE_ECALL ENABLED false
+set_parameter_property RV32I_ENABLE_ECALL ENABLED true
 set_parameter_property RV32I_ENABLE_ECALL UNITS None
 set_parameter_property RV32I_ENABLE_ECALL ALLOWED_RANGES -2147483648:2147483647
-set_parameter_property RV32I_ENABLE_ECALL DESCRIPTION "**TEST ONLY**"
+set_parameter_property RV32I_ENABLE_ECALL DESCRIPTION "**TEST ONLY**: Enable/disable ECALL instruction"
 set_parameter_property RV32I_ENABLE_ECALL HDL_PARAMETER true
-add_parameter RV32I_IMEM_SHADOW_WR INTEGER 0 "**TEST ONLY**"
+add_parameter RV32I_IMEM_SHADOW_WR INTEGER 0 "**TEST ONLY**: Shadow DMEM writes in IMEM"
 set_parameter_property RV32I_IMEM_SHADOW_WR DEFAULT_VALUE 0
 set_parameter_property RV32I_IMEM_SHADOW_WR DISPLAY_NAME RV32I_IMEM_SHADOW_WR
 set_parameter_property RV32I_IMEM_SHADOW_WR TYPE INTEGER
-set_parameter_property RV32I_IMEM_SHADOW_WR ENABLED false
+set_parameter_property RV32I_IMEM_SHADOW_WR ENABLED true
 set_parameter_property RV32I_IMEM_SHADOW_WR UNITS None
 set_parameter_property RV32I_IMEM_SHADOW_WR ALLOWED_RANGES -2147483648:2147483647
-set_parameter_property RV32I_IMEM_SHADOW_WR DESCRIPTION "**TEST ONLY**"
+set_parameter_property RV32I_IMEM_SHADOW_WR DESCRIPTION "**TEST ONLY**: Shadow DMEM writes in IMEM"
 set_parameter_property RV32I_IMEM_SHADOW_WR HDL_PARAMETER true
+add_parameter RV32I_INCL_TEST_BLOCK INTEGER 0 "**TEST ONLY**: Include the core test block logic"
+set_parameter_property RV32I_INCL_TEST_BLOCK DEFAULT_VALUE 0
+set_parameter_property RV32I_INCL_TEST_BLOCK DISPLAY_NAME RV32I_INCL_TEST_BLOCK
+set_parameter_property RV32I_INCL_TEST_BLOCK TYPE INTEGER
+set_parameter_property RV32I_INCL_TEST_BLOCK ENABLED true
+set_parameter_property RV32I_INCL_TEST_BLOCK UNITS None
+set_parameter_property RV32I_INCL_TEST_BLOCK ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32I_INCL_TEST_BLOCK DESCRIPTION "**TEST ONLY**: Include the core test block logic"
+set_parameter_property RV32I_INCL_TEST_BLOCK HDL_PARAMETER true
 
 
 # 
@@ -162,7 +172,7 @@ add_display_item MEMORY RV32I_IMEM_INIT_FILE PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_INIT_FILE PARAMETER ""
 add_display_item TEST RV32I_ENABLE_ECALL PARAMETER ""
 add_display_item TEST RV32I_IMEM_SHADOW_WR PARAMETER ""
-
+add_display_item TEST RV32I_INCL_TEST_BLOCK PARAMETER ""
 
 # 
 # connection point csr

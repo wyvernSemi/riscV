@@ -1,5 +1,5 @@
 ###################################################################
-# Makefile for rb32i_cpu testcode in Modelsim
+# Makefile for rv32i_cpu testcode in Modelsim
 #
 # Copyright (c) 2021 Simon Southwell
 #
@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # The code is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this code. If not, see <http://www.gnu.org/licenses/>.
 #
@@ -25,6 +25,13 @@ MODELSIMDIR        = c:\altera\ver\modelsim_ase
 VSIMEXE            = ${MODELSIMDIR}\\win32aloem\\vsim
 VSIMARGS           =
 
+# Location for core files
+COREDIR            = ../de10-nano/src
+COREHWTCLFILE      = ${COREDIR}/core_hw.tcl
+
+# Name of auto-generated list of core source files
+COREVLOGTCLFILE    = files_core_auto.tcl
+
 #------------------------------------------------------
 # BUILD RULES
 #------------------------------------------------------
@@ -32,6 +39,12 @@ VSIMARGS           =
 # Build is dependant on generating the auto-gen file and
 # processing makefile in vproc
 all: compile
+
+${COREVLOGTCLFILE}: ${COREHWTCLFILE}
+	@awk '/^#/{next}/VERILOG/{print "${COREDIR}/" $$5}' $< > $@
+
+compile: ${COREVLOGTCLFILE}
+	@${VSIMEXE} -c -do compile.do -do quit
 
 #------------------------------------------------------
 # EXECUTION RULES
@@ -42,13 +55,10 @@ run: all
 
 rungui: all
 	@${VSIMEXE} -gui -do wave.do -do simg.do ${VSIMARGS}
-    
+
 runlog: all
 	@awk -F" " '/add wave/{print "log " $$NF}' < wave.do > batch.do
 	@${VSIMEXE} -c -do simlog.do ${VSIMARGS}
-
-compile: ${COREVHDLTCLFILE} ${COREVLOGTCLFILE}
-	@${VSIMEXE} -c -do compile.do -do quit
 
 waves:
 	@${VSIMEXE} -view vsim.wlf -do wave.do
@@ -79,4 +89,5 @@ clean:
 	@rm -rf transcript
 	@rm -rf *.log
 	@rm -rf transcript
+	@rm -rf ${COREVLOGTCLFILE}
 	@make -f makefile.test clean

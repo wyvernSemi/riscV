@@ -44,20 +44,23 @@ module rv32i_cpu_core
   input                        clk,
   input                        reset_n,
 
-  output [31:0]                iaddress,
+  output [31:0]                iaddress,         // Byte address (32 bit aligned)
   output                       iread,
   input  [31:0]                ireaddata,
   input                        iwaitrequest,
 
-  output [31:0]                daddress,
+  output [31:0]                daddress,         // Byte address (32 bit aligned)
   output                       dwrite,
   output [31:0]                dwritedata,
-  output  [3:0]                dbyteenable,
+  output  [3:0]                dbyteenable,      // BE active on writes
   output                       dread,
   input  [31:0]                dreaddata,
   input                        dwaitrequest,
 
-  input                        irq
+  input                        irq,
+
+  output  [4:0]                test_rd_idx,
+  output [31:0]                test_rd_val
 );
 
 // Decode pipeline outputs
@@ -114,13 +117,16 @@ wire        stall_decode       = dread;
 wire        stall_alu          = dread;
 wire        clr_load_op        = dread & ~dwaitrequest;
 
-wire        instr              = (iread & ~iwaitrequest) ? ireaddata : `RV32I_NOP;
-
 // Fetch instructions from the current PC address
 assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;
 assign iread                   = reset_n & ~stall;
 
+// DMEM write data always comes from ALU's C output
 assign dwritedata              = alu_c;
+
+// Export writes to register file for test/debug purposes
+assign test_rd_idx             = alu_rd;
+assign test_rd_val             = alu_c;
 
   // ---------------------------------------------------------
   // Decoder

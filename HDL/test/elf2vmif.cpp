@@ -65,7 +65,7 @@ static void output_verilog_mif (const uint32_t byte_addr, const uint32_t word, F
     last_addr = byte_addr;
     
     // Print out the word as a series of 4 bytes (little endian)
-    fprintf(op_fp, "%03x : %02X%02X%02X%02X ", byte_addr, (word >> 24) & 0xff, (word >> 16) & 0xff, (word >> 8) & 0xff, (word >> 0) & 0xff);
+    fprintf(op_fp, "%03x : %02X%02X%02X%02X ", byte_addr>>2, (word >> 24) & 0xff, (word >> 16) & 0xff, (word >> 8) & 0xff, (word >> 0) & 0xff);
     
     // Keep track of the number of bytes in the present row
     byte_count += 4;

@@ -239,7 +239,12 @@
  <module name="core_0" kind="core" version="0.0" enabled="1">
   <parameter name="CLK_FREQ_MHZ" value="100" />
   <parameter name="RV32I_DMEM_ADDR_WIDTH" value="12" />
+  <parameter name="RV32I_DMEM_INIT_FILE" value="UNUSED" />
+  <parameter name="RV32I_ENABLE_ECALL" value="0" />
   <parameter name="RV32I_IMEM_ADDR_WIDTH" value="12" />
+  <parameter name="RV32I_IMEM_INIT_FILE" value="UNUSED" />
+  <parameter name="RV32I_IMEM_SHADOW_WR" value="1" />
+  <parameter name="RV32I_INCL_TEST_BLOCK" value="1" />
   <parameter name="RV32I_LOG2_REGFILE_ENTRIES" value="5" />
   <parameter name="RV32I_REGFILE_USE_MEM" value="true" />
   <parameter name="RV32I_RESET_VECTOR" value="0" />

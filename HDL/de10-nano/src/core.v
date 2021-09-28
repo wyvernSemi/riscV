@@ -41,9 +41,10 @@ module core
             RV32I_DMEM_ADDR_WIDTH      = 12,
             RV32I_IMEM_INIT_FILE       = "UNUSED",
             RV32I_DMEM_INIT_FILE       = "UNUSED",
-            // Next parameters strictly for simulation test purposes only
+            // Next parameters altered strictly for test purposes only
             RV32I_ENABLE_ECALL         = 1,
-            RV32I_IMEM_SHADOW_WR       = 0
+            RV32I_IMEM_SHADOW_WR       = 0,
+            RV32I_INCL_TEST_BLOCK      = 0
 )
 (
     input            clk,
@@ -134,8 +135,19 @@ wire         local_write;
 wire         local_read;
 wire  [31:0] local_readdata;
 
-wire  [31:0] scratch;
 wire         core_rstn;
+wire  [31:0] test_gp;
+
+wire         halt_on_addr;
+wire         halt_on_unimp;
+wire  [31:0] halt_addr;
+
+// Memory register access signals
+wire         imem_read_csr;
+wire         imem_write_csr;
+wire         dmem_read_csr;
+wire         dmem_write_csr;
+
 
 // Memory signals
 wire         imem_rd;
@@ -153,19 +165,20 @@ wire   [3:0] dmem_be;
 reg          dmem_rd_delay;
 wire         dmem_waitreq;
 
-wire         imem_read;
 wire         imem_write;
-wire         imem_write_csr;
 wire   [3:0] imem_be;
 wire  [31:0] imem_readdata;
+wire         imem_waitrequest;
 reg          imem_readdatavalid;
 
-
-wire         dmem_read;
-wire         dmem_write;
+// Test block signals
+wire   [4:0] test_rd_idx;
+wire  [31:0] test_rd_val;
+wire         test_halt;
+wire         test_clr_halt;
 
 // ---------------------------------------------------------
-// Tie off unused signals
+// Tie off unused signals and ports
 // ---------------------------------------------------------
 
 assign avm_rx_burstcount               = 12'h0;
@@ -206,20 +219,21 @@ assign debug_out                       = 32'h0;
 // Combinatorial Logic
 // ---------------------------------------------------------
 
+// Flash the LEDs to visually check programming
 assign led                             = {6'h0, ~count[26], count[26]};
 
 // Register controlled core reset
-assign core_rstn                       = scratch[0] & reset_n;
+assign core_rstn                       = ~test_halt & reset_n;
 
 // Memory control
 assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay;
 
-assign imem_write                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) | imem_write_csr;
-assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_wdata : avs_csr_writedata;
-assign imem_be                         = dmem_be;
-assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR & dmem_wr) ? dmem_addr  : avs_csr_address;
+assign imem_write                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) | imem_write_csr;
+assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_wdata : avs_csr_writedata;
+assign imem_be                         = {4{imem_write_csr}} | dmem_be;
+assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_addr  : {avs_csr_address, 2'b00}; // Byte address
 assign imem_readdata                   = imem_rdata;
-assign imem_waitrequest                = imem_read & ~imem_readdatavalid;
+assign imem_waitrequest                = imem_rd & ~imem_readdatavalid;
 
 // ---------------------------------------------------------
 // Local Synchronous Logic
@@ -257,11 +271,11 @@ end
     .local_readdata                    (local_readdata),
 
     .imem_write                        (imem_write_csr),
-    .imem_read                         (imem_read),
-    .imem_readdata                     (imem_rdata),
+    .imem_read                         (imem_read_csr),
+    .imem_readdata                     (32'h0),
 
-    .dmem_write                        (dmem_write),
-    .dmem_read                         (dmem_read),
+    .dmem_write                        (dmem_write_csr),  // Unused at present
+    .dmem_read                         (dmem_read_csr),
     .dmem_readdata                     (32'h0)
   );
 
@@ -274,7 +288,13 @@ end
     .clk                               (clk),
     .rst_n                             (reset_n),
 
-    .scratch                           (scratch),
+    .control_halt_on_addr              (halt_on_addr),
+    .control_halt_on_unimp             (halt_on_unimp),
+    .control_clr_halt                  (test_clr_halt),
+    .halt_addr                         (halt_addr),
+    .status_halted                     (test_halt),
+    .status_reset                      (core_rstn),
+    .gp                                (test_gp),
 
     .avs_address                       (avs_csr_address[4:0]),
     .avs_write                         (local_write),
@@ -312,7 +332,10 @@ end
     .dreaddata                         (dmem_rdata),
     .dwaitrequest                      (dmem_waitreq),
 
-    .irq                               (1'b0)
+    .irq                               (~gpio_in[0]),
+
+    .test_rd_idx                       (test_rd_idx),
+    .test_rd_val                       (test_rd_val)
   );
 
 // ---------------------------------------------------------
@@ -330,10 +353,10 @@ end
 
     .wren                              (imem_write),
     .byteena_a                         (imem_be),
-    .wraddress                         (imem_waddr[RV32I_IMEM_ADDR_WIDTH-1:0]),
+    .wraddress                         (imem_waddr[RV32I_IMEM_ADDR_WIDTH+1:2]),
     .data                              (imem_wdata),
 
-    .rdaddress                         (imem_raddr[RV32I_IMEM_ADDR_WIDTH-1:0]),
+    .rdaddress                         (imem_raddr[RV32I_IMEM_ADDR_WIDTH+1:2]),
     .q                                 (imem_rdata)
   );
 
@@ -348,11 +371,52 @@ end
 
     .wren                              (dmem_wr),
     .byteena_a                         (dmem_be),
-    .wraddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH-1:0]),
+    .wraddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH+1:2]),
     .data                              (dmem_wdata),
 
-    .rdaddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH-1:0]),
+    .rdaddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH+1:2]),
     .q                                 (dmem_rdata)
   );
+
+// ---------------------------------------------------------
+// Test module
+// ---------------------------------------------------------
+
+generate
+
+  if (RV32I_INCL_TEST_BLOCK == 1)
+  begin : test_blk
+
+    core_test test
+    (
+      .clk                             (clk),
+      .reset_n                         (reset_n),
+
+      .iaddr                           (imem_raddr),
+      .irdata                          (imem_rdata),
+      .iread                           (imem_rd),
+      .iwaitreq                        (imem_waitrequest),
+
+      .halt_on_unimp                   (halt_on_unimp),
+      .halt_on_addr                    (halt_on_addr),
+      .halt_addr                       (halt_addr),
+      .clr_halt                        (test_clr_halt),
+
+      .rd_idx                          (test_rd_idx),
+      .rd_val                          (test_rd_val),
+
+      .halt                            (test_halt),
+      .gp                              (test_gp)
+    );
+
+  end
+  else
+  begin : no_test_blk
+
+    assign test_halt                   = 1'b0;
+    assign test_gp                     = 32'h00000000;
+
+  end
+endgenerate
 
 endmodule
