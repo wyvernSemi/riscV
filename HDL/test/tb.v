@@ -69,6 +69,7 @@ module tb
   DMEM_ADDR_WIDTH                      = 16,              // rv32i_cpu_core data memory address width (i.e. 2^DMEM_ADDR_WIDTH = num words)
   IMEM_ADDR_WIDTH                      = 16,              // rv32i_cpu_core instruction memory address width (i.e. 2^IMEM_ADDR_WIDTH = num words)
   IMEM_INIT_FILE                       = "test.mif",      // IMEM initialisation file ("UNUSED" for no initialisation file)
+  ZICSR_EN                             = 1,               // rv32i_cpu_core Enable/disable Zicsr extensions
   ENABLE_ECALL                         = 0,               // **TEST ONLY**: 1 => enable ecall instruction, 0 => ecall is nop
   IMEM_SHADOW_WR                       = 1,               // **TEST ONLY**: 1 => shadow dmem writes to imem, 0 => no shadow writes
   INCL_TEST_BLOCK                      = 1,               // **TEST ONLY**: 1 => include core test block logic, 0 => no test block
@@ -110,7 +111,7 @@ end
 // Generate a clock based on parameter
 // --------------------------------------------------------
 
-always #(1000/CLK_FREQ_MHZ) clk        = ~clk;
+always #((1000/CLK_FREQ_MHZ)/2) clk    = ~clk;
 
 // --------------------------------------------------------
 // Simulation control process
@@ -192,6 +193,7 @@ end
     .RV32I_IMEM_ADDR_WIDTH             (IMEM_ADDR_WIDTH),
     .RV32I_IMEM_INIT_FILE              (IMEM_INIT_FILE),
     .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE), // Load DMEM with same image as IMEM for fence_i test
+    .RV32_ZICSR_EN                     (ZICSR_EN),
     .RV32I_ENABLE_ECALL                (ENABLE_ECALL),
     .RV32I_IMEM_SHADOW_WR              (IMEM_SHADOW_WR),
     .RV32I_INCL_TEST_BLOCK             (INCL_TEST_BLOCK)

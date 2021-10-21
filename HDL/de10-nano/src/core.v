@@ -41,6 +41,7 @@ module core
             RV32I_DMEM_ADDR_WIDTH      = 12,
             RV32I_IMEM_INIT_FILE       = "UNUSED",
             RV32I_DMEM_INIT_FILE       = "UNUSED",
+            RV32_ZICSR_EN              = 1,
             // Next parameters altered strictly for test purposes only
             RV32I_ENABLE_ECALL         = 1,
             RV32I_IMEM_SHADOW_WR       = 0,
@@ -233,7 +234,7 @@ assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? d
 assign imem_be                         = {4{imem_write_csr}} | dmem_be;
 assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_addr  : {avs_csr_address, 2'b00}; // Byte address
 assign imem_readdata                   = imem_rdata;
-assign imem_waitrequest                = imem_rd & ~imem_readdatavalid;
+assign imem_waitrequest                = 1'b0;
 
 // ---------------------------------------------------------
 // Local Synchronous Logic
@@ -308,11 +309,13 @@ end
 // ---------------------------------------------------------
 
   rv32i_cpu_core #(
+   .CLK_FREQ_MHZ                       (CLK_FREQ_MHZ),
    .RV32I_RESET_VECTOR                 (RV32I_RESET_VECTOR),
    .RV32I_TRAP_VECTOR                  (RV32I_TRAP_VECTOR),
    .RV32I_LOG2_REGFILE_ENTRIES         (RV32I_LOG2_REGFILE_ENTRIES),
    .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM),
-   .RV32I_ENABLE_ECALL                 (RV32I_ENABLE_ECALL)
+   .RV32I_ENABLE_ECALL                 (RV32I_ENABLE_ECALL),
+   .RV32_ZICSR_EN                      (RV32_ZICSR_EN)
   )
   rv32i_cpu_core_inst
   (

@@ -44,6 +44,9 @@ add_fileset_file rv32i_alu.v VERILOG PATH ../../src/rv32i_alu.v
 add_fileset_file rv32i_decode.v VERILOG PATH ../../src/rv32i_decode.v
 add_fileset_file rv32i_regfile.v VERILOG PATH ../../src/rv32i_regfile.v
 add_fileset_file rv32i_cpu_core.v VERILOG PATH ../../src/rv32i_cpu_core.v
+add_fileset_file zicsr_auto.vh VERILOG PATH ../../src/zicsr_auto.vh
+add_fileset_file zicsr_rv32_regs_auto.v VERILOG PATH ../../src/zicsr_rv32_regs_auto.v
+add_fileset_file rv32_zicsr.v VERILOG PATH ../../src/rv32_zicsr.v
 add_fileset_file core_auto.vh VERILOG_INCLUDE PATH core_auto.vh
 add_fileset_file core_csr_decode_auto.v VERILOG PATH core_csr_decode_auto.v
 add_fileset_file core_csr_regs_auto.v VERILOG PATH core_csr_regs_auto.v
@@ -124,6 +127,15 @@ set_parameter_property RV32I_DMEM_INIT_FILE TYPE STRING
 set_parameter_property RV32I_DMEM_INIT_FILE UNITS None
 set_parameter_property RV32I_DMEM_INIT_FILE DESCRIPTION "Specify DMEM initialisation file"
 set_parameter_property RV32I_DMEM_INIT_FILE HDL_PARAMETER true
+add_parameter RV32_ZICSR_EN INTEGER 1 "Enable/disable Zicsr extensions"
+set_parameter_property RV32_ZICSR_EN DEFAULT_VALUE 1
+set_parameter_property RV32_ZICSR_EN DISPLAY_NAME RV32_ZICSR_EN
+set_parameter_property RV32_ZICSR_EN TYPE INTEGER
+set_parameter_property RV32_ZICSR_EN ENABLED true
+set_parameter_property RV32_ZICSR_EN UNITS None
+set_parameter_property RV32_ZICSR_EN ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32_ZICSR_EN DESCRIPTION "Enable/disable Zicsr extensions"
+set_parameter_property RV32_ZICSR_EN HDL_PARAMETER true
 add_parameter RV32I_ENABLE_ECALL INTEGER 1 "**TEST ONLY**: Enable/disable ECALL instruction"
 set_parameter_property RV32I_ENABLE_ECALL DEFAULT_VALUE 1
 set_parameter_property RV32I_ENABLE_ECALL DISPLAY_NAME RV32I_ENABLE_ECALL
@@ -156,11 +168,6 @@ set_parameter_property RV32I_INCL_TEST_BLOCK HDL_PARAMETER true
 # 
 # display items
 # 
-add_display_item "" REGFILE GROUP ""
-add_display_item "" Timing GROUP ""
-add_display_item "" Vectors GROUP ""
-add_display_item "" "Register file" GROUP ""
-add_display_item "" "Internal memory" GROUP ""
 add_display_item VECTORS RV32I_RESET_VECTOR PARAMETER ""
 add_display_item VECTORS RV32I_TRAP_VECTOR PARAMETER ""
 add_display_item TIMING CLK_FREQ_MHZ PARAMETER ""
@@ -170,6 +177,7 @@ add_display_item MEMORY RV32I_IMEM_ADDR_WIDTH PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_ADDR_WIDTH PARAMETER ""
 add_display_item MEMORY RV32I_IMEM_INIT_FILE PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_INIT_FILE PARAMETER ""
+add_display_item EXTENSIONS RV32_ZCSR_EN PARAMETER ""
 add_display_item TEST RV32I_ENABLE_ECALL PARAMETER ""
 add_display_item TEST RV32I_IMEM_SHADOW_WR PARAMETER ""
 add_display_item TEST RV32I_INCL_TEST_BLOCK PARAMETER ""

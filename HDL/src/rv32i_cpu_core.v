@@ -24,7 +24,7 @@
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
-//  along with this code. If not(), see <http://www.gnu.org/licenses/>.
+//  along with this code. If not, see <http://www.gnu.org/licenses/>.
 //
 // -----------------------------------------------------------------------------
 
@@ -34,11 +34,13 @@
 
 module rv32i_cpu_core
 #(parameter
+   CLK_FREQ_MHZ                = 100,
    RV32I_RESET_VECTOR          = 32'h00000000,
    RV32I_TRAP_VECTOR           = 32'h00000004,
    RV32I_LOG2_REGFILE_ENTRIES  = 5,
    RV32I_REGFILE_USE_MEM       = 1,
-   RV32I_ENABLE_ECALL          = 1
+   RV32I_ENABLE_ECALL          = 1,
+   RV32_ZICSR_EN               = 1
 )
 (
   input                        clk,
@@ -94,24 +96,39 @@ wire        decode_bit_is_xor;
 wire        decode_shift_arith;
 wire        decode_shift_left;
 wire        decode_shift_right;
+wire        decode_cancelled;
+wire  [1:0] decode_zicsr;
+wire        decode_mret;
 
+// ALU writeback signals
 wire [31:0] alu_c;
 wire [31:0] alu_pc;
 wire  [4:0] alu_rd;
 wire        alu_update_pc;
 
+// Decoder RS prefetch indexes
 wire  [4:0] decode_rs2_prefetch;
 wire  [4:0] decode_rs1_prefetch;
 
+// Reg file outputs
 wire [31:0] regfile_rs1;
 wire [31:0] regfile_rs2;
 wire [31:0] regfile_pc;
 wire [31:0] regfile_last_pc;
+wire  [4:0] regfile_rd;
+wire [31:0] regfile_rd_val;
 
-wire        ld_early;
+// Signals for minstret counter
+wire        retired_instr;
 
-wire        stall              = dread & dwaitrequest;
+// zicsr exception PC signals
+wire        zicsr_update_pc;
+wire [31:0] zicsr_new_pc;
+wire  [4:0] zicsr_rd;
+wire [31:0] zicsr_rd_val;
 
+// Stall conditions
+wire        stall              = (dread & dwaitrequest);
 wire        stall_regfile      = stall | (decode_load & ~dread);
 wire        stall_decode       = dread;
 wire        stall_alu          = dread;
@@ -119,14 +136,18 @@ wire        clr_load_op        = dread & ~dwaitrequest;
 
 // Fetch instructions from the current PC address
 assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;
-assign iread                   = reset_n & ~stall;
+assign iread                   = reset_n & ~(dread & dwaitrequest);
 
 // DMEM write data always comes from ALU's C output
 assign dwritedata              = alu_c;
 
+// Mux the sources of RD updates to the register file
+assign regfile_rd              = alu_rd | zicsr_rd;
+assign regfile_rd_val          = |zicsr_rd ? zicsr_rd_val : alu_c;
+
 // Export writes to register file for test/debug purposes
-assign test_rd_idx             = alu_rd;
-assign test_rd_val             = alu_c;
+assign test_rd_idx             = regfile_rd;
+assign test_rd_val             = regfile_rd_val;
 
   // ---------------------------------------------------------
   // Decoder
@@ -134,7 +155,8 @@ assign test_rd_val             = alu_c;
 
   rv32i_decode #(
     .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR),
-    .RV32I_ENABLE_ECALL        (RV32I_ENABLE_ECALL)
+    .RV32I_ENABLE_ECALL        (RV32I_ENABLE_ECALL),
+    .RV32_ZICSR_EN             (RV32_ZICSR_EN)
   ) decode
   (
     .clk                       (clk),
@@ -159,9 +181,13 @@ assign test_rd_val             = alu_c;
     .load                      (decode_load),
     .store                     (decode_store),
     .ld_st_width               (decode_ld_st_width),
+    .zicsr                     (decode_zicsr),
+    .mret                      (decode_mret),
 
-    .fb_rd                     (alu_rd),
-    .fb_rd_val                 (alu_c),
+    .cancelled                 (decode_cancelled),
+
+    .fb_rd                     (regfile_rd),
+    .fb_rd_val                 (regfile_rd_val),
 
     .a                         (decode_a),
     .b                         (decode_b),
@@ -204,8 +230,8 @@ assign test_rd_val             = alu_c;
 
      .rs1_idx                  (decode_rs1_prefetch),
      .rs2_idx                  (decode_rs2_prefetch),
-     .rd_idx                   (alu_rd),
-     .new_rd                   (alu_c),
+     .rd_idx                   (regfile_rd),
+     .new_rd                   (regfile_rd_val),
      .new_pc                   (alu_pc),
      .update_pc                (alu_update_pc),
      .stall                    (stall_regfile),
@@ -232,6 +258,9 @@ assign test_rd_val             = alu_c;
 
     .a_rs_idx                  (decode_a_rs_idx),
     .b_rs_idx                  (decode_b_rs_idx),
+    
+    .regfile_rd_idx            (regfile_rd),
+    .regfile_rd_val            (regfile_rd_val),
 
     .pc_in                     (decode_pc),
     .rd_in                     (decode_rd),
@@ -260,6 +289,9 @@ assign test_rd_val             = alu_c;
     .shift_left                (decode_shift_left),
     .shift_right               (decode_shift_right),
 
+    .cancelled                 (decode_cancelled),
+    .retired_instr             (retired_instr),
+
     .c                         (alu_c),
     .rd                        (alu_rd),
     .pc                        (alu_pc),
@@ -270,5 +302,57 @@ assign test_rd_val             = alu_c;
     .st_be                     (dbyteenable),
     .ld_data                   (dreaddata)
   );
+
+  // ---------------------------------------------------------
+  // zicsr Extension module
+  // ---------------------------------------------------------
+
+generate
+
+  if (RV32_ZICSR_EN == 1)
+  begin : zicsr
+    rv32_zicsr #(.CLK_FREQ_MHZ  (CLK_FREQ_MHZ)) rv32_zicsr
+      (
+        .clk                   (clk),
+        .reset_n               (reset_n),
+
+        .irq                   (irq),
+        .exception             (1'b0),
+        .exception_pc          (32'h0),
+        .exception_type        (4'h0),
+
+        .ext_sw_interrupt      (1'b0),
+
+        .mret                  (decode_mret),
+
+        .instr_retired         (retired_instr),
+
+        .zicsr                 (decode_zicsr),
+        .a                     (decode_a),
+        .index                 (decode_b[11:0]),
+        .rd_in                 (decode_rd),
+        .rs1_in                (decode_a_rs_idx),
+        
+        .regfile_rd_val        (regfile_rd_val),
+        .regfile_rd_idx        (regfile_rd),
+
+        .wr_mtime              (1'b0),
+        .wr_mtimecmp           (1'b0),
+        .wr_mtime_upper        (1'b0),
+        .wr_mtime_val          (32'h0),
+
+        .zicsr_update_pc       (zicsr_update_pc),
+        .zicsr_new_pc          (zicsr_new_pc),
+        .zicsr_rd              (zicsr_rd),
+        .zicsr_rd_val          (zicsr_rd_val)
+      );
+  end
+  else
+  begin : nozicsr
+    assign zicsr_update_pc      = 1'b0;
+    assign zicsr_rd             = 5'h0;
+  end
+
+endgenerate
 
 endmodule

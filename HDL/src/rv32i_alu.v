@@ -44,6 +44,9 @@ module rv32i_alu
 
   input   [4:0]                a_rs_idx,
   input   [4:0]                b_rs_idx,
+  
+  input   [4:0]                regfile_rd_idx,
+  input  [31:0]                regfile_rd_val,
 
   // Pipeline control
   input  [31:0]                pc_in,
@@ -54,6 +57,7 @@ module rv32i_alu
   input                        load_in,          // a is rs1, b is imm
   input                        store_in,         // a is rs1, b is rs2
   input   [1:0]                ld_store_width,   // 0 = byte, 1 = hword, 2 = word
+  input                        cancelled,
 
   // Add/sub control
   input                        add_nsub,
@@ -90,7 +94,9 @@ module rv32i_alu
   // Memory access
   output reg [31:0]            addr,
   output reg  [3:0]            st_be,
-  input      [31:0]            ld_data
+  input      [31:0]            ld_data,
+  
+  output reg                   retired_instr
 );
 
 reg                            update_rd;
@@ -100,8 +106,8 @@ reg           [1:0]            addr_lo;
 // The A and B inputs to the ALU logic come from the ALU output if the source register
 // matches the destination register. Otherwise the regfile value (via decode) is
 // used.
-wire        [31:0] a            = (update_rd == 1'b1 && a_rs_idx == rd && rd != 5'h0) ? c : a_decode;
-wire        [31:0] b            = (update_rd == 1'b1 && b_rs_idx == rd && rd != 5'h0) ? c : b_decode;
+wire        [31:0] a            = (update_rd == 1'b1 && a_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : a_decode;
+wire        [31:0] b            = (update_rd == 1'b1 && b_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : b_decode;
 
 // ADD/SUB
 wire        [31:0] add          = a + b;
@@ -161,9 +167,14 @@ begin
     store                       <=  1'b0;
     update_pc                   <=  1'b0;
     ld_width                    <=  2'b00;
+    retired_instr               <=  1'b0;
   end
   else
   begin
+  
+    // Flag each completed instruction for retired instruction counter
+    retired_instr               <= ~stall & ~cancelled;
+    
     // Update C output based on active operation
     if (load)
     begin

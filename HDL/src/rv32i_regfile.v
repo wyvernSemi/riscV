@@ -79,6 +79,7 @@ begin
   if (reset_n == 1'b0)
   begin
     pc                         <= RESET_VECTOR;
+    last_pc                    <= RESET_VECTOR;
   end
   else
   begin

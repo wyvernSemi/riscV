@@ -1,0 +1,506 @@
+[{
+    "ip_name"     : "zicsr",
+    "bus"         : "rv32",
+    "addr_width"  : "12",
+    "description" : " This block is the registers for the Zicsr extensions",
+    "registers" : {
+        "mstatus" : {
+            "address"      : "0x300",
+            "width"        : "32",
+            "description"  : "Status register",
+            "fields"       : {
+                "uie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User global interrupt enable. Hardwired to 0 as U-mode not yet supported"
+                },
+                "sie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor global interrupt enable. Hardwired to 0 as S-mode not yet supported"
+                },
+                "rsv0"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "mie"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine global interrupt enable"
+                },
+                "upie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Previous User global interrupt enable. Hardwired to 0 as U-mode not yet supported"
+                },
+                "spie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Previous Supervisor global interrupt enable. Hardwired to 0 as S-mode not yet supported"
+                },
+                "rsv1"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "mpie"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Previous machine global interrupt enable"
+                },
+                "spp"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Previous supervisor privilege mode. Hardwired to 0 as S-mode not yet supported"
+                },
+                "rsv2"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "2",
+                    "description" : "reserved"
+                },
+                "mpp"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "2",
+                    "reset"       : "0",
+                    "description" : "Previous machine privilege mode"
+                },
+                "fs"     : {
+                    "type"        : "c",
+                    "bit_len"     : "2",
+                    "reset"       : "0",
+                    "description" : "Floating point status. Hardwired to 0, as S-mode and an FPU not yet supported"
+                },
+                "xs"     : {
+                    "type"        : "c",
+                    "bit_len"     : "2",
+                    "reset"       : "0",
+                    "description" : "Extension Status. Hardwired to 0, as S-mode and user mode extensions not yet supported."
+                },
+                "mprv"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Modify privilege. Hardwired to 0 as U-mode not yet supported"
+                },
+                "sum"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor user memory access. Hardwired to 0, as S-mode not yet supported"
+                },
+                "mxr"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Make executable readable. Hardwired to 0, as S-mode not yet supported"
+                },
+                "tvm"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Trap virtual memory. Hardwired to 0, as S-mode not yet supported"
+                },
+                "tw"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Timeout wait. Hardwired to 0, as S-mode and U-mode not yet supported"
+                },
+                "tsr"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Trap SRET. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv3"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "8",
+                    "description" : "reserved"
+                },
+                "sd"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Status dirty. Hardwired to 0, as FS and XS hardwired to 0."
+                }
+            }
+        },
+        "misa" : {
+            "address"      : "0x301",
+            "width"        : "32",
+            "description"  : "Instruction set architecture. RV32I only, at present.",
+            "fields"       : {
+                "extensions" : {
+                    "type"        : "c",
+                    "bit_len"     : "26",
+                    "reset"       : "0x0000100",
+                    "description" : "Extension flags. I extensions only, at present"
+                },
+                "rsv"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "4",
+                    "description" : "reserved"
+                },
+                "mxl" : {
+                    "type"        : "c",
+                    "bit_len"     : "2",
+                    "reset"       : "0x1",
+                    "description" : "Maximum length. RV32 only at present"
+                }
+            }
+        },
+        "mie" : {
+            "address"      : "0x304",
+            "width"        : "12",
+            "description"  : "Interrupt Enable",
+            "fields"       : {
+                "usie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User software interrupt enable. Hardwired to 0, as U-mode not yet supported"
+                },
+                "ssie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor software interrupt enable. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv0"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "msie"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine software interrupt enable."
+                },
+                "utie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User timer interrupt enable. Hardwired to 0, as U-mode not yet supported"
+                },
+                "stie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor timer interrupt enable. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv1"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "mtie"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine timer interrupt enable."
+                },
+                "ueie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User external interrupt enable. Hardwired to 0, as U-mode not yet supported."
+                },
+                "seie"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor external interrupt enable. Hardwired to 0, as S-mode not yet supported."
+                },
+                "rsv2"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "meie"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine external interrupt enable."
+                }
+            }
+        },
+        "mtvec" : {
+            "address"      : "0x305",
+            "width"        : "32",
+            "description"   : "Trap vector",
+            "fields"       : {
+                "mode"     : {
+                    "type"        : "w",
+                    "bit_len"     : "2",
+                    "reset"       : "0",
+                    "description" : "Trap mode: 0 => Direct, 1 => Vectored, other => reserved"
+                },
+                "base"     : {
+                    "type"        : "w",
+                    "bit_len"     : "30",
+                    "reset"       : "0x00000001",
+                    "description" : "Trap base address [31:2]"
+                }
+            }
+        },
+        "mcounteren" : {
+            "address"      : "0x306",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Counter enable (hardwired to 0)"
+        },
+        "mcountinhibit" : {
+            "address"      : "0x320",
+            "width"        : "3",
+            "description"  : "Count inhibit",
+            "fields"       : {
+                "cy"     : {
+                    "type"        : "w",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Inhibit counter"
+                },
+                "reserved"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "ir"     : {
+                    "type"        : "w",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Inhibit intstruction retired counter"
+                }
+            }
+        },
+        "mscratch" : {
+            "address"      : "0x340",
+            "width"        : "32",
+            "type"         : "w",
+            "reset"        : "0",
+            "description"  : "Scratch register"
+        },
+        "mepc" : {
+            "address"      : "0x341",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "Exception program counter"
+        },
+        "mcause" : {
+            "address"      : "0x342",
+            "width"        : "32",
+            "description"  : "Trap cause",
+            "fields"       : {
+                "code"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "4",
+                    "reset"       : "0",
+                    "description" : "Interrupts => 0:usr s/w, 1:sup s/w, 3:mach s/w, 4:usr timer, 5:sup timer, 7:mach timer, 8:usr ext, 9:sup ext, 11:mach ext; Traps => 0:instr misalign, 1: instr fault, 2:instr illegal, 3:break, 4:load misalign, 5:load fault, 6:store misalign, 7:store fault, 8:usr env call, 9:sup env call, 11:mach env call, 12:instr page fault, 13:load page fault, 15:store page fault; Others => reserved."
+                },
+                "rsvd"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "27",
+                    "description" : "Reserved"
+                },
+                "interrupt"     : {
+                    "type"        : "wp",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Interrupt type flag"
+                }
+            }
+        },
+        "mtval" : {
+            "address"      : "0x343",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Trap value"
+        },
+        "mip" : {
+            "address"      : "0x344",
+            "width"        : "12",
+            "description"  : "Interrupt Pending",
+            "fields"       : {
+                "usip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User software interrupt pending. Hardwired to 0, as U-mode not yet supported"
+                },
+                "ssip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor software interrupt Pending. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv0"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "msip"     : {
+                    "type"        : "r",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine software interrupt pending."
+                },
+                "utip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User timer interrupt pending. Hardwired to 0, as U-mode not yet supported"
+                },
+                "stip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor timer interrupt pending. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv1"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "mtip"     : {
+                    "type"        : "r",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine software interrupt pending."
+                },
+                "ueip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "User external interrupt pending. Hardwired to 0, as U-mode not yet supported"
+                },
+                "seip"     : {
+                    "type"        : "c",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Supervisor external interrupt pending. Hardwired to 0, as S-mode not yet supported"
+                },
+                "rsv2"     : {
+                    "type"        : "rsv",
+                    "bit_len"     : "1",
+                    "description" : "reserved"
+                },
+                "meip"     : {
+                    "type"        : "r",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Machine external interrupt pending."
+                }
+            }
+        },
+        "mcycle" : {
+            "address"      : "0xb00",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "Cycle count low bits"
+        },
+        "minstret" : {
+            "address"      : "0xb02",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "Instructions retired count low bits"
+        },
+        "mcycleh" : {
+            "address"      : "0xb80",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "Cycle count high bits"
+        },
+        "minstreth" : {
+            "address"      : "0xb82",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "Instructions retired count high bits"
+        },
+        "ucycle" : {
+            "address"      : "0xc00",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only cycle count low bits"
+        },
+        "utime" : {
+            "address"      : "0xc01",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only real time count low bits"
+        },
+        "uinstret" : {
+            "address"      : "0xc02",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only instructions retired count low bits"
+        },
+        "ucycleh" : {
+            "address"      : "0xc80",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only cycle count high bits"
+        },
+        "utimeh" : {
+            "address"      : "0xc81",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only real time count high bits"
+        },
+        "uinstreth" : {
+            "address"      : "0xc82",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "Unprivileged read-only instructions retired count high bits"
+        },
+        "mvendor" : {
+            "address"      : "0xf11",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Vendor ID"
+        },
+        "marchid" : {
+            "address"      : "0xf12",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Architecture ID"
+        },
+        "mimpid" : {
+            "address"      : "0xf13",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Implementation ID"
+        },
+        "mhartid" : {
+            "address"      : "0xf14",
+            "width"        : "32",
+            "type"         : "c",
+            "reset"        : "0",
+            "description"  : "Hart ID"
+        }
+    }
+}]

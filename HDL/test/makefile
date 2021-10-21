@@ -71,11 +71,11 @@ log: runlog
 
 help:
 	@echo "make               Build code without running simulation"
-	@echo "make compile       Build HDL code without running simulation"
+	@echo "make compile       Build HDL code without running simulation (same as make)"
 	@echo "make run/sim       Build and run batch simulation"
 	@echo "make rungui/gui    Build and run GUI simulation"
 	@echo "make runlog/log    Build and run batch simulation with signal logging"
-	@echo "make waves         Run wave view in free starter ModelSim (to view runlog/runfree signals)"
+	@echo "make waves         Run wave viewer in ModelSim (to view runlog signals)"
 	@echo "make help          Display this message"
 
 #------------------------------------------------------
