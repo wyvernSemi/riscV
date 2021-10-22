@@ -194,7 +194,7 @@ begin
     end
     else if (store_in)
     begin
-      c                         <= b << {next_addr[1:0], 3'b000};
+      c                         <= b << {next_addr[1:0] & {~ld_store_width[1], ~ld_store_width[0]}, 3'b000};
     end
     
     // For load store, address is result of ALU's addition
@@ -213,9 +213,9 @@ begin
     load                        <= (stall ? load : (load_in  & ~update_pc)) & ~clr_load_op;
     store                       <= store_in & ~update_pc;
     
-    st_be                       <=  ld_store_width[1] ? 4'b1111 :
-                                   (ld_store_width[0] ? 4'b0011 :
-                                                        4'b0001) << next_addr[1:0];
+    st_be                       <= ld_store_width[1] ? 4'b1111 :
+                                   ld_store_width[0] ? (4'b0011 << {next_addr[1], 1'b0}):
+                                                       (4'b0001 <<  next_addr[1:0]);
                                                         
     ld_width                    <= stall ? ld_width : ld_store_width;
   end
