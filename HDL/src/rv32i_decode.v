@@ -71,7 +71,7 @@ module rv32i_decode
   output reg                           system,       // a is 0, b is trap vector
   output reg                           load,         // a is rs1, b is imm
   output reg                           store,        // a is rs1, b is imm
-  output reg  [1:0]                    ld_st_width,  // 0 = byte, 1 = hword, 2 = word
+  output reg  [2:0]                    ld_st_width,  // 0 = byte, 1 = hword, 2 = word
 
   // Add/sub control
   output reg                           add_nsub,
@@ -227,12 +227,13 @@ begin
         system                         <= system_instr;
         load                           <= ld_st_instr & ~opcode_32[3];
         store                          <= ld_st_instr &  opcode_32[3];
-        ld_st_width                    <= funct3[1:0];
+        ld_st_width                    <= funct3;
         pc                             <= pc_in;
         
         // ALU inputs A and B
-        a                              <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0 :      // LUI and system, A = 0
-                                          ((ui_instr & ~opcode_32[3]) | (jmp_instr & opcode_32[1])) ? pc_in :      // AUIPC and JAL, A = PC
+        a                              <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0   :    // LUI and system, A = 0
+                                          (jmp_instr & opcode_32[1])                                ? pc + 32'h4:  // JAL, A = PC+4
+                                          (ui_instr & ~opcode_32[3])                                ? pc_in   :    // AUIPC, A = PC
                                                                                                       rs1;         // all others, A = rs1 value 
         
         b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value 
@@ -242,8 +243,8 @@ begin
         offset                         <= imm;
         
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr)      ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
-        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr) ? rs2_idx : 5'h0;
+        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr | ui_instr) ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
+        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)       ? rs2_idx : 5'h0;
         
         // ALU operation control outputs
         arith                          <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC

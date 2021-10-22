@@ -53,7 +53,7 @@ module rv32i_alu
   input                        system_in,        // a is 0, b is trap vector
   input                        load_in,          // a is rs1, b is imm
   input                        store_in,         // a is rs1, b is rs2
-  input   [1:0]                ld_store_width,   // 0 = byte, 1 = hword, 2 = word
+  input   [2:0]                ld_store_width,   // 0 = byte, 1 = hword, 2 = word
 
   // Add/sub control
   input                        add_nsub,
@@ -94,7 +94,7 @@ module rv32i_alu
 );
 
 reg                            update_rd;
-reg           [1:0]            ld_width;
+reg           [2:0]            ld_width;
 reg           [1:0]            addr_lo;
 
 // The A and B inputs to the ALU logic come from the ALU output if the source register
@@ -160,7 +160,7 @@ begin
     load                        <=  1'b0;
     store                       <=  1'b0;
     update_pc                   <=  1'b0;
-    ld_width                    <=  2'b00;
+    ld_width                    <=  3'b000;
   end
   else
   begin
@@ -168,7 +168,9 @@ begin
     if (load)
     begin
       // Clear the unused bits of the shifted load data, based on load width (byte, hword, word)
-      c                         <= ld_data_shift & {{16{ld_width[1]}}, {8{|ld_width}}, 8'hff};
+      c                         <= (ld_data_shift & {{16{ld_width[1]}}, {8{|ld_width[1:0]}}, 8'hff}) |
+                                   {{16{~ld_width[2] & ~ld_width[1] &  ld_width[0] & ld_data_shift[15]}}, 16'h0} |
+                                   {{24{~ld_width[2] & ~ld_width[1] & ~ld_width[0] & ld_data_shift[7]}},   8'h0};
     end
     else if (arith)
     begin
@@ -206,7 +208,7 @@ begin
     update_rd                   <= stall ? update_rd : ((rd_in != 5'h0) ? 1'b1  : 1'b0);
     
     pc                          <= stall ? pc : next_pc;
-    update_pc                   <= stall ? update_pc : (jump_in | system_in | branch_taken);
+    update_pc                   <= stall ? update_pc : ((jump_in | system_in | branch_taken) & ~update_pc);
     
     load                        <= (stall ? load : (load_in  & ~update_pc)) & ~clr_load_op;
     store                       <= store_in & ~update_pc;

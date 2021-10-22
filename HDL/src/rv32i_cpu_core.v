@@ -70,7 +70,7 @@ wire        decode_jump;
 wire        decode_system;
 wire        decode_load;
 wire        decode_store;
-wire  [1:0] decode_ld_st_width;
+wire  [2:0] decode_ld_st_width;
 wire [31:0] decode_pc;
 
 // ALU inputs from decoder
