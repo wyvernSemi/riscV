@@ -70,7 +70,7 @@ module tb
   IMEM_ADDR_WIDTH                      = 16,              // rv32i_cpu_core instruction memory address width (i.e. 2^IMEM_ADDR_WIDTH = num words)
   IMEM_INIT_FILE                       = "test.mif",      // IMEM initialisation file ("UNUSED" for no initialisation file)
   ZICSR_EN                             = 1,               // rv32i_cpu_core Enable/disable Zicsr extensions
-  ENABLE_ECALL                         = 0,               // **TEST ONLY**: 1 => enable ecall instruction, 0 => ecall is nop
+  ENABLE_ECALL                         = 1,               // **TEST ONLY**: 1 => enable ecall instruction, 0 => ecall is nop
   IMEM_SHADOW_WR                       = 1,               // **TEST ONLY**: 1 => shadow dmem writes to imem, 0 => no shadow writes
   INCL_TEST_BLOCK                      = 1,               // **TEST ONLY**: 1 => include core test block logic, 0 => no test block
   TIMEOUT_COUNT                        = 10000

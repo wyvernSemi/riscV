@@ -42,6 +42,7 @@ MIF_FILE      = test.mif
 CC            = ${ARCHCHAIN}gcc
 LD            = ${ARCHCHAIN}ld
 MIFEXE        = elf2vmif.exe
+HEXEXE        = elf2vhex.exe
 
 INCLPATHS     = -I.                                     \
                 -I${TESTENVDIR}/p                       \
@@ -60,7 +61,7 @@ EXEC          = ${FNAME:%.S=%.exe}
 # -----------------------------------------------------------------
 
 .PHONY: all
-all: ${OBJDIR} ${MIF_FILE}
+all: ${OBJDIR} ${MIF_FILE} ${HEXEXE}
 
 ${EXEC}: ${OBJS}
 ${OBJS}: ${DIR32UI}/${FNAME} ${TESTENVDIR}/p/riscv_test.h ${TESTENVDIR}/encoding.h ${TESTDIR}/isa/macros/scalar/test_macros.h
@@ -69,6 +70,9 @@ ${OBJDIR}:
 	@mkdir ${OBJDIR}
 
 ${MIFEXE} : ${MIFEXE:%.exe=%.cpp}
+	@gcc -I ../../iss/src $< -o $@
+
+${HEXEXE} : ${HEXEXE:%.exe=%.cpp}
 	@gcc -I ../../iss/src $< -o $@
 
 ${MIF_FILE} : ${EXEC} ${MIFEXE}

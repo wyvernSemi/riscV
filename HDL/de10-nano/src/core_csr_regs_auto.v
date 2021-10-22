@@ -208,7 +208,7 @@ module core_csr_regs
       // Reset internal write registers
       control_halt_on_addr_reg             <= 1'b0;
       control_halt_on_unimp_reg            <= 1'b0;
-      halt_addr_reg                        <= 32'h00000040;
+      halt_addr_reg                        <= 32'h00000030;
       control_clr_halt_reg                 <= 1'b0;
   
       // end auto-generated

@@ -6,8 +6,8 @@ _start: .global _start
 main:                                # Delta changes
          nop
          nop
-         lui  x3, 0x12345
-         lui  x4, 0xfedcb
+         lui  x1, 0x80000
+         lui  x8, 0x8
          nop
          nop
          nop
