@@ -66,6 +66,7 @@ module rv32i_cpu_core
 
 // Decode pipeline outputs
 wire  [4:0] decode_rd;
+wire  [4:0] decode_zicsr_rd;
 wire        decode_branch;
 wire        decode_jump;
 wire        decode_system;
@@ -178,6 +179,7 @@ assign test_rd_val             = regfile_rd_val;
     .rs2_rtn                   (regfile_rs2),
 
     .rd                        (decode_rd),
+    .zicsr_rd                  (decode_zicsr_rd),
     .branch                    (decode_branch),
     .jump                      (decode_jump),
     .system                    (decode_system),
@@ -323,6 +325,8 @@ generate
       (
         .clk                   (clk),
         .reset_n               (reset_n),
+        
+        .stall                 (stall_decode),
 
         .irq                   (irq),
         .exception             (exception),
@@ -338,7 +342,7 @@ generate
         .zicsr                 (decode_zicsr),
         .a                     (decode_a),
         .index                 (decode_b[11:0]),
-        .rd_in                 (decode_rd),
+        .rd_in                 (decode_zicsr_rd),
         .rs1_in                (decode_a_rs_idx),
         
         .regfile_rd_val        (regfile_rd_val),

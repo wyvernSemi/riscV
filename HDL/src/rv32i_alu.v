@@ -106,8 +106,8 @@ reg           [1:0]            addr_lo;
 // The A and B inputs to the ALU logic come from the ALU output if the source register
 // matches the destination register. Otherwise the regfile value (via decode) is
 // used.
-wire        [31:0] a            = (update_rd == 1'b1 && a_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : a_decode;
-wire        [31:0] b            = (update_rd == 1'b1 && b_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : b_decode;
+wire        [31:0] a            = (a_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : a_decode;
+wire        [31:0] b            = (b_rs_idx == regfile_rd_idx && regfile_rd_idx != 5'h0) ? regfile_rd_val : b_decode;
 
 // ADD/SUB
 wire        [31:0] add          = a + b;

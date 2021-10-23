@@ -4,7 +4,7 @@
 // -----------------------------------------------------------------------------
 //  File       : core_csr_regs_auto.v
 //  Author     : auto-generated
-//  Created    : 2021-09-27
+//  Created    : 2021-10-23
 //  Standard   : Verilog 2001
 // -----------------------------------------------------------------------------
 //  Description:
@@ -48,13 +48,14 @@ module core_csr_regs
     // auto-generated
 
     // Internal signal ports
-    output        control_halt_on_addr,
-    output        control_halt_on_unimp,
-    output [31:0] halt_addr,
-    output        control_clr_halt,
-    input         status_halted,
-    input         status_reset,
-    input  [31:0] gp,
+    output                control_halt_on_addr,
+    output                control_halt_on_unimp,
+    output                control_halt_on_ecall,
+    output      [31:0]    halt_addr,
+    output                control_clr_halt,
+    input                 status_halted,
+    input                 status_reset,
+    input       [31:0]    gp,
 
     // end auto-generated
 
@@ -73,14 +74,16 @@ module core_csr_regs
 
   // auto-generated
   
-  reg        control_halt_on_addr_reg;
-  reg        control_halt_on_unimp_reg;
-  reg [31:0] halt_addr_reg;
-  reg        control_clr_halt_reg;
-  reg        next_control_halt_on_addr;
-  reg        next_control_halt_on_unimp;
-  reg [31:0] next_halt_addr;
-  reg        next_control_clr_halt;
+  reg                control_halt_on_addr_reg;
+  reg                control_halt_on_unimp_reg;
+  reg                control_halt_on_ecall_reg;
+  reg      [31:0]    halt_addr_reg;
+  reg                control_clr_halt_reg;
+  reg                next_control_halt_on_addr;
+  reg                next_control_halt_on_unimp;
+  reg                next_control_halt_on_ecall;
+  reg      [31:0]    next_halt_addr;
+  reg                next_control_clr_halt;
   
   // end auto-generated
   
@@ -93,6 +96,7 @@ module core_csr_regs
   // Export internal write registers to output ports
   assign control_halt_on_addr            = control_halt_on_addr_reg;
   assign control_halt_on_unimp           = control_halt_on_unimp_reg;
+  assign control_halt_on_ecall           = control_halt_on_ecall_reg;
   assign halt_addr                       = halt_addr_reg;
   assign control_clr_halt                = control_clr_halt_reg;
 
@@ -113,6 +117,7 @@ module core_csr_regs
     // Default the internal write register next values to be current state
     next_control_halt_on_addr            <= control_halt_on_addr_reg;
     next_control_halt_on_unimp           <= control_halt_on_unimp_reg;
+    next_control_halt_on_ecall           <= control_halt_on_ecall_reg;
     next_halt_addr                       <= halt_addr_reg;
   
     // Default the write-clear register next values to 0
@@ -135,6 +140,7 @@ module core_csr_regs
         begin
           next_control_clr_halt          <= avs_writedata[0];
           next_control_halt_on_addr      <= avs_writedata[1];
+          next_control_halt_on_ecall     <= avs_writedata[3];
           next_control_halt_on_unimp     <= avs_writedata[2];
         end
 
@@ -167,6 +173,7 @@ module core_csr_regs
         `CSR_CONTROL_ADDR :
         begin
           next_avs_readdata[1]                <= control_halt_on_addr_reg;
+          next_avs_readdata[3]                <= control_halt_on_ecall_reg;
           next_avs_readdata[2]                <= control_halt_on_unimp_reg;
         end
 
@@ -208,7 +215,8 @@ module core_csr_regs
       // Reset internal write registers
       control_halt_on_addr_reg             <= 1'b0;
       control_halt_on_unimp_reg            <= 1'b0;
-      halt_addr_reg                        <= 32'h00000030;
+      control_halt_on_ecall_reg            <= 1'b0;
+      halt_addr_reg                        <= 32'h00000040;
       control_clr_halt_reg                 <= 1'b0;
   
       // end auto-generated
@@ -222,6 +230,7 @@ module core_csr_regs
       // Internal write register state updates
       control_halt_on_addr_reg             <= next_control_halt_on_addr;
       control_halt_on_unimp_reg            <= next_control_halt_on_unimp;
+      control_halt_on_ecall_reg            <= next_control_halt_on_ecall;
       halt_addr_reg                        <= next_halt_addr;
       control_clr_halt_reg                 <= next_control_clr_halt;
   

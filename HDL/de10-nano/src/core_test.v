@@ -44,6 +44,7 @@ module core_test
   input             iwaitreq,
   
   input             halt_on_unimp,
+  input             halt_on_ecall,
   input             halt_on_addr,
   input      [31:0] halt_addr,
   input             clr_halt,
@@ -64,6 +65,7 @@ begin
   else
   begin
     if ((halt_on_unimp == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && irdata == 32'hC0001073)) ||
+        (halt_on_ecall == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && irdata == 32'h00000073)) ||
         (halt_on_addr  == 1'b1 && (iread == 1'b1 && iaddr == halt_addr)))
     begin
       halt                     <= 1'b1;

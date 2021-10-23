@@ -73,6 +73,7 @@ module rv32i_decode
   output reg                           store,        // a is rs1, b is imm
   output reg  [2:0]                    ld_st_width,  // 0 = byte, 1 = hword, 2 = word
   output reg  [1:0]                    zicsr,
+  output reg  [4:0]                    zicsr_rd,
   output reg                           mret,
 
   // Add/sub control
@@ -164,7 +165,7 @@ wire [31:0] rs1                        = (|fb_rd && fb_rd == rs1_idx) ? fb_rd_va
 wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_val : rs2_rtn;
 
 // No register writeback for store, branch, system and invalid instructions
-wire no_writeback                      = st_instr | branch_instr | system_instr | invalid_instr | fence_instr;
+wire no_writeback                      = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
 
 always @(posedge clk)
 begin
@@ -177,6 +178,7 @@ begin
     load                               <=  1'b0;
     store                              <=  1'b0;
     zicsr                              <=  2'h0;
+    zicsr_rd                           <=  5'h0;
     mret                               <=  1'b0;
     arith                              <=  1'b0;
     add_nsub                           <=  1'b0;
@@ -219,6 +221,7 @@ begin
       load                             <=  1'b0;
       store                            <=  1'b0;
       zicsr                            <=  2'h0;
+      zicsr_rd                         <=  5'h0;
       mret                             <=  1'b0;
       arith                            <=  1'b0;
       add_nsub                         <=  1'b0;
@@ -249,6 +252,7 @@ begin
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
+        zicsr_rd                       <= rd_idx; 
         branch                         <= branch_instr;
         jump                           <= jmp_instr;
         system                         <= system_instr;
@@ -273,8 +277,8 @@ begin
         offset                         <= imm;
 
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr | zicsr_rs1_instr | ui_instr) ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
-        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)                         ? rs2_idx : 5'h0;
+        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr | ui_instr) ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
+        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)       ? rs2_idx : 5'h0;
 
         // ALU operation control outputs
         arith                          <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC

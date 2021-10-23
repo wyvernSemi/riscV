@@ -40,6 +40,8 @@ module rv32_zicsr
 (
   input                                clk,
   input                                reset_n,
+  
+  input                                stall,
 
   input       [4:0]                    regfile_rd_idx,
   input      [31:0]                    regfile_rd_val,
@@ -161,6 +163,8 @@ wire        sw_interrupt;
 wire        interrupt;
 wire        time_gt_cmp;
 
+wire  [1:0] zicsr_int;
+
 // RD bypass signalling
 wire [31:0] a_int;
 reg   [4:0] rs1_reg;
@@ -197,13 +201,15 @@ assign next_mcause_code_int            = ext_interrupt   ? `MACH_EXT_INT_CODE   
                                                            exception_type;
 
 // The internal CSR register read data is bypassed if writing to the same location as being read
-assign readdata_int                    = (index == waddr) ? writedata : readdata;
+assign readdata_int                    = (write == 1'b1 && index == waddr) ? writedata : readdata;
 
 // Export the registered read data (i.e. the CSR register's old value) to the Zicsr's regfile update data port
 assign zicsr_rd_val                    = readdata_reg;
 
 // Bypass A input if destination is being written
 assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == rs1_reg) ? regfile_rd_val : a;
+
+assign zicsr_int                       = stall ? 2'b00 : zicsr;
 
 // -----------------------------------------------
 // Synchronous logic
@@ -243,17 +249,17 @@ begin
     // Default zicsr_update_pc to 0 so it is a pulse when set
     zicsr_update_pc                    <= 1'b0;
 
-    // Manage reads/wites of CSR registers
-    write                              <= (zicsr != 2'b00) ? 1'b1 : 1'b0;
+    // Manage reads/writes of CSR registers
+    write                              <= (|zicsr_int && |rs1_in) ? 1'b1 : 1'b0;
     waddr                              <= index;
 
     // The CSR register update data is a function of the A input (imm or RS1) and the register's current value (if not CSRRW)
-    writedata                          <= (zicsr == 2'b01) ?                 a_int :  // CSRRW
-                                          (zicsr == 2'b10) ? readdata_int |  a_int :  // CSRRS
-                                                             readdata_int & ~a_int;   // CSRRC
+    writedata                          <= (zicsr_int == 2'b01) ?                 a_int :  // CSRRW
+                                          (zicsr_int == 2'b10) ? readdata_int |  a_int :  // CSRRS
+                                                                 readdata_int & ~a_int;   // CSRRC
 
     // The registered Zicsr destination register index is the instruction RD index, if a Zicsr instructoin flagged.
-    zicsr_rd                           <= {5{|zicsr}} & rd_in;
+    zicsr_rd                           <= {5{|zicsr_int}} & rd_in;
 
     // The destination register (RD) value is just the old CSR register value
     readdata_reg                       <= readdata_int;

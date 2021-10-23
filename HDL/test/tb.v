@@ -49,6 +49,7 @@
 `define CLR_HALT_BIT_MASK              32'h00000001
 `define HALT_ON_ADDR_BIT_MASK          32'h00000002
 `define HALT_ON_UNIMP_BIT_MASK         32'h00000004
+`define HALT_ON_ECALL_BIT_MASK         32'h00000008
 
 // ========================================================
 // Test bench module
@@ -58,8 +59,9 @@ module tb
 #(parameter
   // Test bench parameters
   GUI_RUN                              = 0,
-  HALT_ON_ADDR                         = 1,
+  HALT_ON_ADDR                         = 0,
   HALT_ON_UNIMP                        = 0,
+  HALT_ON_ECALL                        = 1,
   CLK_FREQ_MHZ                         = 100,
   // UUT paramters
   RESET_ADDR                           = 32'h00000000,    // Default rv32i_cpu_core reset address
@@ -170,7 +172,8 @@ begin
   avs_csr_address                      <= `CORE_CONTROL_ADDR;
   avs_csr_writedata                    <= `CLR_HALT_BIT_MASK                                | 
                                           (HALT_ON_ADDR  ? `HALT_ON_ADDR_BIT_MASK  : 32'h0) | 
-                                          (HALT_ON_UNIMP ? `HALT_ON_UNIMP_BIT_MASK : 32'h0);
+                                          (HALT_ON_UNIMP ? `HALT_ON_UNIMP_BIT_MASK : 32'h0) |
+                                          (HALT_ON_ECALL ? `HALT_ON_ECALL_BIT_MASK : 32'h0);
   
   if (count == (`RESET_PERIOD + 5))
   begin

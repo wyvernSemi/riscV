@@ -12,6 +12,7 @@
 `define CSR_CONTROL_CLR_HALT                 0:0
 `define CSR_CONTROL_HALT_ON_ADDR             1:1
 `define CSR_CONTROL_HALT_ON_UNIMP            2:2
+`define CSR_CONTROL_HALT_ON_ECALL            3:3
 `define CSR_STATUS_ADDR                      5'h01
 `define CSR_STATUS_ADDR_INT                  1
 `define CSR_STATUS_HALTED                    0:0

@@ -140,6 +140,7 @@ wire  [31:0] test_gp;
 
 wire         halt_on_addr;
 wire         halt_on_unimp;
+wire         halt_on_ecall;
 wire  [31:0] halt_addr;
 
 // Memory register access signals
@@ -294,6 +295,7 @@ end
 
     .control_halt_on_addr              (halt_on_addr),
     .control_halt_on_unimp             (halt_on_unimp),
+    .control_halt_on_ecall             (halt_on_ecall),
     .control_clr_halt                  (test_clr_halt),
     .halt_addr                         (halt_addr),
     .status_halted                     (test_halt),
@@ -403,6 +405,7 @@ generate
       .iwaitreq                        (imem_waitrequest),
 
       .halt_on_unimp                   (halt_on_unimp),
+      .halt_on_ecall                   (halt_on_ecall),
       .halt_on_addr                    (halt_on_addr),
       .halt_addr                       (halt_addr),
       .clr_halt                        (test_clr_halt),
