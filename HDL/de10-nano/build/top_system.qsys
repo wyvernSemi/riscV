@@ -240,7 +240,6 @@
   <parameter name="CLK_FREQ_MHZ" value="100" />
   <parameter name="RV32I_DMEM_ADDR_WIDTH" value="12" />
   <parameter name="RV32I_DMEM_INIT_FILE" value="UNUSED" />
-  <parameter name="RV32I_ENABLE_ECALL" value="0" />
   <parameter name="RV32I_IMEM_ADDR_WIDTH" value="12" />
   <parameter name="RV32I_IMEM_INIT_FILE" value="UNUSED" />
   <parameter name="RV32I_IMEM_SHADOW_WR" value="1" />

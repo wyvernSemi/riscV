@@ -48,8 +48,8 @@ derive_clock_uncertainty
 
 set_input_delay  -max  3.0 -clock virtual_ext_clk_200MHz [get_ports {HPS_ENET_MDIO HPS_ENET_RX* HPS_I2C*_SDAT HPS_SPIM_MISO HPS_UART_RX HPS_USB_DAT* HPS_USB_DIR HPS_USB_NXT HPS_SD_DATA[*] HPS_SD_CMD}]
 set_input_delay  -min  2.0 -clock virtual_ext_clk_200MHz [get_ports {HPS_ENET_MDIO HPS_ENET_RX* HPS_I2C*_SDAT HPS_SPIM_MISO HPS_UART_RX HPS_USB_DAT* HPS_USB_DIR HPS_USB_NXT HPS_SD_DATA[*] HPS_SD_CMD}]
-set_input_delay  -max  3.0 -clock virtual_ext_clk_25MHz [get_ports {KEY[*]}]
-set_input_delay  -min  2.0 -clock virtual_ext_clk_25MHz [get_ports {KEY[*]}]
+set_input_delay  -max  3.0 -clock virtual_ext_clk_25MHz [get_ports {KEY[*] GPIO_0[*]}]
+set_input_delay  -min  2.0 -clock virtual_ext_clk_25MHz [get_ports {KEY[*] GPIO_0[*]}]
 
 #**************************************************************
 # Set Output Delay

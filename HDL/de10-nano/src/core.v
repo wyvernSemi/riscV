@@ -43,7 +43,6 @@ module core
             RV32I_DMEM_INIT_FILE       = "UNUSED",
             RV32_ZICSR_EN              = 1,
             // Next parameters altered strictly for test purposes only
-            RV32I_ENABLE_ECALL         = 1,
             RV32I_IMEM_SHADOW_WR       = 0,
             RV32I_INCL_TEST_BLOCK      = 0
 )
@@ -178,6 +177,8 @@ wire  [31:0] test_rd_val;
 wire         test_halt;
 wire         test_clr_halt;
 
+reg    [1:0] irq_sync;
+
 // ---------------------------------------------------------
 // Tie off unused signals and ports
 // ---------------------------------------------------------
@@ -247,12 +248,14 @@ begin
     count                              <= 0;
     imem_readdatavalid                 <= 1'b0;
     dmem_rd_delay                      <= 1'b0;
+    irq_sync                           <= 2'b00;
   end
   else
   begin
     count                              <= count + 27'd1;
     imem_readdatavalid                 <= imem_rd;
     dmem_rd_delay                      <= dmem_rd;
+    irq_sync                           <= {~gpio_in[0], irq_sync[1]};
   end
 end
 
@@ -314,7 +317,6 @@ end
    .RV32I_TRAP_VECTOR                  (RV32I_TRAP_VECTOR),
    .RV32I_LOG2_REGFILE_ENTRIES         (RV32I_LOG2_REGFILE_ENTRIES),
    .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM),
-   .RV32I_ENABLE_ECALL                 (RV32I_ENABLE_ECALL),
    .RV32_ZICSR_EN                      (RV32_ZICSR_EN)
   )
   rv32i_cpu_core_inst
@@ -335,7 +337,7 @@ end
     .dreaddata                         (dmem_rdata),
     .dwaitrequest                      (dmem_waitreq),
 
-    .irq                               (~gpio_in[0]),
+    .irq                               (irq_sync[0]),
 
     .test_rd_idx                       (test_rd_idx),
     .test_rd_val                       (test_rd_val)

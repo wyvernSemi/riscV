@@ -136,15 +136,6 @@ set_parameter_property RV32_ZICSR_EN UNITS None
 set_parameter_property RV32_ZICSR_EN ALLOWED_RANGES -2147483648:2147483647
 set_parameter_property RV32_ZICSR_EN DESCRIPTION "Enable/disable Zicsr extensions"
 set_parameter_property RV32_ZICSR_EN HDL_PARAMETER true
-add_parameter RV32I_ENABLE_ECALL INTEGER 1 "**TEST ONLY**: Enable/disable ECALL instruction"
-set_parameter_property RV32I_ENABLE_ECALL DEFAULT_VALUE 1
-set_parameter_property RV32I_ENABLE_ECALL DISPLAY_NAME RV32I_ENABLE_ECALL
-set_parameter_property RV32I_ENABLE_ECALL TYPE INTEGER
-set_parameter_property RV32I_ENABLE_ECALL ENABLED true
-set_parameter_property RV32I_ENABLE_ECALL UNITS None
-set_parameter_property RV32I_ENABLE_ECALL ALLOWED_RANGES -2147483648:2147483647
-set_parameter_property RV32I_ENABLE_ECALL DESCRIPTION "**TEST ONLY**: Enable/disable ECALL instruction"
-set_parameter_property RV32I_ENABLE_ECALL HDL_PARAMETER true
 add_parameter RV32I_IMEM_SHADOW_WR INTEGER 0 "**TEST ONLY**: Shadow DMEM writes in IMEM"
 set_parameter_property RV32I_IMEM_SHADOW_WR DEFAULT_VALUE 0
 set_parameter_property RV32I_IMEM_SHADOW_WR DISPLAY_NAME RV32I_IMEM_SHADOW_WR
@@ -178,7 +169,6 @@ add_display_item MEMORY RV32I_DMEM_ADDR_WIDTH PARAMETER ""
 add_display_item MEMORY RV32I_IMEM_INIT_FILE PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_INIT_FILE PARAMETER ""
 add_display_item EXTENSIONS RV32_ZCSR_EN PARAMETER ""
-add_display_item TEST RV32I_ENABLE_ECALL PARAMETER ""
 add_display_item TEST RV32I_IMEM_SHADOW_WR PARAMETER ""
 add_display_item TEST RV32I_INCL_TEST_BLOCK PARAMETER ""
 

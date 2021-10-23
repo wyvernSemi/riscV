@@ -39,7 +39,6 @@ module rv32i_cpu_core
    RV32I_TRAP_VECTOR           = 32'h00000004,
    RV32I_LOG2_REGFILE_ENTRIES  = 5,
    RV32I_REGFILE_USE_MEM       = 1,
-   RV32I_ENABLE_ECALL          = 1,
    RV32_ZICSR_EN               = 1
 )
 (
@@ -127,6 +126,11 @@ wire [31:0] zicsr_new_pc;
 wire  [4:0] zicsr_rd;
 wire [31:0] zicsr_rd_val;
 
+// Synchronous exception signals
+wire        exception;
+wire [31:0] exception_pc;
+wire  [3:0] exception_type;
+
 // Stall conditions
 wire        stall              = (dread & dwaitrequest);
 wire        stall_regfile      = stall | (decode_load & ~dread);
@@ -155,7 +159,6 @@ assign test_rd_val             = regfile_rd_val;
 
   rv32i_decode #(
     .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR),
-    .RV32I_ENABLE_ECALL        (RV32I_ENABLE_ECALL),
     .RV32_ZICSR_EN             (RV32_ZICSR_EN)
   ) decode
   (
@@ -212,7 +215,11 @@ assign test_rd_val             = regfile_rd_val;
 
     .shift_arith               (decode_shift_arith),
     .shift_left                (decode_shift_left),
-    .shift_right               (decode_shift_right)
+    .shift_right               (decode_shift_right),
+
+    .exception                 (exception),
+    .exception_pc              (exception_pc),
+    .exception_type            (exception_type)
   );
 
   // ---------------------------------------------------------
@@ -301,6 +308,7 @@ assign test_rd_val             = regfile_rd_val;
     .addr                      (daddress),
     .st_be                     (dbyteenable),
     .ld_data                   (dreaddata)
+    
   );
 
   // ---------------------------------------------------------
@@ -317,9 +325,9 @@ generate
         .reset_n               (reset_n),
 
         .irq                   (irq),
-        .exception             (1'b0),
-        .exception_pc          (32'h0),
-        .exception_type        (4'h0),
+        .exception             (exception),
+        .exception_pc          (exception_pc),
+        .exception_type        (exception_type),
 
         .ext_sw_interrupt      (1'b0),
 

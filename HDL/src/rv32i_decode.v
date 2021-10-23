@@ -34,7 +34,6 @@
 module rv32i_decode
 #(parameter
    RV32I_TRAP_VECTOR                   = 32'h00000040,
-   RV32I_ENABLE_ECALL                  = 1,
    RV32_ZICSR_EN                       = 1
 )
 (
@@ -97,7 +96,11 @@ module rv32i_decode
   output reg                           shift_left,
   output reg                           shift_right,
 
-  output reg                           cancelled
+  // Zicsr interface
+  output reg                           cancelled,
+  output reg                           exception,
+  output reg [31:0]                    exception_pc,
+  output reg  [3:0]                    exception_type
 );
 
 reg         update_pc_dly;
@@ -135,7 +138,7 @@ wire        ui_instr                   = ~invalid_instr & ~opcode_32[4] & &{opco
 wire        branch_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11000};
 wire        jmp_instr                  = ~invalid_instr & &{opcode_32[4:2] ~^ 3'b110} & &{opcode_32[0]};
 wire        fence_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b00011};
-wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21] & (RV32I_ENABLE_ECALL[0] | instr_reg[20]);
+wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21];
 wire        zicsr_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b11100} &  |funct3 &  RV32_ZICSR_EN[0];
 wire        mret_instr                 = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 &  instr_reg[21] & instr_reg[29] & RV32_ZICSR_EN[0];
 
@@ -173,7 +176,7 @@ begin
     system                             <=  1'b0;
     load                               <=  1'b0;
     store                              <=  1'b0;
-    zicsr                              <=  3'h0;
+    zicsr                              <=  2'h0;
     mret                               <=  1'b0;
     arith                              <=  1'b0;
     add_nsub                           <=  1'b0;
@@ -197,6 +200,11 @@ begin
   begin
     instr_reg                          <= stall ? instr_reg : instr;
     update_pc_dly                      <= update_pc;
+    cancelled                          <= 1'b0;
+    
+    exception                          <= 1'b0;
+    exception_pc                       <= pc_in;
+    exception_type                     <= system_instr ? (instr_reg[20] ? 4'd3 : 4'd11) : 4'h0;
 
     if (update_pc == 1'b1 || update_pc_dly == 1'b1)
     begin
@@ -210,7 +218,7 @@ begin
       system                           <=  1'b0;
       load                             <=  1'b0;
       store                            <=  1'b0;
-      zicsr                            <=  3'h0;
+      zicsr                            <=  2'h0;
       mret                             <=  1'b0;
       arith                            <=  1'b0;
       add_nsub                         <=  1'b0;
@@ -225,6 +233,8 @@ begin
       shift_arith                      <=  1'b0;
       shift_left                       <=  1'b0;
       shift_right                      <=  1'b0;
+      
+      cancelled                        <=  1'b1;
     end
     else
     begin
@@ -234,6 +244,8 @@ begin
 
       if (~stall)
       begin
+      
+        exception                      <= system_instr;
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
