@@ -139,8 +139,11 @@ wire        stall_decode       = dread;
 wire        stall_alu          = dread;
 wire        clr_load_op        = dread & ~dwaitrequest;
 
+wire        update_pc          = alu_update_pc | zicsr_update_pc;
+wire [31:0] new_pc             = zicsr_update_pc ? zicsr_new_pc : alu_pc;
+
 // Fetch instructions from the current PC address
-assign iaddress                = ~alu_update_pc ? regfile_pc : alu_pc;
+assign iaddress                = ~update_pc ? regfile_pc : new_pc;
 assign iread                   = reset_n & ~(dread & dwaitrequest);
 
 // DMEM write data always comes from ALU's C output
@@ -241,8 +244,8 @@ assign test_rd_val             = regfile_rd_val;
      .rs2_idx                  (decode_rs2_prefetch),
      .rd_idx                   (regfile_rd),
      .new_rd                   (regfile_rd_val),
-     .new_pc                   (alu_pc),
-     .update_pc                (alu_update_pc),
+     .new_pc                   (new_pc),
+     .update_pc                (update_pc),
      .stall                    (stall_regfile),
 
      .rs1                      (regfile_rs1),
