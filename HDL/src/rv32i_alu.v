@@ -201,7 +201,7 @@ begin
     end
     else if (jump_in)
     begin
-      c                         <= pc_in + 4;
+      c                         <= pc_in + 32'h4;
     end
     else if (store_in)
     begin

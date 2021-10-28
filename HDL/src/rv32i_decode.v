@@ -99,15 +99,23 @@ module rv32i_decode
 
   // Zicsr interface
   output reg                           cancelled,
-  output reg                           exception,
-  output reg [31:0]                    exception_pc,
+  output                               exception,
+  output     [31:0]                    exception_pc,
   output reg  [3:0]                    exception_type
 );
+
+localparam ILLEGAL_INSTR = 4'd2;
+localparam BREAKPOINT    = 4'd3;
+localparam ECALL         = 4'd11;
 
 reg         update_pc_dly;
 reg  [31:0] instr_reg;
 reg   [4:0] rs1_pf_held;
 reg   [4:0] rs2_pf_held;
+
+reg   [1:0] mret_dly;
+reg         exception_int;
+reg   [1:0] exception_dly;
 
 // Extract all the possible immediate value (sign extended as appropriate
 wire [31:0] imm_i                      = {{20{instr_reg[31]}}, instr_reg[31:20]};
@@ -167,6 +175,14 @@ wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_va
 // No register writeback for store, branch, system and invalid instructions
 wire no_writeback                      = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
 
+// Updating PC after a jump/branch executed in ALU, an exception_int or a return from exception_int
+wire updating_pc                       = update_pc | update_pc_dly | exception_int | |exception_dly | mret | |mret_dly;
+
+// Export synchronous exception, but mask if just takng a branch, as following (possibly invalid) instructions are not executed
+assign exception                       = exception_int & ~(update_pc | update_pc_dly);
+
+assign exception_pc                    = pc;
+
 always @(posedge clk)
 begin
   if (reset_n == 1'b0)
@@ -180,6 +196,7 @@ begin
     zicsr                              <=  2'h0;
     zicsr_rd                           <=  5'h0;
     mret                               <=  1'b0;
+    mret_dly                           <=  2'h0;
     arith                              <=  1'b0;
     add_nsub                           <=  1'b0;
     cmp_unsigned                       <=  1'b0;
@@ -195,6 +212,8 @@ begin
     shift_right                        <=  1'b0;
     update_pc_dly                      <=  1'b0;
     cancelled                          <=  1'b0;
+    exception_int                      <=  1'b0;
+    exception_dly                      <=  2'b00;
 
     instr_reg                          <= 32'h00000013;
   end
@@ -202,13 +221,18 @@ begin
   begin
     instr_reg                          <= stall ? instr_reg : instr;
     update_pc_dly                      <= update_pc;
+    mret_dly                           <= {mret, mret_dly[1]};
+    exception_dly                      <= {exception_int, exception_dly[1]};
     cancelled                          <= 1'b0;
-    
-    exception                          <= 1'b0;
-    exception_pc                       <= pc_in;
-    exception_type                     <= system_instr ? (instr_reg[20] ? 4'd3 : 4'd11) : 4'h0;
 
-    if (update_pc == 1'b1 || update_pc_dly == 1'b1)
+    exception_int                      <= 1'b0;
+    exception_type                     <= invalid_instr ? ILLEGAL_INSTR :
+                                          system_instr  ? (instr_reg[20] ? BREAKPOINT : ECALL) :
+                                                          4'h0;
+    pc                                 <= pc_in;
+
+    // When PC is updating, cancel the next instructions to clear pipeline
+    if (updating_pc == 1'b1)
     begin
       a                                <= 32'h0;
       b                                <= 32'h0;
@@ -236,7 +260,7 @@ begin
       shift_arith                      <=  1'b0;
       shift_left                       <=  1'b0;
       shift_right                      <=  1'b0;
-      
+
       cancelled                        <=  1'b1;
     end
     else
@@ -247,12 +271,12 @@ begin
 
       if (~stall)
       begin
-      
-        exception                      <= system_instr;
+
+        exception_int                  <= system_instr | invalid_instr;
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
-        zicsr_rd                       <= rd_idx; 
+        zicsr_rd                       <= rd_idx;
         branch                         <= branch_instr;
         jump                           <= jmp_instr;
         system                         <= system_instr;
@@ -261,12 +285,10 @@ begin
         load                           <= ld_st_instr & ~opcode_32[3];
         store                          <= ld_st_instr &  opcode_32[3];
         ld_st_width                    <= funct3;
-        pc                             <= pc_in;
 
         // ALU inputs A and B
         a                              <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0   :    // LUI and system, A = 0
-                                          (jmp_instr & opcode_32[1])                                ? pc + 32'h4:  // JAL, A = PC+4
-                                          (ui_instr & ~opcode_32[3])                                ? pc_in   :    // AUIPC, A = PC
+                                          ((jmp_instr & opcode_32[1]) | (ui_instr & ~opcode_32[3])) ? pc_in   :    // AUIPC, JAL, A = PC
                                           zicsr_imm_instr                                           ? rs1_idx :    // Zicsr imm, A = RS1 index bits
                                                                                                       rs1;         // all others, A = rs1 value
 

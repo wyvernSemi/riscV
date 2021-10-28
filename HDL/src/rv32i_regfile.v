@@ -51,8 +51,8 @@ module rv32i_regfile
 
    output     [31:0]           rs1,
    output     [31:0]           rs2,
-   output reg [31:0]           pc,
-   output reg [31:0]           last_pc
+   output     [31:0]           pc,
+   output     [31:0]           last_pc
 );
 
 localparam REGFILE_ENTRIES     = (1 << LOG2_REGFILE_ENTRIES);
@@ -64,6 +64,9 @@ reg   [4:0] rs1_idx_dly;
 reg   [4:0] rs2_idx_dly;
 reg   [4:0] rd_idx_dly;
 reg  [31:0] new_rd_dly;
+reg  [31:0] pc_int;
+reg  [31:0] last_pc_int;
+reg   [1:0] start_up;
 
 assign rs1                     = (|rs1_idx_dly && rs1_idx_dly == rd_idx)     ? new_rd     :
                                  (|rs1_idx_dly && rs1_idx_dly == rd_idx_dly) ? new_rd_dly :
@@ -72,14 +75,21 @@ assign rs1                     = (|rs1_idx_dly && rs1_idx_dly == rd_idx)     ? n
 assign rs2                     = (|rs2_idx_dly && rs2_idx_dly == rd_idx)     ? new_rd :
                                  (|rs2_idx_dly && rs2_idx_dly == rd_idx_dly) ? new_rd_dly :
                                                                                rs2_int;
+                                                                               
+wire [31:0] next_pc            = update_pc ? new_pc : pc_int;
+
+// Export the PC values, but hold at reset vector until running after reset, to prefetch reset vector instruction.
+assign      pc                 = start_up[1] ? RESET_VECTOR   : pc_int;
+assign      last_pc            = |start_up   ? RESET_VECTOR   : last_pc_int;
 
 // Process to update the program counter
 always @(posedge clk)
 begin
   if (reset_n == 1'b0)
   begin
-    pc                         <= RESET_VECTOR;
-    last_pc                    <= RESET_VECTOR;
+    pc_int                     <= RESET_VECTOR;
+    last_pc_int                <= RESET_VECTOR;
+    start_up                   <= 2'b11;
   end
   else
   begin
@@ -87,15 +97,16 @@ begin
     rs2_idx_dly                <= rs2_idx;
     rd_idx_dly                 <= rd_idx;
     new_rd_dly                 <= new_rd;
+    start_up                   <= {1'b0, start_up[1]};
     
-    if (~stall)
+    if (~stall | update_pc)
     begin
       // Because of pipeline delay reading instruction,
       // last PC for decoder is the address before current PC to align at ALU
-      last_pc                  <= pc - 32'h4;
+      last_pc_int              <= next_pc - 32'h4;
 
       // Update PC 
-      pc                       <= (update_pc ? new_pc : pc) + 32'h4;
+      pc_int                   <= next_pc + 32'h4;
     end
   end
 end

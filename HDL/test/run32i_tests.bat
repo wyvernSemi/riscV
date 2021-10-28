@@ -56,7 +56,8 @@ for %%i in (^
  for %%i in (^
    csr^
    mcsr^
-   sbreak
+   sbreak^
+   illegal^
  ) do (
    echo.
    echo.

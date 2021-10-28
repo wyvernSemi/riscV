@@ -40,7 +40,7 @@ module rv32_zicsr
 (
   input                                clk,
   input                                reset_n,
-  
+
   input                                stall,
 
   input       [4:0]                    regfile_rd_idx,
@@ -187,8 +187,8 @@ assign mtvec_base[1:0]                 = 2'b00;
 assign time_gt_cmp                     = (mtime_int >= mtimecmp_int) ? 1'b1 : 1'b0;
 
 // Flag interrupts if enabled
-assign timer_interrupt                 = mstatus_mie_int & (mip_meip & mie_meie);
-assign ext_interrupt                   = mstatus_mie_int & (mip_mtip & mie_mtie);
+assign ext_interrupt                   = mstatus_mie_int & (mip_meip & mie_meie);
+assign timer_interrupt                 = mstatus_mie_int & (mip_mtip & mie_mtie);
 assign sw_interrupt                    = mstatus_mie_int & (mip_msip & mie_msie);
 
 // Combine sources of interrupts
@@ -200,14 +200,20 @@ assign next_mcause_code_int            = ext_interrupt   ? `MACH_EXT_INT_CODE   
                                          timer_interrupt ? `MACH_TIMER_INT_CODE :
                                                            exception_type;
 
+// Mask on CSR write data so bypass does not pick up on writes to unused or read only bits
+wire [31:0] mask                       = (waddr == 12'h300) ? 32'h00000008 :
+                                         (waddr == 12'h304) ? 32'h00000888 :
+                                         (waddr == 12'h341) ? 32'hfffffffc :
+                                                              32'hffffffff;
+
 // The internal CSR register read data is bypassed if writing to the same location as being read
-assign readdata_int                    = (write == 1'b1 && index == waddr) ? writedata : readdata;
+assign readdata_int                    = (write == 1'b1 && index == waddr) ? (writedata & mask) : readdata;
 
 // Export the registered read data (i.e. the CSR register's old value) to the Zicsr's regfile update data port
 assign zicsr_rd_val                    = readdata_reg;
 
 // Bypass A input if destination is being written
-assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == rs1_reg) ? regfile_rd_val : a;
+assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == rs1_in) ? regfile_rd_val : a;
 
 assign zicsr_int                       = stall ? 2'b00 : zicsr;
 
@@ -234,7 +240,7 @@ begin
     mie_meie_int                       <=  1'b0;
     usec_count                         <= 12'h0;
     mtime_int                          <= 64'h0;
-    mtimecmp_int                       <= 64'h0;
+    mtimecmp_int                       <= {64{1'b1}};
     minstret_int                       <= 32'h0;
     minstreth_int                      <= 32'h0;
     zicsr_update_pc                    <=  1'b0;
@@ -243,7 +249,7 @@ begin
   end
   else
   begin
-  
+
     rs1_reg                            <= rs1_in;
 
     // Default zicsr_update_pc to 0 so it is a pulse when set
@@ -283,7 +289,7 @@ begin
       mstatus_mie_int                  <= 1'b0;
       mepc_int                         <= exception_pc[31:2];
 
-      zicsr_update_pc                  <= interrupt;
+      zicsr_update_pc                  <= interrupt | (exception & exception_type == 4'd2);
       zicsr_new_pc                     <= mtvec_base + {26'h0, (next_mcause_code_int & {4{mtvec_mode[0]}}), 2'b00};
     end
 
@@ -299,15 +305,13 @@ begin
       mstatus_mpp_int                  <= 2'b00;
       mstatus_mpie_int                 <= 1'b0;
       zicsr_update_pc                  <= 1'b1;
-      zicsr_new_pc                     <= {mepc_int, 2'b00};
+      zicsr_new_pc                     <= {mepc_pulse ? mepc_wval[31:2] : mepc_int, 2'b00};
     end
 
     // Update external registers if written to over CSR bus
     if (mstatus_pulse)
     begin
       mstatus_mie_int                  <= mstatus_mie_wval;
-      mstatus_mpie_int                 <= mstatus_mpie_wval;
-      mstatus_mpp_int                  <= mstatus_mpp_wval;
     end
 
     if (mie_pulse)
