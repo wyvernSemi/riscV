@@ -58,6 +58,7 @@ for %%i in (^
    mcsr^
    sbreak^
    illegal^
+   ma_fetch^
  ) do (
    echo.
    echo.

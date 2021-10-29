@@ -33,6 +33,8 @@
 `define MACH_SW_INT_CODE               4'd0
 `define MACH_TIMER_INT_CODE            4'd7
 `define MACH_EXT_INT_CODE              4'd11
+`define MACH_IADDR_ALIGN_CODE          4'd0
+`define MACH_DADDR_ALIGN_CODE          4'd4
 
 module rv32_zicsr
 #(parameter                            CLK_FREQ_MHZ = 100
@@ -289,7 +291,7 @@ begin
       mstatus_mie_int                  <= 1'b0;
       mepc_int                         <= exception_pc[31:2];
 
-      zicsr_update_pc                  <= interrupt | (exception & exception_type == 4'd2);
+      zicsr_update_pc                  <= interrupt | (exception & exception_type <= 4'd2);
       zicsr_new_pc                     <= mtvec_base + {26'h0, (next_mcause_code_int & {4{mtvec_mode[0]}}), 2'b00};
     end
 

@@ -100,13 +100,15 @@ module rv32i_decode
   // Zicsr interface
   output reg                           cancelled,
   output                               exception,
-  output     [31:0]                    exception_pc,
+  output reg [31:0]                    exception_pc,
   output reg  [3:0]                    exception_type
 );
 
-localparam ILLEGAL_INSTR = 4'd2;
-localparam BREAKPOINT    = 4'd3;
-localparam ECALL         = 4'd11;
+localparam IADDR_ALIGN_CODE            = 4'd0;
+localparam ILLEGAL_INSTR               = 4'd2;
+localparam DADDR_ALIGN_CODE            = 4'd4;
+localparam BREAKPOINT                  = 4'd3;
+localparam ECALL                       = 4'd11;
 
 reg         update_pc_dly;
 reg  [31:0] instr_reg;
@@ -176,12 +178,12 @@ wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_va
 wire no_writeback                      = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
 
 // Updating PC after a jump/branch executed in ALU, an exception_int or a return from exception_int
-wire updating_pc                       = update_pc | update_pc_dly | exception_int | |exception_dly | mret | |mret_dly;
+wire updating_pc                       = update_pc | update_pc_dly | exception | |exception_dly | mret | |mret_dly;
 
-// Export synchronous exception, but mask if just takng a branch, as following (possibly invalid) instructions are not executed
+// Export synchronous exception, but mask if just taking a branch, as following (possibly invalid) instructions are not executed
 assign exception                       = exception_int & ~(update_pc | update_pc_dly);
 
-assign exception_pc                    = pc;
+//assign exception_pc                    = pc;
 
 always @(posedge clk)
 begin
@@ -222,12 +224,15 @@ begin
     instr_reg                          <= stall ? instr_reg : instr;
     update_pc_dly                      <= update_pc;
     mret_dly                           <= {mret, mret_dly[1]};
-    exception_dly                      <= {exception_int, exception_dly[1]};
+    exception_dly                      <= {exception, exception_dly[1]};
     cancelled                          <= 1'b0;
 
     exception_int                      <= 1'b0;
-    exception_type                     <= invalid_instr ? ILLEGAL_INSTR :
+    exception_pc                       <= |pc_in[1:0]   ? pc : pc_in;
+    exception_type                     <= |pc_in[1:0]   ? IADDR_ALIGN_CODE :
+                                          invalid_instr ? ILLEGAL_INSTR :
                                           system_instr  ? (instr_reg[20] ? BREAKPOINT : ECALL) :
+                                          
                                                           4'h0;
     pc                                 <= pc_in;
 
@@ -272,7 +277,7 @@ begin
       if (~stall)
       begin
 
-        exception_int                  <= system_instr | invalid_instr;
+        exception_int                  <= system_instr | invalid_instr | |pc_in[1:0];
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx

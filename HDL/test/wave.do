@@ -313,175 +313,175 @@ add wave -noupdate -group test /tb/uut/test_blk/test/iwaitreq
 add wave -noupdate -group test -radix hexadecimal /tb/uut/test_blk/test/rd_idx
 add wave -noupdate -group test -radix hexadecimal /tb/uut/test_blk/test/rd_val
 add wave -noupdate -group test /tb/uut/test_blk/test/reset_n
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/CLK_FREQ_MHZ
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/clk
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/index
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_idx
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_val
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_pc
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_type
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_sw_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/instr_retired
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/irq
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_cy
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_ir
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_pulse
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_pulse
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_wval
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_pulse
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_pulse
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_pulse
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_meip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_msip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_mtip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_pulse
-add wave -noupdate -group rv32_zicsr -radix decimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtime_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtimecmp_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/next_mcause_code_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/readdata
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/reset_n
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/sw_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/time_gt_cmp
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/timer_interrupt
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_count
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_wrap_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_upper
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtimecmp
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rd_in
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/waddr
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/CLK_FREQ_MHZ
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/clk
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_pc
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_type
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_sw_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/instr_retired
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/irq
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_cy
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_ir
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_wval
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_meip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_msip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_mtip
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_wval
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_pulse
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtime_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtimecmp_int
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/next_mcause_code_int
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rd_in
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_idx
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/reset_n
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/sw_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/time_gt_cmp
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/timer_interrupt
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_count
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_wrap_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_upper
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtimecmp
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/waddr
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/rd
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/c
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/decode/zicsr_rd
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a_int
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/index
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/readdata
-add wave -noupdate -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_rd
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_rd_val
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
-add wave -noupdate -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_update_pc
-add wave -noupdate -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_new_pc
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/CLK_FREQ_MHZ
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/clk
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/index
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_idx
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_val
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_pc
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_type
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_sw_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/instr_retired
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/irq
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_cy
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_ir
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_wval
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_meip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_msip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_mtip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_pulse
+add wave -noupdate -expand -group rv32_zicsr -radix decimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtime_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtimecmp_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/next_mcause_code_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/readdata
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/reset_n
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/sw_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/time_gt_cmp
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/timer_interrupt
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_count
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_wrap_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_upper
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtimecmp
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rd_in
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/waddr
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/CLK_FREQ_MHZ
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/clk
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_pc
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception_type
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/ext_sw_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/instr_retired
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/irq
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_code_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_interrupt_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcause_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_cy
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcountinhibit_ir
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycle_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mcycleh_wval
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mepc_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_meie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_msie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_mtie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mie_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstret_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/minstreth_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_meip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_msip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mip_mtip
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mie_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpie_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_mpp_wval
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mstatus_pulse
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtime_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtimecmp_int
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_base
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mtvec_mode
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/next_mcause_code_int
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rd_in
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_idx
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regfile_rd_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/reset_n
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/sw_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/time_gt_cmp
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/timer_interrupt
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_count
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/usec_wrap_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_upper
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtime_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/wr_mtimecmp
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/waddr
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/write
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/writedata
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/rd
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/c
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/decode/zicsr_rd
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/rs1_in
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/a_int
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/index
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/readdata
+add wave -noupdate -expand -group rv32_zicsr -radix unsigned /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_rd
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_rd_val
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/exception
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/mret
+add wave -noupdate -expand -group rv32_zicsr /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_update_pc
+add wave -noupdate -expand -group rv32_zicsr -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr_new_pc
 add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/ADDR_DECODE_WIDTH
 add wave -noupdate -group regs -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
 add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/avs_read
@@ -568,7 +568,7 @@ add wave -noupdate -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zic
 add wave -noupdate -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
 add wave -noupdate -radix hexadecimal -childformat {{{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[0]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[1]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[2]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[3]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[4]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[5]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[6]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[7]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[8]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[9]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[10]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[11]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[12]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[13]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[14]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[15]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[16]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[17]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[18]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[19]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[20]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[21]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[22]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[23]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[24]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[25]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[26]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[27]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[28]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[29]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[30]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[31]} -radix hexadecimal}} -subitemconfig {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[0]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[1]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[2]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[3]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[4]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[5]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[6]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[7]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[8]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[9]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[10]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[11]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[12]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[13]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[14]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[15]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[16]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[17]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[18]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[19]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[20]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[21]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[22]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[23]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[24]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[25]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[26]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[27]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[28]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[29]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[30]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[31]} {-height 15 -radix hexadecimal}} /tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {1584117 ps} 0}
+WaveRestoreCursors {{Cursor 2} {1224847 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 183
 configure wave -valuecolwidth 100
@@ -584,4 +584,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1521652 ps} {1677232 ps}
+WaveRestoreZoom {1151623 ps} {1276395 ps}

@@ -215,7 +215,7 @@ begin
       addr_lo                   <= stall ? addr [1:0] : next_addr[1:0];
     end
     
-    rd                          <= stall ? rd : (~update_pc ? rd_in : 5'h0);
+    rd                          <= stall ? rd : ((~update_pc & ~((jump_in | branch_taken) & |next_pc[1:0])) ? rd_in : 5'h0);
     update_rd                   <= stall ? update_rd : ((rd_in != 5'h0) ? 1'b1  : 1'b0);
     
     pc                          <= stall ? pc : next_pc;
