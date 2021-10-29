@@ -291,7 +291,7 @@ begin
       mstatus_mie_int                  <= 1'b0;
       mepc_int                         <= exception_pc[31:2];
 
-      zicsr_update_pc                  <= interrupt | (exception & exception_type <= 4'd2);
+      zicsr_update_pc                  <= interrupt | exception;
       zicsr_new_pc                     <= mtvec_base + {26'h0, (next_mcause_code_int & {4{mtvec_mode[0]}}), 2'b00};
     end
 

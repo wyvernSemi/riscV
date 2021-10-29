@@ -120,6 +120,9 @@ add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/test_rd_idx
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/test_rd_val
 add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc_in
 add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
+add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/sys_instr_nozicsr
+add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
+add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/jmp_instr
 add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr
@@ -195,7 +198,6 @@ add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rd_i
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/reset_n
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs1_pf_held
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs2_pf_held
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/RV32I_TRAP_VECTOR
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_arith
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
 add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
@@ -587,4 +589,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1727250 ps}
+WaveRestoreZoom {144113 ps} {1871363 ps}

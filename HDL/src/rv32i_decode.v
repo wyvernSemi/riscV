@@ -33,7 +33,7 @@
 
 module rv32i_decode
 #(parameter
-   RV32I_TRAP_VECTOR                   = 32'h00000040,
+   RV32I_TRAP_VECTOR                   = 32'h00000004,
    RV32_ZICSR_EN                       = 1
 )
 (
@@ -153,6 +153,7 @@ wire        branch_instr               = ~invalid_instr & &{opcode_32      ~^ 5'
 wire        jmp_instr                  = ~invalid_instr & &{opcode_32[4:2] ~^ 3'b110} & &{opcode_32[0]};
 wire        fence_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b00011};
 wire        system_instr               = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 & ~instr_reg[21];
+wire        sys_instr_nozicsr          = system_instr & ~RV32_ZICSR_EN[0];
 wire        zicsr_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b11100} &  |funct3 &  RV32_ZICSR_EN[0];
 wire        mret_instr                 = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 &  instr_reg[21] & instr_reg[29] & RV32_ZICSR_EN[0];
 
@@ -178,14 +179,13 @@ wire [31:0] rs1                        = (|fb_rd && fb_rd == rs1_idx) ? fb_rd_va
 wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_val : rs2_rtn;
 
 // No register writeback for store, branch, system and invalid instructions
-wire        no_writeback               = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
+wire        no_writeback               = st_instr | branch_instr | sys_instr_nozicsr | invalid_instr | fence_instr | zicsr_instr;
 
 // Updating PC after a jump/branch executed in ALU, an exception_int or a return from exception_int
 wire        updating_pc                = update_pc | update_pc_dly | exception | |exception_dly | mret | |mret_dly;
 
 // Export synchronous exception, but mask if just taking a branch, as following (possibly invalid) instructions are not executed
 assign exception                       = exception_int & ~(update_pc | update_pc_dly);
-
 
 always @(posedge clk)
 begin
@@ -234,7 +234,6 @@ begin
     exception_type                     <= |pc_in[1:0]   ? IADDR_ALIGN_CODE :
                                           invalid_instr ? ILLEGAL_INSTR :
                                           system_instr  ? (instr_reg[20] ? BREAKPOINT : ECALL) :
-                                          
                                                           4'h0;
     pc                                 <= pc_in;
 
@@ -286,7 +285,7 @@ begin
         zicsr_rd                       <= rd_idx;
         branch                         <= branch_instr;
         jump                           <= jmp_instr;
-        system                         <= system_instr;
+        system                         <= sys_instr_nozicsr;
         zicsr                          <= funct3[1:0] & {2{zicsr_instr}};
         mret                           <= mret_instr;
         load                           <= ld_st_instr & ~opcode_32[3];
@@ -294,20 +293,20 @@ begin
         ld_st_width                    <= funct3;
 
         // ALU inputs A and B
-        a                              <= ((ui_instr &  opcode_32[3]) | system_instr)               ? 32'h0   :    // LUI and system, A = 0
+        a                              <= ((ui_instr &  opcode_32[3]) | sys_instr_nozicsr)          ? 32'h0   :    // LUI and system, A = 0
                                           ((jmp_instr & opcode_32[1]) | (ui_instr & ~opcode_32[3])) ? pc_in   :    // AUIPC, JAL, A = PC
                                           zicsr_imm_instr                                           ? rs1_idx :    // Zicsr imm, A = RS1 index bits
                                                                                                       rs1;         // all others, A = rs1 value
 
         b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value
-                                           system_instr                                      ? RV32I_TRAP_VECTOR : // system, B = trap vector
+                                           sys_instr_nozicsr                                 ? RV32I_TRAP_VECTOR : // system, B = trap vector (when no Zicsr extensions)
                                                                                                imm;                // all others, B = immediate value
         // Offset for store and branch instructions
         offset                         <= imm;
 
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | system_instr | ui_instr) ? rs1_idx : 5'h0; // JAL or system instructions have no rs fields
-        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)       ? rs2_idx : 5'h0;
+        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | sys_instr_nozicsr | ui_instr) ? rs1_idx : 5'h0; // JAL, system or ui instructions have no rs fields
+        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)            ? rs2_idx : 5'h0;
 
         // ALU operation control outputs
         arith                          <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC
