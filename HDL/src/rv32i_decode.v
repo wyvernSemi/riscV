@@ -137,9 +137,12 @@ wire  [4:0] rs2_idx                    = instr_reg[24:20];
 assign      rs1_prefetch               = stall ? rs1_pf_held : instr[19:15];
 assign      rs2_prefetch               = stall ? rs2_pf_held : instr[24:20];
 
+// Flag if a shift instruction of either direction
+wire        is_shift_instr             = &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4] & ((funct3 == 3'b001 ? 1'b1 : 1'b0) | (funct3 == 3'b101 ? 1'b1: 1'b0));
+
 // Not a 32 bit instruction (16 bits if low two bits not both set),
 // or 48 bits and greater if first 5 bits set)
-wire        invalid_instr              = ~&opcode[1:0] | &opcode[4:0];
+wire        invalid_instr              = (~&opcode[1:0] | &opcode[4:0]) | (is_shift_instr & instr_reg[25]);
 
 // Decode major categories from opcode (less bottom two bits)
 wire        alu_instr                  = ~invalid_instr & &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4];
@@ -175,15 +178,14 @@ wire [31:0] rs1                        = (|fb_rd && fb_rd == rs1_idx) ? fb_rd_va
 wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_val : rs2_rtn;
 
 // No register writeback for store, branch, system and invalid instructions
-wire no_writeback                      = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
+wire        no_writeback               = st_instr | branch_instr | system_instr | invalid_instr | fence_instr | zicsr_instr;
 
 // Updating PC after a jump/branch executed in ALU, an exception_int or a return from exception_int
-wire updating_pc                       = update_pc | update_pc_dly | exception | |exception_dly | mret | |mret_dly;
+wire        updating_pc                = update_pc | update_pc_dly | exception | |exception_dly | mret | |mret_dly;
 
 // Export synchronous exception, but mask if just taking a branch, as following (possibly invalid) instructions are not executed
 assign exception                       = exception_int & ~(update_pc | update_pc_dly);
 
-//assign exception_pc                    = pc;
 
 always @(posedge clk)
 begin
@@ -322,7 +324,7 @@ begin
         bit_is_or                      <= alu_instr & funct3 == 3'b110;                                 // ALU bit op is OR  when funct3 == 6
         bit_is_xor                     <= alu_instr & funct3 == 3'b100;                                 // ALU bit op is XOR when funct3 == 5
 
-        shift_arith                    <= instr_reg[30];                                                    // A shift is arithmetic if instr_reg[30] set
+        shift_arith                    <= instr_reg[30];                                                // A shift is arithmetic if instr_reg[30] set
         shift_left                     <= alu_instr & funct3 == 3'b001;                                 // ALU shift left if funct3 == 1
         shift_right                    <= alu_instr & funct3 == 3'b101;                                 // ALU shift right if funct3 == 5
       end
