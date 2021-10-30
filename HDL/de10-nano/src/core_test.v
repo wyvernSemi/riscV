@@ -32,6 +32,9 @@
 `timescale 1ns / 10ps
 
 `define GP_IDX                 5'd3
+`define UNIMP_INSTR            32'hC0001073
+`define UNIMP_INSTR_ALT        32'h00000000
+`define ECALL_INSTR            32'h00000073
 
 module core_test
 (
@@ -64,9 +67,8 @@ begin
   end
   else
   begin
-    if ((halt_on_unimp == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && irdata == 32'hC0001073)) ||
-        (halt_on_unimp == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && irdata == 32'h00000000)) ||
-        (halt_on_ecall == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && irdata == 32'h00000073)) ||
+    if ((halt_on_unimp == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 && (irdata == `UNIMP_INSTR || irdata == `UNIMP_INSTR_ALT))) ||
+        (halt_on_ecall == 1'b1 && (iread == 1'b1 && iwaitreq == 1'b0 &&  irdata == `ECALL_INSTR)) ||
         (halt_on_addr  == 1'b1 && (iread == 1'b1 && iaddr == halt_addr)))
     begin
       halt                     <= 1'b1;

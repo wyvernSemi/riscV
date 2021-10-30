@@ -118,100 +118,100 @@ add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall_decod
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall_regfile
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/test_rd_idx
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/test_rd_val
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc_in
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/sys_instr_nozicsr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/jmp_instr
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr_reg
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/stall
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret_dly
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc_dly
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/is_shift_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_dly
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_int
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/invalid_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/exception_pc
-add wave -noupdate -expand -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/exception_type
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cancelled
-add wave -noupdate -expand -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/a_rs_idx
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/add_nsub
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/alu_imm
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/alu_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/arith
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/b_rs_idx
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_and
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_or
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_xor
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/a
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/b
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch_instr
-add wave -noupdate -expand -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/rs1_prefetch
-add wave -noupdate -expand -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/rs2_prefetch
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs1_rtn
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs2_rtn
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/stall
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs1_idx
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs2_idx
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs1
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs2
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/clk
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_eq
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_ge
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_lt
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_ne
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_unsigned
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/fb_rd
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/fb_rd_val
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/fence_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/funct3
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_b
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_i
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_j
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_s
-add wave -noupdate -expand -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_u
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/ld_st_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/ld_st_width
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/load
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/no_writeback
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/offset
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/opcode
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/opcode_32
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/pc_in
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rd
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rd_idx
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/reset_n
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs1_pf_held
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs2_pf_held
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_arith
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/st_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/store
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/ui_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_imm_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_instr
-add wave -noupdate -expand -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_rs1_instr
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc_in
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/sys_instr_nozicsr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jmp_instr
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr_reg
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/stall
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret_dly
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc_dly
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/is_shift_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_dly
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_int
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/invalid_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/exception_pc
+add wave -noupdate -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/exception_type
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cancelled
+add wave -noupdate -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/a_rs_idx
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/add_nsub
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/alu_imm
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/alu_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/arith
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/b_rs_idx
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_and
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_or
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/bit_is_xor
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/a
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/b
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch_instr
+add wave -noupdate -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/rs1_prefetch
+add wave -noupdate -group decode -radix unsigned /tb/uut/rv32i_cpu_core_inst/decode/rs2_prefetch
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs1_rtn
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs2_rtn
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/stall
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs1_idx
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs2_idx
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs1
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/rs2
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/clk
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_eq
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_ge
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_lt
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_is_ne
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/cmp_unsigned
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/fb_rd
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/fb_rd_val
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/fence_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/funct3
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_b
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_i
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_j
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_s
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/imm_u
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/ld_st_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/ld_st_width
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/load
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/no_writeback
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/offset
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/opcode
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/opcode_32
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/pc_in
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rd
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rd_idx
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/reset_n
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs1_pf_held
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/rs2_pf_held
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_arith
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/st_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/store
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/ui_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_imm_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_rs1_instr
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc_in
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/cancelled
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_pc
@@ -221,7 +221,6 @@ add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/jump_in
 add wave -noupdate -group alu -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/a_rs_idx
 add wave -noupdate -group alu -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/rd
-add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_rd
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/stall
 add wave -noupdate -group alu -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/rd
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/c
@@ -285,7 +284,6 @@ add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/system_in
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_pc
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/c
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc
-add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_rd
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/xorop
 add wave -noupdate -group regfile /tb/uut/rv32i_cpu_core_inst/regfile/clk
 add wave -noupdate -group regfile /tb/uut/rv32i_cpu_core_inst/regfile/reset_n

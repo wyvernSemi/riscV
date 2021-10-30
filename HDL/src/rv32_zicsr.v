@@ -45,6 +45,7 @@ module rv32_zicsr
 
   input                                stall,
 
+  // Values being written to regfile registers
   input       [4:0]                    regfile_rd_idx,
   input      [31:0]                    regfile_rd_val,
 
@@ -80,6 +81,7 @@ module rv32_zicsr
   output reg                           zicsr_update_pc,
   output reg [31:0]                    zicsr_new_pc,
 
+  // Update RD in register file
   output reg  [4:0]                    zicsr_rd,
   output     [31:0]                    zicsr_rd_val
 
@@ -165,11 +167,11 @@ wire        sw_interrupt;
 wire        interrupt;
 wire        time_gt_cmp;
 
+// Internal version of zicsr input
 wire  [1:0] zicsr_int;
 
 // RD bypass signalling
 wire [31:0] a_int;
-reg   [4:0] rs1_reg;
 
 // -----------------------------------------------
 // Combinatorial logic
@@ -217,6 +219,7 @@ assign zicsr_rd_val                    = readdata_reg;
 // Bypass A input if destination is being written
 assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == rs1_in) ? regfile_rd_val : a;
 
+// Mask zicsr instruction input when stalled
 assign zicsr_int                       = stall ? 2'b00 : zicsr;
 
 // -----------------------------------------------
@@ -242,7 +245,7 @@ begin
     mie_meie_int                       <=  1'b0;
     usec_count                         <= 12'h0;
     mtime_int                          <= 64'h0;
-    mtimecmp_int                       <= {64{1'b1}};
+    mtimecmp_int                       <= {64{1'b1}};  // Set comparaator to maximum time to avoid unintentional interrupts until set
     minstret_int                       <= 32'h0;
     minstreth_int                      <= 32'h0;
     zicsr_update_pc                    <=  1'b0;
@@ -251,8 +254,6 @@ begin
   end
   else
   begin
-
-    rs1_reg                            <= rs1_in;
 
     // Default zicsr_update_pc to 0 so it is a pulse when set
     zicsr_update_pc                    <= 1'b0;
@@ -272,17 +273,16 @@ begin
     // The destination register (RD) value is just the old CSR register value
     readdata_reg                       <= readdata_int;
 
-    // Manage timer and counter
+    // Manage timer and counters
     mcycle_int                         <= mcycle_int  + {31'h0, ~mcountinhibit_cy};
     mcycleh_int                        <= mcycleh_int + {31'h0, &mcycle_int};
     usec_count                         <= (usec_count == usec_wrap_val[11:0]) ? 12'h0 : usec_count + 12'h1;
     mtime_int                          <= mtime_int + {63'h0, ~|usec_count};
-
     minstret_int                       <= minstret_int  + {31'h0, instr_retired & ~mcountinhibit_ir};
     minstreth_int                      <= minstreth_int + {31'h0, &minstret_int};
 
 
-    // Manage exceptions
+    // Manage exceptions, updating relvant CSR registers, and jumping to trap vector
     if (interrupt | exception)
     begin
       mcause_interrupt_int             <= interrupt;
@@ -291,7 +291,7 @@ begin
       mstatus_mie_int                  <= 1'b0;
       mepc_int                         <= exception_pc[31:2];
 
-      zicsr_update_pc                  <= interrupt | exception;
+      zicsr_update_pc                  <= 1'b1;
       zicsr_new_pc                     <= mtvec_base + {26'h0, (next_mcause_code_int & {4{mtvec_mode[0]}}), 2'b00};
     end
 
@@ -300,17 +300,18 @@ begin
     mip_meip                           <= irq;
     mip_msip                           <= ext_sw_interrupt;
 
-    // Process mret
+    // Process mret instruction. updating relevant CSR registers, and jumping to mepc address
     if (mret)
     begin
       mstatus_mie_int                  <= mstatus_mpie_int;
       mstatus_mpp_int                  <= 2'b00;
       mstatus_mpie_int                 <= 1'b0;
+
       zicsr_update_pc                  <= 1'b1;
       zicsr_new_pc                     <= {mepc_pulse ? mepc_wval[31:2] : mepc_int, 2'b00};
     end
 
-    // Update external registers if written to over CSR bus
+    // Update external registers if written to over zicsr_rv32_regs's bus (via CSRxxx instructions)
     if (mstatus_pulse)
     begin
       mstatus_mie_int                  <= mstatus_mie_wval;

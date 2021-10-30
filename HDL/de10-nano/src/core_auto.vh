@@ -21,4 +21,14 @@
 `define CSR_HALT_ADDR_ADDR_INT               2
 `define CSR_GP_ADDR                          5'h03
 `define CSR_GP_ADDR_INT                      3
+`define CSR_TEST_TIMER_LO_ADDR               5'h04
+`define CSR_TEST_TIMER_LO_ADDR_INT           4
+`define CSR_TEST_TIMER_HI_ADDR               5'h05
+`define CSR_TEST_TIMER_HI_ADDR_INT           5
+`define CSR_TEST_TIME_CMP_LO_ADDR            5'h06
+`define CSR_TEST_TIME_CMP_LO_ADDR_INT        6
+`define CSR_TEST_TIME_CMP_HI_ADDR            5'h07
+`define CSR_TEST_TIME_CMP_HI_ADDR_INT        7
+`define CSR_TEST_EXT_SW_INTERRUPT_ADDR       5'h08
+`define CSR_TEST_EXT_SW_INTERRUPT_ADDR_INT   8
 

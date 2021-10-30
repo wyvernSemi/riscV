@@ -4,7 +4,7 @@
 // -----------------------------------------------------------------------------
 //  File       : core_csr_regs_auto.v
 //  Author     : auto-generated
-//  Created    : 2021-10-23
+//  Created    : 2021-10-30
 //  Standard   : Verilog 2001
 // -----------------------------------------------------------------------------
 //  Description:
@@ -52,7 +52,20 @@ module core_csr_regs
     output                control_halt_on_unimp,
     output                control_halt_on_ecall,
     output      [31:0]    halt_addr,
+    output                test_ext_sw_interrupt,
     output                control_clr_halt,
+    output reg            test_timer_lo_pulse,
+    output      [31:0]    test_timer_lo,
+    input       [31:0]    test_timer_lo_in,
+    output reg            test_timer_hi_pulse,
+    output      [31:0]    test_timer_hi,
+    input       [31:0]    test_timer_hi_in,
+    output reg            test_time_cmp_lo_pulse,
+    output      [31:0]    test_time_cmp_lo,
+    input       [31:0]    test_time_cmp_lo_in,
+    output reg            test_time_cmp_hi_pulse,
+    output      [31:0]    test_time_cmp_hi,
+    input       [31:0]    test_time_cmp_hi_in,
     input                 status_halted,
     input                 status_reset,
     input       [31:0]    gp,
@@ -78,11 +91,13 @@ module core_csr_regs
   reg                control_halt_on_unimp_reg;
   reg                control_halt_on_ecall_reg;
   reg      [31:0]    halt_addr_reg;
+  reg                test_ext_sw_interrupt_reg;
   reg                control_clr_halt_reg;
   reg                next_control_halt_on_addr;
   reg                next_control_halt_on_unimp;
   reg                next_control_halt_on_ecall;
   reg      [31:0]    next_halt_addr;
+  reg                next_test_ext_sw_interrupt;
   reg                next_control_clr_halt;
   
   // end auto-generated
@@ -98,9 +113,14 @@ module core_csr_regs
   assign control_halt_on_unimp           = control_halt_on_unimp_reg;
   assign control_halt_on_ecall           = control_halt_on_ecall_reg;
   assign halt_addr                       = halt_addr_reg;
+  assign test_ext_sw_interrupt           = test_ext_sw_interrupt_reg;
   assign control_clr_halt                = control_clr_halt_reg;
 
   // Export AVS write bus to write pulse register ports
+  assign test_timer_lo                   = avs_writedata[31:0];
+  assign test_timer_hi                   = avs_writedata[31:0];
+  assign test_time_cmp_lo                = avs_writedata[31:0];
+  assign test_time_cmp_hi                = avs_writedata[31:0];
   
   // end auto-generated
 
@@ -119,11 +139,16 @@ module core_csr_regs
     next_control_halt_on_unimp           <= control_halt_on_unimp_reg;
     next_control_halt_on_ecall           <= control_halt_on_ecall_reg;
     next_halt_addr                       <= halt_addr_reg;
+    next_test_ext_sw_interrupt           <= test_ext_sw_interrupt_reg;
   
     // Default the write-clear register next values to 0
     next_control_clr_halt                <= 1'b0;
   
     // Default the read- and write-pulse register pulse outputs to 0
+    test_timer_lo_pulse                  <= 1'b0;
+    test_timer_hi_pulse                  <= 1'b0;
+    test_time_cmp_lo_pulse               <= 1'b0;
+    test_time_cmp_hi_pulse               <= 1'b0;
   
     // end auto-generated
   
@@ -147,6 +172,31 @@ module core_csr_regs
         `CSR_HALT_ADDR_ADDR :
         begin
           next_halt_addr                 <= avs_writedata[31:0];
+        end
+
+        `CSR_TEST_EXT_SW_INTERRUPT_ADDR :
+        begin
+          next_test_ext_sw_interrupt     <= avs_writedata[0];
+        end
+
+        `CSR_TEST_TIME_CMP_HI_ADDR :
+        begin
+          test_time_cmp_hi_pulse         <= 1'b1;
+        end
+
+        `CSR_TEST_TIME_CMP_LO_ADDR :
+        begin
+          test_time_cmp_lo_pulse         <= 1'b1;
+        end
+
+        `CSR_TEST_TIMER_HI_ADDR :
+        begin
+          test_timer_hi_pulse            <= 1'b1;
+        end
+
+        `CSR_TEST_TIMER_LO_ADDR :
+        begin
+          test_timer_lo_pulse            <= 1'b1;
         end
         
         default:
@@ -192,6 +242,31 @@ module core_csr_regs
           next_avs_readdata[0]                <= status_halted;
           next_avs_readdata[1]                <= status_reset;
         end
+
+        `CSR_TEST_EXT_SW_INTERRUPT_ADDR :
+        begin
+          next_avs_readdata[0]                <= test_ext_sw_interrupt_reg;
+        end
+
+        `CSR_TEST_TIME_CMP_HI_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= test_time_cmp_hi_in;
+        end
+
+        `CSR_TEST_TIME_CMP_LO_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= test_time_cmp_lo_in;
+        end
+
+        `CSR_TEST_TIMER_HI_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= test_timer_hi_in;
+        end
+
+        `CSR_TEST_TIMER_LO_ADDR :
+        begin
+          next_avs_readdata[31:0]             <= test_timer_lo_in;
+        end
         // end auto-generated
   
         // Default an active read on non-existent register
@@ -217,6 +292,7 @@ module core_csr_regs
       control_halt_on_unimp_reg            <= 1'b0;
       control_halt_on_ecall_reg            <= 1'b0;
       halt_addr_reg                        <= 32'h00000040;
+      test_ext_sw_interrupt_reg            <= 1'b0;
       control_clr_halt_reg                 <= 1'b0;
   
       // end auto-generated
@@ -232,6 +308,7 @@ module core_csr_regs
       control_halt_on_unimp_reg            <= next_control_halt_on_unimp;
       control_halt_on_ecall_reg            <= next_control_halt_on_ecall;
       halt_addr_reg                        <= next_halt_addr;
+      test_ext_sw_interrupt_reg            <= next_test_ext_sw_interrupt;
       control_clr_halt_reg                 <= next_control_clr_halt;
   
       // end auto-generated

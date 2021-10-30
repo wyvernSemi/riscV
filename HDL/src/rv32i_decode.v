@@ -41,7 +41,7 @@ module rv32i_decode
   input                                reset_n,
 
   input      [31:0]                    instr,
-  input      [31:0]                    pc_in,       // From fetch unit
+  input      [31:0]                    pc_in,      // PC value, aligned with instr_reg
   input                                update_pc,
   input                                stall,
 
@@ -51,6 +51,7 @@ module rv32i_decode
   input      [31:0]                    rs1_rtn,
   input      [31:0]                    rs2_rtn,
 
+  // Regfile writes, fed back
   input       [4:0]                    fb_rd,
   input      [31:0]                    fb_rd_val,
 
@@ -104,20 +105,56 @@ module rv32i_decode
   output reg  [3:0]                    exception_type
 );
 
+// Define the synchronous exception codes
 localparam IADDR_ALIGN_CODE            = 4'd0;
 localparam ILLEGAL_INSTR               = 4'd2;
 localparam DADDR_ALIGN_CODE            = 4'd4;
 localparam BREAKPOINT                  = 4'd3;
 localparam ECALL                       = 4'd11;
 
+localparam NOP_INSTR                   = 32'h00000013;
+
+// Task to clear the common output state between reset, and when updating PC and 'deleting' instructions
+task clr_state;
+begin
+  rd                                   <=  5'h0;
+  branch                               <=  1'b0;
+  jump                                 <=  1'b0;
+  system                               <=  1'b0;
+  load                                 <=  1'b0;
+  store                                <=  1'b0;
+  zicsr                                <=  2'h0;
+  zicsr_rd                             <=  5'h0;
+  mret                                 <=  1'b0;
+  arith                                <=  1'b0;
+  add_nsub                             <=  1'b0;
+  cmp_unsigned                         <=  1'b0;
+  cmp_is_eq                            <=  1'b0;
+  cmp_is_ne                            <=  1'b0;
+  cmp_is_ge                            <=  1'b0;
+  cmp_is_lt                            <=  1'b0;
+  bit_is_and                           <=  1'b0;
+  bit_is_or                            <=  1'b0;
+  bit_is_xor                           <=  1'b0;
+  shift_arith                          <=  1'b0;
+  shift_left                           <=  1'b0;
+  shift_right                          <=  1'b0;
+end
+endtask
+
 reg         update_pc_dly;
+
+// Registered instr (phase 1) input value, to place in phase 2
 reg  [31:0] instr_reg;
+
+// RS prefetch held values, for use when stalled
 reg   [4:0] rs1_pf_held;
 reg   [4:0] rs2_pf_held;
 
-reg   [1:0] mret_dly;
+// Exception (trap) and return registers
 reg         exception_int;
 reg   [1:0] exception_dly;
+reg   [1:0] mret_dly;
 
 // Extract all the possible immediate value (sign extended as appropriate
 wire [31:0] imm_i                      = {{20{instr_reg[31]}}, instr_reg[31:20]};
@@ -134,6 +171,7 @@ wire  [4:0] rd_idx                     = instr_reg[11:7];
 wire  [4:0] rs1_idx                    = instr_reg[19:15];
 wire  [4:0] rs2_idx                    = instr_reg[24:20];
 
+// Export RS prefetch indexes to register file. From input instruction directly if not stalled, or the held value.
 assign      rs1_prefetch               = stall ? rs1_pf_held : instr[19:15];
 assign      rs2_prefetch               = stall ? rs2_pf_held : instr[24:20];
 
@@ -191,106 +229,81 @@ always @(posedge clk)
 begin
   if (reset_n == 1'b0)
   begin
-    rd                                 <=  5'h0;
-    branch                             <=  1'b0;
-    jump                               <=  1'b0;
-    system                             <=  1'b0;
-    load                               <=  1'b0;
-    store                              <=  1'b0;
-    zicsr                              <=  2'h0;
-    zicsr_rd                           <=  5'h0;
-    mret                               <=  1'b0;
-    mret_dly                           <=  2'h0;
-    arith                              <=  1'b0;
-    add_nsub                           <=  1'b0;
-    cmp_unsigned                       <=  1'b0;
-    cmp_is_eq                          <=  1'b0;
-    cmp_is_ne                          <=  1'b0;
-    cmp_is_ge                          <=  1'b0;
-    cmp_is_lt                          <=  1'b0;
-    bit_is_and                         <=  1'b0;
-    bit_is_or                          <=  1'b0;
-    bit_is_xor                         <=  1'b0;
-    shift_arith                        <=  1'b0;
-    shift_left                         <=  1'b0;
-    shift_right                        <=  1'b0;
+    // Clear common state
+    clr_state;
+
     update_pc_dly                      <=  1'b0;
     cancelled                          <=  1'b0;
     exception_int                      <=  1'b0;
     exception_dly                      <=  2'b00;
-
-    instr_reg                          <= 32'h00000013;
+    mret_dly                           <=  2'h0;
+    
+    // Start off in the phase 2 stage with a NOP
+    instr_reg                          <= NOP_INSTR;
   end
   else
   begin
+    // Phase 2 version of instruction (held if stalled)
     instr_reg                          <= stall ? instr_reg : instr;
+
+    // Delay the PC altering signals for use in 'deleting' upstream instructions read before PC changes
     update_pc_dly                      <= update_pc;
     mret_dly                           <= {mret, mret_dly[1]};
     exception_dly                      <= {exception, exception_dly[1]};
-    cancelled                          <= 1'b0;
 
+    // Default the cancelled and exception state to 0, so they pulse when set
+    cancelled                          <= 1'b0;
     exception_int                      <= 1'b0;
+
+    // Export to Zicsr block (when present) the PC of an exception. If a misaligned IADDR, 
+    // then use pc as the exception was caused by the last instruction
     exception_pc                       <= |pc_in[1:0]   ? pc : pc_in;
+
+    // Set the synchronous exception type based on instruction type, or alignment
     exception_type                     <= |pc_in[1:0]   ? IADDR_ALIGN_CODE :
-                                          invalid_instr ? ILLEGAL_INSTR :
+                                          invalid_instr ? ILLEGAL_INSTR    :
                                           system_instr  ? (instr_reg[20] ? BREAKPOINT : ECALL) :
                                                           4'h0;
+    
+    // Export the PC to the ALU, aligned to other outputs to ALU (phase 3)
     pc                                 <= pc_in;
 
     // When PC is updating, cancel the next instructions to clear pipeline
     if (updating_pc == 1'b1)
     begin
-      a                                <= 32'h0;
-      b                                <= 32'h0;
-      offset                           <= 32'h0;
+      // Clear common state
+      clr_state;
 
-      rd                               <=  5'h0;
-      branch                           <=  1'b0;
-      jump                             <=  1'b0;
-      system                           <=  1'b0;
-      load                             <=  1'b0;
-      store                            <=  1'b0;
-      zicsr                            <=  2'h0;
-      zicsr_rd                         <=  5'h0;
-      mret                             <=  1'b0;
-      arith                            <=  1'b0;
-      add_nsub                         <=  1'b0;
-      cmp_unsigned                     <=  1'b0;
-      cmp_is_eq                        <=  1'b0;
-      cmp_is_ne                        <=  1'b0;
-      cmp_is_ge                        <=  1'b0;
-      cmp_is_lt                        <=  1'b0;
-      bit_is_and                       <=  1'b0;
-      bit_is_or                        <=  1'b0;
-      bit_is_xor                       <=  1'b0;
-      shift_arith                      <=  1'b0;
-      shift_left                       <=  1'b0;
-      shift_right                      <=  1'b0;
-
+      // Flag to ALU that instructions cancelled, for use in counting retired instructions
       cancelled                        <=  1'b1;
     end
     else
     begin
 
+      // Hold RS prefetch indexes when stalled
       rs1_pf_held                      <= stall ? rs1_pf_held : rs1_prefetch;
       rs2_pf_held                      <= stall ? rs2_pf_held : rs2_prefetch;
 
+      // When not stalled, process the phase 2 instruction and generate the outputs for the ALU and extensions
       if (~stall)
       begin
 
+        // A synchrounous exception occurs when a system instruction is read, when an invalid instruction occurs or a misaligned IADDR
         exception_int                  <= system_instr | invalid_instr | |pc_in[1:0];
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx
-        zicsr_rd                       <= rd_idx;
         branch                         <= branch_instr;
         jump                           <= jmp_instr;
         system                         <= sys_instr_nozicsr;
-        zicsr                          <= funct3[1:0] & {2{zicsr_instr}};
-        mret                           <= mret_instr;
         load                           <= ld_st_instr & ~opcode_32[3];
         store                          <= ld_st_instr &  opcode_32[3];
         ld_st_width                    <= funct3;
+
+        // Zicsr signals
+        zicsr_rd                       <= rd_idx;
+        zicsr                          <= funct3[1:0] & {2{zicsr_instr}};
+        mret                           <= mret_instr;
 
         // ALU inputs A and B
         a                              <= ((ui_instr &  opcode_32[3]) | sys_instr_nozicsr)          ? 32'h0   :    // LUI and system, A = 0

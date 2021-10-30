@@ -45,11 +45,13 @@ module rv32i_cpu_core
   input                        clk,
   input                        reset_n,
 
+  // Instruction memory interface
   output [31:0]                iaddress,         // Byte address (32 bit aligned)
   output                       iread,
   input  [31:0]                ireaddata,
   input                        iwaitrequest,
 
+  // Data memory interface
   output [31:0]                daddress,         // Byte address (32 bit aligned)
   output                       dwrite,
   output [31:0]                dwritedata,
@@ -58,8 +60,17 @@ module rv32i_cpu_core
   input  [31:0]                dreaddata,
   input                        dwaitrequest,
 
+  // External execption signals
   input                        irq,
+  input                        ext_sw_interrupt,
+  
+  // Interface to update real-time clock via, say, memory mapped bus
+  input                        wr_mtime,
+  input                        wr_mtimecmp,
+  input                        wr_mtime_upper,
+  input  [31:0]                wr_mtime_val,
 
+  // Outputs for an external test block
   output  [4:0]                test_rd_idx,
   output [31:0]                test_rd_val
 );
@@ -336,7 +347,7 @@ generate
         .exception_pc          (exception_pc),
         .exception_type        (exception_type),
 
-        .ext_sw_interrupt      (1'b0),
+        .ext_sw_interrupt      (ext_sw_interrupt),
 
         .mret                  (decode_mret),
 
@@ -351,10 +362,11 @@ generate
         .regfile_rd_val        (regfile_rd_val),
         .regfile_rd_idx        (regfile_rd),
 
-        .wr_mtime              (1'b0),
-        .wr_mtimecmp           (1'b0),
-        .wr_mtime_upper        (1'b0),
-        .wr_mtime_val          (32'h0),
+        // Interface to update real-time clock externally (say via a memory mapped bus)
+        .wr_mtime              (wr_mtime),
+        .wr_mtimecmp           (wr_mtimecmp),
+        .wr_mtime_upper        (wr_mtime_upper),
+        .wr_mtime_val          (wr_mtime_val),
 
         .zicsr_update_pc       (zicsr_update_pc),
         .zicsr_new_pc          (zicsr_new_pc),
@@ -364,6 +376,7 @@ generate
   end
   else
   begin : nozicsr
+    // When Zicsr not configured, tie off the PC and RD update controls
     assign zicsr_update_pc      = 1'b0;
     assign zicsr_rd             = 5'h0;
   end

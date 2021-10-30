@@ -178,6 +178,19 @@ wire  [31:0] test_rd_val;
 wire         test_halt;
 wire         test_clr_halt;
 
+wire         test_timer_lo_pulse;
+wire         test_timer_hi_pulse;
+wire         test_time_cmp_lo_pulse;
+wire         test_time_cmp_hi_pulse;
+wire         test_ext_sw_interrupt;
+
+// Signals for timer update interface
+wire         wr_mtime;
+wire         wr_mtimecmp;
+wire         wr_mtime_upper;
+wire  [31:0] wr_mtime_val;
+
+// Asynchronous external Interrupt clock synchronising registers
 reg    [1:0] irq_sync;
 
 // ---------------------------------------------------------
@@ -237,6 +250,11 @@ assign imem_be                         = {4{imem_write_csr}} | dmem_be;
 assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_addr  : {avs_csr_address, 2'b00}; // Byte address
 assign imem_readdata                   = imem_rdata;
 assign imem_waitrequest                = 1'b0;
+
+assign wr_mtime                        = test_timer_lo_pulse    | test_timer_hi_pulse;
+assign wr_mtimecmp                     = test_time_cmp_lo_pulse | test_time_cmp_hi_pulse;
+assign wr_mtime_upper                  = test_timer_hi_pulse    | test_time_cmp_hi_pulse;
+assign wr_mtime_val                    = avs_csr_writedata;
 
 // ---------------------------------------------------------
 // Local Synchronous Logic
@@ -302,6 +320,16 @@ end
     .status_reset                      (core_rstn),
     .gp                                (test_gp),
 
+    .test_timer_lo_pulse               (test_timer_lo_pulse),
+    .test_timer_lo_in                  (32'h0),
+    .test_timer_hi_pulse               (test_timer_hi_pulse),
+    .test_timer_hi_in                  (32'h0),
+    .test_time_cmp_lo_pulse            (test_time_cmp_lo_pulse),
+    .test_time_cmp_lo_in               (32'h0),
+    .test_time_cmp_hi_pulse            (test_time_cmp_hi_pulse),
+    .test_time_cmp_hi_in               (32'h0),
+    .test_ext_sw_interrupt             (test_ext_sw_interrupt),
+
     .avs_address                       (avs_csr_address[4:0]),
     .avs_write                         (local_write),
     .avs_writedata                     (avs_csr_writedata),
@@ -340,6 +368,13 @@ end
     .dwaitrequest                      (dmem_waitreq),
 
     .irq                               (irq_sync[0]),
+    .ext_sw_interrupt                  (test_ext_sw_interrupt),
+
+    // Interface to update real-time clock externally
+    .wr_mtime                          (wr_mtime),
+    .wr_mtimecmp                       (wr_mtimecmp),
+    .wr_mtime_upper                    (wr_mtime_upper),
+    .wr_mtime_val                      (wr_mtime_val),
 
     .test_rd_idx                       (test_rd_idx),
     .test_rd_val                       (test_rd_val)

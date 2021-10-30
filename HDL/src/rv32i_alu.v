@@ -30,21 +30,25 @@
 
  `timescale 1ns / 10ps
 
-
 module rv32i_alu
 (
   input                        clk,
   input                        reset_n,
-  
+
   input                        stall,
 
+  // Main ALU value inputs A and B
   input  [31:0]                a_decode,         // rs1
   input  [31:0]                b_decode,         // rs2 or imm
+
+  // Offset for PC calculations
   input  [31:0]                offset_decode,    // imm_b or imm_j  or imm_s or imm_i
 
+  // RS indexes for the A and B inputs (when relevant)
   input   [4:0]                a_rs_idx,
   input   [4:0]                b_rs_idx,
-  
+
+  // RD values being written to register file for feedback bypass
   input   [4:0]                regfile_rd_idx,
   input  [31:0]                regfile_rd_val,
 
@@ -95,12 +99,15 @@ module rv32i_alu
   output reg [31:0]            addr,
   output reg  [3:0]            st_be,
   input      [31:0]            ld_data,
-  
+
+  // Retired instruction flag for Zicsr (if fitted)
   output reg                   retired_instr
 );
 
-reg                            update_rd;
+// Width (Word, half-word, byte) of a load instruction
 reg           [2:0]            ld_width;
+
+// Low bits of a load access address
 reg           [1:0]            addr_lo;
 
 // The A and B inputs to the ALU logic come from the ALU output if the source register
@@ -154,8 +161,10 @@ wire               branch_taken = branch_in & cmp[0];
 wire        [31:0] next_pc      = (jump_in | system_in) ? add :
                                                           pc_in + offset_decode;
 
+// Next memory address is the A input plus the offset from the decoder
 wire        [31:0] next_addr    = a + offset_decode;
 
+// The returned load data is shifted dependant of the address low bits
 wire        [31:0] ld_data_shift = ld_data >> {addr_lo, 3'b000};
 
 always @(posedge clk)
@@ -171,10 +180,10 @@ begin
   end
   else
   begin
-  
+
     // Flag each completed instruction for retired instruction counter
     retired_instr               <= ~stall & ~cancelled;
-    
+
     // Update C output based on active operation
     if (load)
     begin
@@ -201,33 +210,41 @@ begin
     end
     else if (jump_in)
     begin
+      // When jumping, the RD value is the jump instruction's address + 4
       c                         <= pc_in + 32'h4;
     end
     else if (store_in)
     begin
+      // The C output for stores is the B value from the decoder, shifted by the address low bits (masked dependant on width)
       c                         <= b << {next_addr[1:0] & {~ld_store_width[1], ~ld_store_width[0]}, 3'b000};
     end
-    
+
     // For load store, address is result of ALU's addition
     if (load_in | store_in)
     begin
       addr                      <= stall ? addr       : {next_addr[31:2], 2'b00};
       addr_lo                   <= stall ? addr [1:0] : next_addr[1:0];
     end
-    
+
+    // Te RD register is updated (i.e. not 0) when the PC isn't being updated (and instructions 'deleted') and not a misaligned instruction read
     rd                          <= stall ? rd : ((~update_pc & ~((jump_in | branch_taken) & |next_pc[1:0])) ? rd_in : 5'h0);
-    update_rd                   <= stall ? update_rd : ((rd_in != 5'h0) ? 1'b1  : 1'b0);
-    
+
+    // Update PC when a system, jump or taken branch instruction
     pc                          <= stall ? pc : next_pc;
     update_pc                   <= stall ? update_pc : ((jump_in | system_in | branch_taken) & ~update_pc);
-    
+
+    // Load/store outputs
     load                        <= (stall ? load : (load_in  & ~update_pc)) & ~clr_load_op;
     store                       <= store_in & ~update_pc;
-    
+
+    // Store byte enables a function of width (word, half-word, byte) and the address low bits
+    // When word, all set. When half-word, either upper two bits when next_addr[1], else lower two.
+    // When byte, only one bit set, as indexed by next_addr[1:0].
     st_be                       <= ld_store_width[1] ? 4'b1111 :
                                    ld_store_width[0] ? (4'b0011 << {next_addr[1], 1'b0}):
                                                        (4'b0001 <<  next_addr[1:0]);
-                                                        
+
+    // Registered value of load/store width, for use on load instructions
     ld_width                    <= stall ? ld_width : ld_store_width;
   end
 end
