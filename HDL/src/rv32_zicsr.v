@@ -34,7 +34,8 @@
 `define MACH_TIMER_INT_CODE            4'd7
 `define MACH_EXT_INT_CODE              4'd11
 `define MACH_IADDR_ALIGN_CODE          4'd0
-`define MACH_DADDR_ALIGN_CODE          4'd4
+`define MACH_LADDR_ALIGN_CODE          4'd4
+`define MACH_SADDR_ALIGN_CODE          4'd6
 
 module rv32_zicsr
 #(parameter                            CLK_FREQ_MHZ = 100
@@ -54,6 +55,7 @@ module rv32_zicsr
   input                                exception,
   input      [31:0]                    exception_pc,
   input       [3:0]                    exception_type,
+  input      [31:0]                    exception_addr,
 
   // Machine software interrupts comes from an external memory mapped control register
   input                                ext_sw_interrupt,
@@ -159,6 +161,11 @@ reg         mie_meie_int;
 reg         mip_msip;
 reg         mip_mtip;
 reg         mip_meip;
+
+// Trap value signals
+wire        mtval_pulse;
+wire [31:0] mtval_wval;
+reg  [31:0] mtval_int;
 
 // Interrupt signals
 wire        ext_interrupt;
@@ -291,6 +298,8 @@ begin
       mstatus_mie_int                  <= 1'b0;
       mepc_int                         <= exception_pc[31:2];
 
+      mtval_int                        <= exception_addr;
+
       zicsr_update_pc                  <= 1'b1;
       zicsr_new_pc                     <= mtvec_base + {26'h0, (next_mcause_code_int & {4{mtvec_mode[0]}}), 2'b00};
     end
@@ -315,6 +324,11 @@ begin
     if (mstatus_pulse)
     begin
       mstatus_mie_int                  <= mstatus_mie_wval;
+    end
+
+    if (mtval_pulse)
+    begin
+      mtval_int                        <= mtval_wval;
     end
 
     if (mie_pulse)
@@ -420,6 +434,10 @@ end
     .mcause_code_in                    (mcause_code_int),
     .mcause_interrupt                  (mcause_interrupt_wval),
     .mcause_interrupt_in               (mcause_interrupt_int),
+
+    .mtval_pulse                       (mtval_pulse),
+    .mtval                             (mtval_wval),
+    .mtval_in                          (mtval_int),
 
     .mcountinhibit_cy                  (mcountinhibit_cy),
     .mcountinhibit_ir                  (mcountinhibit_ir),

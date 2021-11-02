@@ -59,6 +59,7 @@ for %%i in (^
    sbreak^
    illegal^
    ma_fetch^
+   ma_addr^
    shamt ^
  ) do (
    echo.

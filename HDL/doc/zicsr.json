@@ -324,7 +324,7 @@
         "mtval" : {
             "address"      : "0x343",
             "width"        : "32",
-            "type"         : "c",
+            "type"         : "wp",
             "reset"        : "0",
             "description"  : "Trap value"
         },

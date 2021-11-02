@@ -63,7 +63,7 @@ module rv32i_cpu_core
   // External execption signals
   input                        irq,
   input                        ext_sw_interrupt,
-  
+
   // Interface to update real-time clock via, say, memory mapped bus
   input                        wr_mtime,
   input                        wr_mtimecmp,
@@ -115,7 +115,12 @@ wire        decode_mret;
 wire [31:0] alu_c;
 wire [31:0] alu_pc;
 wire  [4:0] alu_rd;
+
+// ALU exception signals
 wire        alu_update_pc;
+wire        alu_misaligned_load;
+wire        alu_misaligned_store;
+wire [31:0] alu_misaligned_addr;
 
 // Decoder RS prefetch indexes
 wire  [4:0] decode_rs2_prefetch;
@@ -142,6 +147,7 @@ wire [31:0] zicsr_rd_val;
 wire        exception;
 wire [31:0] exception_pc;
 wire  [3:0] exception_type;
+wire [31:0] exception_addr;
 
 // Stall conditions
 wire        stall              = (dread & dwaitrequest);
@@ -186,6 +192,9 @@ assign test_rd_val             = regfile_rd_val;
 
     .pc_in                     (regfile_last_pc),
     .update_pc                 (alu_update_pc),
+    .misaligned_load           (alu_misaligned_load),
+    .misaligned_store          (alu_misaligned_store),
+    .misaligned_addr           (alu_misaligned_addr),
 
     .rs1_prefetch              (decode_rs1_prefetch),
     .rs2_prefetch              (decode_rs2_prefetch),
@@ -235,7 +244,8 @@ assign test_rd_val             = regfile_rd_val;
 
     .exception                 (exception),
     .exception_pc              (exception_pc),
-    .exception_type            (exception_type)
+    .exception_type            (exception_type),
+    .exception_addr            (exception_addr)
   );
 
   // ---------------------------------------------------------
@@ -281,7 +291,7 @@ assign test_rd_val             = regfile_rd_val;
 
     .a_rs_idx                  (decode_a_rs_idx),
     .b_rs_idx                  (decode_b_rs_idx),
-    
+
     .regfile_rd_idx            (regfile_rd),
     .regfile_rd_val            (regfile_rd_val),
 
@@ -319,12 +329,15 @@ assign test_rd_val             = regfile_rd_val;
     .rd                        (alu_rd),
     .pc                        (alu_pc),
     .update_pc                 (alu_update_pc),
+    .misaligned_load           (alu_misaligned_load),
+    .misaligned_store          (alu_misaligned_store),
+    .misaligned_addr           (alu_misaligned_addr),
     .load                      (dread),
     .store                     (dwrite),
     .addr                      (daddress),
     .st_be                     (dbyteenable),
     .ld_data                   (dreaddata)
-    
+
   );
 
   // ---------------------------------------------------------
@@ -339,13 +352,14 @@ generate
       (
         .clk                   (clk),
         .reset_n               (reset_n),
-        
+
         .stall                 (stall_decode),
 
         .irq                   (irq),
         .exception             (exception),
         .exception_pc          (exception_pc),
         .exception_type        (exception_type),
+        .exception_addr        (exception_addr),
 
         .ext_sw_interrupt      (ext_sw_interrupt),
 
@@ -358,7 +372,7 @@ generate
         .index                 (decode_b[11:0]),
         .rd_in                 (decode_zicsr_rd),
         .rs1_in                (decode_a_rs_idx),
-        
+
         .regfile_rd_val        (regfile_rd_val),
         .regfile_rd_idx        (regfile_rd),
 

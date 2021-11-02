@@ -40,9 +40,21 @@ module rv32i_decode
   input                                clk,
   input                                reset_n,
 
+  // Fetch instruction (phase 1)
   input      [31:0]                    instr,
-  input      [31:0]                    pc_in,      // PC value, aligned with instr_reg
+
+  // PC value, aligned with instr_reg
+  input      [31:0]                    pc_in,
+
+  // ALU flag to indicate PC is being updated
   input                                update_pc,
+
+  // ALU misaligned load/store flags and address
+  input                                misaligned_load,
+  input                                misaligned_store,
+  input      [31:0]                    misaligned_addr,
+
+  // External stall input
   input                                stall,
 
   // GP register read ports
@@ -102,13 +114,15 @@ module rv32i_decode
   output reg                           cancelled,
   output                               exception,
   output reg [31:0]                    exception_pc,
-  output reg  [3:0]                    exception_type
+  output reg  [3:0]                    exception_type,
+  output reg [31:0]                    exception_addr
 );
 
 // Define the synchronous exception codes
 localparam IADDR_ALIGN_CODE            = 4'd0;
 localparam ILLEGAL_INSTR               = 4'd2;
-localparam DADDR_ALIGN_CODE            = 4'd4;
+localparam LOAD_ALIGN_CODE             = 4'd4;
+localparam STORE_ALIGN_CODE            = 4'd6;
 localparam BREAKPOINT                  = 4'd3;
 localparam ECALL                       = 4'd11;
 
@@ -219,11 +233,16 @@ wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_va
 // No register writeback for store, branch, system and invalid instructions
 wire        no_writeback               = st_instr | branch_instr | sys_instr_nozicsr | invalid_instr | fence_instr | zicsr_instr;
 
-// Updating PC after a jump/branch executed in ALU, an exception_int or a return from exception_int
-wire        updating_pc                = update_pc | update_pc_dly | exception | |exception_dly | mret | |mret_dly;
+// Updating PC after a jump/branch executed in ALU, an exception_int, misaligned
+// memory access or a return from exception_int
+wire        updating_pc                = update_pc       | update_pc_dly    |
+                                         exception       | |exception_dly   |
+                                         misaligned_load | misaligned_store |
+                                         mret            | |mret_dly;
+
 
 // Export synchronous exception, but mask if just taking a branch, as following (possibly invalid) instructions are not executed
-assign exception                       = exception_int & ~(update_pc | update_pc_dly);
+assign      exception                  = exception_int & ~(update_pc | update_pc_dly);
 
 always @(posedge clk)
 begin
@@ -237,7 +256,7 @@ begin
     exception_int                      <=  1'b0;
     exception_dly                      <=  2'b00;
     mret_dly                           <=  2'h0;
-    
+
     // Start off in the phase 2 stage with a NOP
     instr_reg                          <= NOP_INSTR;
   end
@@ -255,16 +274,21 @@ begin
     cancelled                          <= 1'b0;
     exception_int                      <= 1'b0;
 
-    // Export to Zicsr block (when present) the PC of an exception. If a misaligned IADDR, 
-    // then use pc as the exception was caused by the last instruction
-    exception_pc                       <= |pc_in[1:0]   ? pc : pc_in;
+    // Export to Zicsr block (when present) the PC of an exception. If a misaligned [I|D]ADDR,
+    // then use pc, as the exception was caused by the last instruction
+    exception_pc                       <= (|pc_in[1:0] | misaligned_store | misaligned_load) ? pc : pc_in;
 
     // Set the synchronous exception type based on instruction type, or alignment
-    exception_type                     <= |pc_in[1:0]   ? IADDR_ALIGN_CODE :
-                                          invalid_instr ? ILLEGAL_INSTR    :
-                                          system_instr  ? (instr_reg[20] ? BREAKPOINT : ECALL) :
-                                                          4'h0;
-    
+    exception_type                     <= |pc_in[1:0]      ? IADDR_ALIGN_CODE :
+                                          misaligned_load  ? LOAD_ALIGN_CODE  :
+                                          misaligned_store ? STORE_ALIGN_CODE :
+                                          invalid_instr    ? ILLEGAL_INSTR    :
+                                          system_instr     ? (instr_reg[20] ? BREAKPOINT : ECALL) :
+                                                             4'h0;
+
+    // Exception address for load/store misalignments and illegal instructions
+    exception_addr                     <= (misaligned_load | misaligned_store) ? misaligned_addr : 32'h0;
+
     // Export the PC to the ALU, aligned to other outputs to ALU (phase 3)
     pc                                 <= pc_in;
 
@@ -274,7 +298,7 @@ begin
       // Clear common state
       clr_state;
 
-      // Flag to ALU that instructions cancelled, for use in counting retired instructions
+      // Flag to ALU that the instruction's cancelled, for use in counting retired instructions
       cancelled                        <=  1'b1;
     end
     else
@@ -288,8 +312,9 @@ begin
       if (~stall)
       begin
 
-        // A synchrounous exception occurs when a system instruction is read, when an invalid instruction occurs or a misaligned IADDR
-        exception_int                  <= system_instr | invalid_instr | |pc_in[1:0];
+        // A synchrounous exception occurs when a system instruction is read, when an invalid instruction occurs,
+        // a misaligned IADDR, or a misaligned load/store address
+        exception_int                  <= system_instr | invalid_instr | |pc_in[1:0] | misaligned_load | misaligned_store;
 
         // Next stage ALU control outputs
         rd                             <= no_writeback ? 5'h0 : rd_idx;                                 // if no writeback, rd = x0, else feedfoward rd_idx

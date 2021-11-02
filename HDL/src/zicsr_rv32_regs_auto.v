@@ -4,7 +4,7 @@
 // -----------------------------------------------------------------------------
 //  File       : zicsr_rv32_regs_auto.v
 //  Author     : auto-generated
-//  Created    : 2021-10-21
+//  Created    : 2021-11-01
 //  Standard   : Verilog 2001
 // -----------------------------------------------------------------------------
 //  Description:
@@ -75,6 +75,9 @@ module zicsr_rv32_regs
     input        [3:0]    mcause_code_in,
     output                mcause_interrupt,
     input                 mcause_interrupt_in,
+    output reg            mtval_pulse,
+    output      [31:0]    mtval,
+    input       [31:0]    mtval_in,
     output reg            mcycle_pulse,
     output      [31:0]    mcycle,
     input       [31:0]    mcycle_in,
@@ -153,6 +156,7 @@ module zicsr_rv32_regs
   assign mepc                            = avs_writedata[31:0];
   assign mcause_code                     = avs_writedata[3:0];
   assign mcause_interrupt                = avs_writedata[31];
+  assign mtval                           = avs_writedata[31:0];
   assign mcycle                          = avs_writedata[31:0];
   assign minstret                        = avs_writedata[31:0];
   assign mcycleh                         = avs_writedata[31:0];
@@ -184,6 +188,7 @@ module zicsr_rv32_regs
     mie_pulse                            <= 1'b0;
     mepc_pulse                           <= 1'b0;
     mcause_pulse                         <= 1'b0;
+    mtval_pulse                          <= 1'b0;
     mcycle_pulse                         <= 1'b0;
     minstret_pulse                       <= 1'b0;
     mcycleh_pulse                        <= 1'b0;
@@ -249,6 +254,11 @@ module zicsr_rv32_regs
         `RV32_MSTATUS_ADDR :
         begin
           mstatus_pulse                  <= 1'b1;
+        end
+
+        `RV32_MTVAL_ADDR :
+        begin
+          mtval_pulse                    <= 1'b1;
         end
 
         `RV32_MTVEC_ADDR :
@@ -395,7 +405,7 @@ module zicsr_rv32_regs
 
         `RV32_MTVAL_ADDR :
         begin
-          next_avs_readdata[31:0]             <= 32'h0;
+          next_avs_readdata[31:0]             <= mtval_in;
         end
 
         `RV32_MTVEC_ADDR :

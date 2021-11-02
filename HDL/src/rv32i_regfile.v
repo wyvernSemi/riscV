@@ -75,7 +75,7 @@ assign rs1                     = (|rs1_idx_dly && rs1_idx_dly == rd_idx)     ? n
 assign rs2                     = (|rs2_idx_dly && rs2_idx_dly == rd_idx)     ? new_rd :
                                  (|rs2_idx_dly && rs2_idx_dly == rd_idx_dly) ? new_rd_dly :
                                                                                rs2_int;
-                                                                               
+
 wire [31:0] next_pc            = update_pc ? new_pc : pc_int;
 
 // Export the PC values, but hold at reset vector until running after reset, to prefetch reset vector instruction.
@@ -98,14 +98,14 @@ begin
     rd_idx_dly                 <= rd_idx;
     new_rd_dly                 <= new_rd;
     start_up                   <= {1'b0, start_up[1]};
-    
+
     if (~stall | update_pc)
     begin
       // Because of pipeline delay reading instruction,
       // last PC for decoder is the address before current PC to align at ALU
       last_pc_int              <= next_pc - 32'h4;
 
-      // Update PC 
+      // Update PC
       pc_int                   <= next_pc + 32'h4;
     end
   end
