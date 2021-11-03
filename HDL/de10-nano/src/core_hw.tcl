@@ -73,7 +73,7 @@ set_parameter_property RV32I_RESET_VECTOR TYPE STD_LOGIC_VECTOR
 set_parameter_property RV32I_RESET_VECTOR UNITS None
 set_parameter_property RV32I_RESET_VECTOR DESCRIPTION "PC address at reset"
 set_parameter_property RV32I_RESET_VECTOR HDL_PARAMETER true
-add_parameter RV32I_TRAP_VECTOR STD_LOGIC_VECTOR 4 "Trap vector address"
+add_parameter RV32I_TRAP_VECTOR STD_LOGIC_VECTOR 4 "Default trap vector address (if no Zicsr mtvec register)"
 set_parameter_property RV32I_TRAP_VECTOR DEFAULT_VALUE 4
 set_parameter_property RV32I_TRAP_VECTOR DISPLAY_NAME RV32I_TRAP_VECTOR
 set_parameter_property RV32I_TRAP_VECTOR WIDTH 32
@@ -136,6 +136,24 @@ set_parameter_property RV32_ZICSR_EN UNITS None
 set_parameter_property RV32_ZICSR_EN ALLOWED_RANGES -2147483648:2147483647
 set_parameter_property RV32_ZICSR_EN DESCRIPTION "Enable/disable Zicsr extensions"
 set_parameter_property RV32_ZICSR_EN HDL_PARAMETER true
+add_parameter RV32_DISABLE_TIMER INTEGER 0 "Disable/enable RT timer (if Zicsr extensions enabled)"
+set_parameter_property RV32_DISABLE_TIMER DEFAULT_VALUE 0
+set_parameter_property RV32_DISABLE_TIMER DISPLAY_NAME RV32_DISABLE_TIMER
+set_parameter_property RV32_DISABLE_TIMER TYPE INTEGER
+set_parameter_property RV32_DISABLE_TIMER ENABLED true
+set_parameter_property RV32_DISABLE_TIMER UNITS None
+set_parameter_property RV32_DISABLE_TIMER ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32_DISABLE_TIMER DESCRIPTION "Disable/enable RT timer (if Zicsr extensions enabled)"
+set_parameter_property RV32_DISABLE_TIMER HDL_PARAMETER true
+add_parameter RV32_DISABLE_INSTRET INTEGER 0 "Disable/enable instruction retired counter (if Zicsr extensions enabled)"
+set_parameter_property RV32_DISABLE_INSTRET DEFAULT_VALUE 0
+set_parameter_property RV32_DISABLE_INSTRET DISPLAY_NAME RV32_DISABLE_INSTRET
+set_parameter_property RV32_DISABLE_INSTRET TYPE INTEGER
+set_parameter_property RV32_DISABLE_INSTRET ENABLED true
+set_parameter_property RV32_DISABLE_INSTRET UNITS None
+set_parameter_property RV32_DISABLE_INSTRET ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32_DISABLE_INSTRET DESCRIPTION "Disable/enable instruction retired counter (if Zicsr extensions enabled)"
+set_parameter_property RV32_DISABLE_INSTRET HDL_PARAMETER true
 add_parameter RV32I_IMEM_SHADOW_WR INTEGER 0 "**TEST ONLY**: Shadow DMEM writes in IMEM"
 set_parameter_property RV32I_IMEM_SHADOW_WR DEFAULT_VALUE 0
 set_parameter_property RV32I_IMEM_SHADOW_WR DISPLAY_NAME RV32I_IMEM_SHADOW_WR
@@ -168,7 +186,9 @@ add_display_item MEMORY RV32I_IMEM_ADDR_WIDTH PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_ADDR_WIDTH PARAMETER ""
 add_display_item MEMORY RV32I_IMEM_INIT_FILE PARAMETER ""
 add_display_item MEMORY RV32I_DMEM_INIT_FILE PARAMETER ""
-add_display_item EXTENSIONS RV32_ZCSR_EN PARAMETER ""
+add_display_item EXTENSIONS RV32_ZICSR_EN PARAMETER ""
+add_display_item EXTENSIONS RV32_DISABLE_TIMER PARAMETER ""
+add_display_item EXTENSIONS RV32_DISABLE_INSTRET PARAMETER ""
 add_display_item TEST RV32I_IMEM_SHADOW_WR PARAMETER ""
 add_display_item TEST RV32I_INCL_TEST_BLOCK PARAMETER ""
 

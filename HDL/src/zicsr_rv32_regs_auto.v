@@ -4,7 +4,7 @@
 // -----------------------------------------------------------------------------
 //  File       : zicsr_rv32_regs_auto.v
 //  Author     : auto-generated
-//  Created    : 2021-11-01
+//  Created    : 2021-11-03
 //  Standard   : Verilog 2001
 // -----------------------------------------------------------------------------
 //  Description:
@@ -99,6 +99,7 @@ module zicsr_rv32_regs
     input       [31:0]    ucycleh,
     input       [31:0]    utimeh,
     input       [31:0]    uinstreth,
+    input       [11:0]    clk_freq_mhz,
 
     // end auto-generated
 
@@ -287,6 +288,11 @@ module zicsr_rv32_regs
         // auto-generated
   
         // Write and read (incl. constant) case statements
+
+        `RV32_CLK_FREQ_MHZ_ADDR :
+        begin
+          next_avs_readdata[11:0]             <= clk_freq_mhz;
+        end
 
         `RV32_MARCHID_ADDR :
         begin

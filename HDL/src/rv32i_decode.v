@@ -209,8 +209,7 @@ wire        sys_instr_nozicsr          = system_instr & ~RV32_ZICSR_EN[0];
 wire        zicsr_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b11100} &  |funct3 &  RV32_ZICSR_EN[0];
 wire        mret_instr                 = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 &  instr_reg[21] & instr_reg[29] & RV32_ZICSR_EN[0];
 
-wire        zicsr_imm_instr            = zicsr_instr &  funct3[2];
-wire        zicsr_rs1_instr            = zicsr_instr & ~funct3[2];
+wire        zicsr_imm_instr            = zicsr_instr & funct3[2];
 
 // Flag indication that an ALU instruction is I-type
 wire        alu_imm                    = ~opcode[5];

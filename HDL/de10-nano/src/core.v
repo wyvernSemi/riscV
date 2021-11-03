@@ -42,6 +42,8 @@ module core
             RV32I_IMEM_INIT_FILE       = "UNUSED",
             RV32I_DMEM_INIT_FILE       = "UNUSED",
             RV32_ZICSR_EN              = 1,
+            RV32_DISABLE_TIMER         = 0,
+            RV32_DISABLE_INSTRET       = 0,
             // Next parameters altered strictly for test purposes only
             RV32I_IMEM_SHADOW_WR       = 0,
             RV32I_INCL_TEST_BLOCK      = 0
@@ -170,7 +172,6 @@ wire         imem_write;
 wire   [3:0] imem_be;
 wire  [31:0] imem_readdata;
 wire         imem_waitrequest;
-reg          imem_readdatavalid;
 
 // Test block signals
 wire   [4:0] test_rd_idx;
@@ -265,14 +266,12 @@ begin
   if (~reset_n)
   begin
     count                              <= 0;
-    imem_readdatavalid                 <= 1'b0;
     dmem_rd_delay                      <= 1'b0;
     irq_sync                           <= 2'b00;
   end
   else
   begin
     count                              <= count + 27'd1;
-    imem_readdatavalid                 <= imem_rd;
     dmem_rd_delay                      <= dmem_rd;
     irq_sync                           <= {~gpio_in[0], irq_sync[1]};
   end
@@ -347,7 +346,9 @@ end
    .RV32I_TRAP_VECTOR                  (RV32I_TRAP_VECTOR),
    .RV32I_LOG2_REGFILE_ENTRIES         (RV32I_LOG2_REGFILE_ENTRIES),
    .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM),
-   .RV32_ZICSR_EN                      (RV32_ZICSR_EN)
+   .RV32_ZICSR_EN                      (RV32_ZICSR_EN),
+   .RV32_DISABLE_TIMER                 (RV32_DISABLE_TIMER),
+   .RV32_DISABLE_INSTRET               (RV32_DISABLE_INSTRET)
   )
   rv32i_cpu_core_inst
   (

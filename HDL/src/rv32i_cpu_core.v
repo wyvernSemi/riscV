@@ -39,7 +39,9 @@ module rv32i_cpu_core
    RV32I_TRAP_VECTOR           = 32'h00000004,
    RV32I_LOG2_REGFILE_ENTRIES  = 5,
    RV32I_REGFILE_USE_MEM       = 1,
-   RV32_ZICSR_EN               = 1
+   RV32_ZICSR_EN               = 1,
+   RV32_DISABLE_TIMER          = 0,
+   RV32_DISABLE_INSTRET        = 0
 )
 (
   input                        clk,
@@ -348,7 +350,7 @@ generate
 
   if (RV32_ZICSR_EN == 1)
   begin : zicsr
-    rv32_zicsr #(.CLK_FREQ_MHZ  (CLK_FREQ_MHZ)) rv32_zicsr
+    rv32_zicsr #(.CLK_FREQ_MHZ(CLK_FREQ_MHZ), .DISABLE_TIMER(RV32_DISABLE_TIMER), .DISABLE_INSTRET(RV32_DISABLE_INSTRET)) rv32_zicsr
       (
         .clk                   (clk),
         .reset_n               (reset_n),

@@ -32,6 +32,8 @@ COREHWTCLFILE      = ${COREDIR}/core_hw.tcl
 # Name of auto-generated list of core source files
 COREVLOGTCLFILE    = files_core_auto.tcl
 
+CMDSHELL           = cmd
+
 #------------------------------------------------------
 # BUILD RULES
 #------------------------------------------------------
@@ -62,6 +64,9 @@ runlog: all
 
 waves:
 	@${VSIMEXE} -view vsim.wlf -do wave.do
+    
+regression: 
+	@${CMDSHELL} "/c run32i_tests.bat"
 
 gui: rungui
 
@@ -76,6 +81,7 @@ help:
 	@echo "make rungui/gui    Build and run GUI simulation"
 	@echo "make runlog/log    Build and run batch simulation with signal logging"
 	@echo "make waves         Run wave viewer in ModelSim (to view runlog signals)"
+	@echo "make regression    Run the regression test"
 	@echo "make help          Display this message"
 
 #------------------------------------------------------

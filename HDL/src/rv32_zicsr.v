@@ -38,7 +38,9 @@
 `define MACH_SADDR_ALIGN_CODE          4'd6
 
 module rv32_zicsr
-#(parameter                            CLK_FREQ_MHZ = 100
+#(parameter                            CLK_FREQ_MHZ    = 100,
+  parameter                            DISABLE_TIMER   = 0,
+  parameter                            DISABLE_INSTRET = 0
 )
 (
   input                                clk,
@@ -194,8 +196,10 @@ wire [31:0] usec_wrap_val              = CLK_FREQ_MHZ - 1;
 // Trap vector base always aligned to 32 bits
 assign mtvec_base[1:0]                 = 2'b00;
 
+wire   [63:0] mtime_selected           = (DISABLE_TIMER == 0) ? mtime_int : {mcycleh_int, mcycle_int};
+
 // Flag if timer value greater than comparison value
-assign time_gt_cmp                     = (mtime_int >= mtimecmp_int) ? 1'b1 : 1'b0;
+assign time_gt_cmp                     = (mtime_selected >= mtimecmp_int) ? 1'b1 : 1'b0;
 
 // Flag interrupts if enabled
 assign ext_interrupt                   = mstatus_mie_int & (mip_meip & mie_meie);
@@ -229,6 +233,7 @@ assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_
 // Mask zicsr instruction input when stalled
 assign zicsr_int                       = stall ? 2'b00 : zicsr;
 
+
 // -----------------------------------------------
 // Synchronous logic
 // -----------------------------------------------
@@ -252,7 +257,7 @@ begin
     mie_meie_int                       <=  1'b0;
     usec_count                         <= 12'h0;
     mtime_int                          <= 64'h0;
-    mtimecmp_int                       <= {64{1'b1}};  // Set comparaator to maximum time to avoid unintentional interrupts until set
+    mtimecmp_int                       <= {64{1'b1}};  // Set comparator to maximum time to avoid unintentional interrupts until set
     minstret_int                       <= 32'h0;
     minstreth_int                      <= 32'h0;
     zicsr_update_pc                    <=  1'b0;
@@ -280,13 +285,18 @@ begin
     // The destination register (RD) value is just the old CSR register value
     readdata_reg                       <= readdata_int;
 
-    // Manage timer and counters
-    mcycle_int                         <= mcycle_int  + {31'h0, ~mcountinhibit_cy};
+    // Manage timer and counters. When DISABLE_TIMER is non-zero, the timer is disabled, and the cycle count is used
+    // as the timer, and cannot be disabled with mcountinhibit cy bit. The frequency of the cycle counter is available
+    // via a custom CSR at 0xfff, and is a function of the CLK_FREQ_MHZ parameter.
+    mcycle_int                         <= mcycle_int  + {31'h0, (DISABLE_TIMER == 0) ? ~mcountinhibit_cy : 1'b1};
     mcycleh_int                        <= mcycleh_int + {31'h0, &mcycle_int};
-    usec_count                         <= (usec_count == usec_wrap_val[11:0]) ? 12'h0 : usec_count + 12'h1;
-    mtime_int                          <= mtime_int + {63'h0, ~|usec_count};
-    minstret_int                       <= minstret_int  + {31'h0, instr_retired & ~mcountinhibit_ir};
-    minstreth_int                      <= minstreth_int + {31'h0, &minstret_int};
+    usec_count                         <= (usec_count == usec_wrap_val[11:0] || DISABLE_TIMER != 0) ? 12'h0 : usec_count + 12'h1;
+    mtime_int                          <= (DISABLE_TIMER == 0)   ? mtime_int + {63'h0, ~|usec_count} : 64'h0;
+    
+    // Count the instructions retired by the ALU. When the DISABLE_INSTRET is non-zero, the counter is disabled
+    // and will read as zero and can't be written to with CSRxxx instruction.
+    minstret_int                       <= (DISABLE_INSTRET == 0) ? minstret_int  + {31'h0, instr_retired & ~mcountinhibit_ir} : 32'h0;
+    minstreth_int                      <= (DISABLE_INSTRET == 0) ? minstreth_int + {31'h0, &minstret_int} : 32'h0;
 
 
     // Manage exceptions, updating relvant CSR registers, and jumping to trap vector
@@ -359,18 +369,18 @@ begin
       mcycleh_int                      <= mcycleh_wval;
     end
 
-    if (minstret_pulse)
+    if (minstret_pulse && DISABLE_INSTRET == 0)
     begin
       minstret_int                     <= minstret_wval;
     end
 
-    if (minstreth_pulse)
+    if (minstreth_pulse && DISABLE_INSTRET == 0)
     begin
       minstreth_int                    <= minstreth_wval;
     end
 
     // Update mtime/mtimecmp
-    if (wr_mtime)
+    if (wr_mtime && DISABLE_TIMER == 0)
     begin
       if (wr_mtime_upper)
       begin
@@ -457,15 +467,17 @@ end
     .minstreth_in                      (minstreth_int),
 
     .ucycle                            (mcycle_int),
-    .utime                             (mtime_int[31:0]),
+    .utime                             (mtime_selected[31:0]),
     .uinstret                          (minstret_int),
     .ucycleh                           (mcycleh_int),
-    .utimeh                            (mtime_int[63:32]),
+    .utimeh                            (mtime_selected[63:32]),
     .uinstreth                         (minstreth_int),
 
     .mip_msip                          (mip_msip),
     .mip_mtip                          (mip_mtip),
     .mip_meip                          (mip_meip),
+    
+    .clk_freq_mhz                      (CLK_FREQ_MHZ[11:0]),
 
     .avs_waddress                      (waddr),
     .avs_write                         (write),

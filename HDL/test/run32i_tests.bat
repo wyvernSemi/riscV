@@ -1,3 +1,4 @@
+
 @echo off
 
 rm -rf obj
@@ -60,7 +61,7 @@ for %%i in (^
    illegal^
    ma_fetch^
    ma_addr^
-   shamt ^
+   shamt^
  ) do (
    echo.
    echo.
