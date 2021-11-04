@@ -36,6 +36,8 @@ C++       = ${TOOLPATH}\bin\${ARCH}g++.exe
 #
 UTILS_SRC = elf.cpp
 
+INCLUDES  = fpga_support.h core.h CCoreAuto.h
+
 #
 # Output ARM test program
 #
@@ -50,7 +52,7 @@ CFLAGS    = -std=c++11 -I .
 .PHONY: all
 all: ${EXEC}
 
-${EXEC} : ${EXEC:%.exe=%.cpp} ${EXEC:%.exe=%.h} ${UTILS_SRC} ${UTILS_SRC:%.cpp=%.h}
+${EXEC} : ${EXEC:%.exe=%.cpp} ${EXEC:%.exe=%.h} ${UTILS_SRC} ${UTILS_SRC:%.cpp=%.h} ${INCLUDES}
 	@${C++} ${CFLAGS} ${UTILS_SRC} $< -o $@
 
 clean:

@@ -42,6 +42,8 @@ private:
         inline void SetHaltOnAddr(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_CONTROL/4, ((GetControl() & ~CSR_CORE_CONTROL_HALT_ON_ADDR_MASK) | ((val << CSR_CORE_CONTROL_HALT_ON_ADDR) & CSR_CORE_CONTROL_HALT_ON_ADDR_MASK)));}
         inline uint32_t GetHaltOnUnimp(){return (GetControl() & CSR_CORE_CONTROL_HALT_ON_UNIMP_MASK) >> CSR_CORE_CONTROL_HALT_ON_UNIMP;}
         inline void SetHaltOnUnimp(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_CONTROL/4, ((GetControl() & ~CSR_CORE_CONTROL_HALT_ON_UNIMP_MASK) | ((val << CSR_CORE_CONTROL_HALT_ON_UNIMP) & CSR_CORE_CONTROL_HALT_ON_UNIMP_MASK)));}
+        inline uint32_t GetHaltOnEcall(){return (GetControl() & CSR_CORE_CONTROL_HALT_ON_ECALL_MASK) >> CSR_CORE_CONTROL_HALT_ON_ECALL;}
+        inline void SetHaltOnEcall(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_CONTROL/4, ((GetControl() & ~CSR_CORE_CONTROL_HALT_ON_ECALL_MASK) | ((val << CSR_CORE_CONTROL_HALT_ON_ECALL) & CSR_CORE_CONTROL_HALT_ON_ECALL_MASK)));}
         inline void SetControl(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_CONTROL/4, val);}
     private:
         volatile uint32_t* m_pvCsrBaseAddr;
@@ -77,6 +79,56 @@ private:
         volatile uint32_t* m_pvCsrBaseAddr;
     };
 
+    class CTestTimerLo
+    {
+    public:
+        CTestTimerLo(uint32_t* blkBaseAddr) {m_pvCsrBaseAddr = blkBaseAddr;};
+        inline uint32_t GetTestTimerLo(){return CCoreAuto::readReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIMER_LO/4);}
+        inline void SetTestTimerLo(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIMER_LO/4, val);}
+    private:
+        volatile uint32_t* m_pvCsrBaseAddr;
+    };
+
+    class CTestTimerHi
+    {
+    public:
+        CTestTimerHi(uint32_t* blkBaseAddr) {m_pvCsrBaseAddr = blkBaseAddr;};
+        inline uint32_t GetTestTimerHi(){return CCoreAuto::readReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIMER_HI/4);}
+        inline void SetTestTimerHi(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIMER_HI/4, val);}
+    private:
+        volatile uint32_t* m_pvCsrBaseAddr;
+    };
+
+    class CTestTimeCmpLo
+    {
+    public:
+        CTestTimeCmpLo(uint32_t* blkBaseAddr) {m_pvCsrBaseAddr = blkBaseAddr;};
+        inline uint32_t GetTestTimeCmpLo(){return CCoreAuto::readReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIME_CMP_LO/4);}
+        inline void SetTestTimeCmpLo(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIME_CMP_LO/4, val);}
+    private:
+        volatile uint32_t* m_pvCsrBaseAddr;
+    };
+
+    class CTestTimeCmpHi
+    {
+    public:
+        CTestTimeCmpHi(uint32_t* blkBaseAddr) {m_pvCsrBaseAddr = blkBaseAddr;};
+        inline uint32_t GetTestTimeCmpHi(){return CCoreAuto::readReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIME_CMP_HI/4);}
+        inline void SetTestTimeCmpHi(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_TEST_TIME_CMP_HI/4, val);}
+    private:
+        volatile uint32_t* m_pvCsrBaseAddr;
+    };
+
+    class CTestExtSwInterrupt
+    {
+    public:
+        CTestExtSwInterrupt(uint32_t* blkBaseAddr) {m_pvCsrBaseAddr = blkBaseAddr;};
+        inline uint32_t GetTestExtSwInterrupt(){return CCoreAuto::readReg(m_pvCsrBaseAddr + CSR_CORE_TEST_EXT_SW_INTERRUPT/4);}
+        inline void SetTestExtSwInterrupt(uint32_t val){CCoreAuto::writeReg(m_pvCsrBaseAddr + CSR_CORE_TEST_EXT_SW_INTERRUPT/4, val);}
+    private:
+        volatile uint32_t* m_pvCsrBaseAddr;
+    };
+
     
 public:
     // Constructor. Create register objects relative to the passed in base address
@@ -88,6 +140,11 @@ public:
         pStatus = new CStatus(csrBaseAddr + CSR_CORE_LOCAL/4);
         pHaltAddr = new CHaltAddr(csrBaseAddr + CSR_CORE_LOCAL/4);
         pGp = new CGp(csrBaseAddr + CSR_CORE_LOCAL/4);
+        pTestTimerLo = new CTestTimerLo(csrBaseAddr + CSR_CORE_LOCAL/4);
+        pTestTimerHi = new CTestTimerHi(csrBaseAddr + CSR_CORE_LOCAL/4);
+        pTestTimeCmpLo = new CTestTimeCmpLo(csrBaseAddr + CSR_CORE_LOCAL/4);
+        pTestTimeCmpHi = new CTestTimeCmpHi(csrBaseAddr + CSR_CORE_LOCAL/4);
+        pTestExtSwInterrupt = new CTestExtSwInterrupt(csrBaseAddr + CSR_CORE_LOCAL/4);
     };
     
 public:
@@ -97,6 +154,11 @@ public:
     CStatus* pStatus;
     CHaltAddr* pHaltAddr;
     CGp* pGp;
+    CTestTimerLo* pTestTimerLo;
+    CTestTimerHi* pTestTimerHi;
+    CTestTimeCmpLo* pTestTimeCmpLo;
+    CTestTimeCmpHi* pTestTimeCmpHi;
+    CTestExtSwInterrupt* pTestExtSwInterrupt;
     
     // Pointers to the sub-block objects
     

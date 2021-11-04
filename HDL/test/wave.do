@@ -41,7 +41,6 @@ add wave -noupdate -group core -radix hexadecimal /tb/uut/imem_raddr
 add wave -noupdate -group core /tb/uut/imem_rd
 add wave -noupdate -group core -radix hexadecimal /tb/uut/imem_rdata
 add wave -noupdate -group core -radix hexadecimal /tb/uut/imem_readdata
-add wave -noupdate -group core /tb/uut/imem_readdatavalid
 add wave -noupdate -group core -radix hexadecimal /tb/uut/imem_waddr
 add wave -noupdate -group core -radix hexadecimal /tb/uut/imem_wdata
 add wave -noupdate -group core /tb/uut/imem_write
@@ -221,7 +220,6 @@ add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_imm_instr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_instr
-add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_rs1_instr
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc_in
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/cancelled
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_pc

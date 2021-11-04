@@ -39,11 +39,25 @@ for file in tests/add.exe     \
             tests/sw.exe      \
             tests/test.exe    \
             tests/xor.exe     \
-            tests/xori.exe 
+            tests/xori.exe    \
+            tests/csr         \
+            tests/mcsr        \
+            tests/sbreak      \
+            tests/illegal     \
+            tests/ma_fetch    \
+            tests/ma_addr     \
+            tests/shamt
 do
     cp $file test.exe
     echo "running $file"
     ./main.exe | tee -a test.log
+done
+
+for file in tests/scall.exe
+do
+    cp $file test.exe
+    echo "running $file"
+    ./main.exe -s | tee -a test.log
 done
 
 grep "Test exit" test.log

@@ -149,7 +149,6 @@ wire  [31:0] halt_addr;
 wire         imem_read_csr;
 wire         imem_write_csr;
 wire         dmem_read_csr;
-wire         dmem_write_csr;
 
 
 // Memory signals
@@ -159,12 +158,16 @@ wire  [31:0] imem_raddr;
 wire  [31:0] imem_wdata;
 wire  [31:0] imem_rdata;
 
+wire         dmem_write;
 wire         dmem_wr;
 wire         dmem_rd;
+wire  [31:0] dmem_waddr;
 wire  [31:0] dmem_addr;
 wire  [31:0] dmem_wdata;
+wire  [31:0] dmem_wdata_core;
 wire  [31:0] dmem_rdata;
 wire   [3:0] dmem_be;
+wire   [3:0] dmem_be_core;
 reg          dmem_rd_delay;
 wire         dmem_waitreq;
 
@@ -245,12 +248,19 @@ assign core_rstn                       = ~test_halt & reset_n;
 // Memory control
 assign dmem_waitreq                    = dmem_rd & ~dmem_rd_delay;
 
-assign imem_write                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) | imem_write_csr;
-assign imem_wdata                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_wdata : avs_csr_writedata;
-assign imem_be                         = {4{imem_write_csr}} | dmem_be;
-assign imem_waddr                      = (RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? dmem_addr  : {avs_csr_address, 2'b00}; // Byte address
+// When RV32I_IMEM_SHADOW_WR = 1, write to IMEM when DMEM written
+assign imem_write                      = imem_write_csr | (RV32I_IMEM_SHADOW_WR[0] & dmem_wr);
+assign imem_wdata                      = ~(RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? avs_csr_writedata : dmem_wdata_core;
+assign imem_be                         = {4{imem_write_csr}} | (dmem_be_core & {4{RV32I_IMEM_SHADOW_WR[0]}});
+assign imem_waddr                      = ~(RV32I_IMEM_SHADOW_WR[0] & dmem_wr) ? {avs_csr_address, 2'b00} : dmem_addr ; // Byte address
 assign imem_readdata                   = imem_rdata;
 assign imem_waitrequest                = 1'b0;
+
+// When RV32I_IMEM_SHADOW_WR = 1, write to DMEM when IMEM written
+assign dmem_write                      = dmem_wr | (imem_write_csr & RV32I_IMEM_SHADOW_WR[0]);
+assign dmem_wdata                      = ~(imem_write_csr & RV32I_IMEM_SHADOW_WR[0]) ? dmem_wdata_core : avs_csr_writedata;
+assign dmem_be                         = dmem_be_core | {4{imem_write_csr & RV32I_IMEM_SHADOW_WR[0]}};
+assign dmem_waddr                      = ~(imem_write_csr & RV32I_IMEM_SHADOW_WR[0]) ? dmem_addr : {avs_csr_address, 2'b00};
 
 assign wr_mtime                        = test_timer_lo_pulse    | test_timer_hi_pulse;
 assign wr_mtimecmp                     = test_time_cmp_lo_pulse | test_time_cmp_hi_pulse;
@@ -296,7 +306,7 @@ end
     .imem_read                         (imem_read_csr),
     .imem_readdata                     (32'h0),
 
-    .dmem_write                        (dmem_write_csr),  // Unused at present
+    .dmem_write                        (),  // Unused at present
     .dmem_read                         (dmem_read_csr),
     .dmem_readdata                     (32'h0)
   );
@@ -362,8 +372,8 @@ end
 
     .daddress                          (dmem_addr),
     .dwrite                            (dmem_wr),
-    .dwritedata                        (dmem_wdata),
-    .dbyteenable                       (dmem_be),
+    .dwritedata                        (dmem_wdata_core),
+    .dbyteenable                       (dmem_be_core),
     .dread                             (dmem_rd),
     .dreaddata                         (dmem_rdata),
     .dwaitrequest                      (dmem_waitreq),
@@ -412,9 +422,9 @@ end
   (
     .clock                             (clk),
 
-    .wren                              (dmem_wr),
+    .wren                              (dmem_write),
     .byteena_a                         (dmem_be),
-    .wraddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH+1:2]),
+    .wraddress                         (dmem_waddr[RV32I_DMEM_ADDR_WIDTH+1:2]),
     .data                              (dmem_wdata),
 
     .rdaddress                         (dmem_addr[RV32I_DMEM_ADDR_WIDTH+1:2]),

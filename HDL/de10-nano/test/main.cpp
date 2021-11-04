@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <string.h>
 
 #include "../build/hps_0.h"
 #include "fpga_support.h"
@@ -21,8 +22,6 @@
 // DEFINES
 // --------------------------------------------------
 
-#define MAINTESTNUM            0
-
 // --------------------------------------------------
 // STATIC VARIABLES
 // --------------------------------------------------
@@ -30,7 +29,7 @@
 static volatile uint32_t *pImem       = NULL;
 
 // --------------------------------------------------
-// External memory write functoin for ELF loading code
+// External memory write function for ELF loading code
 // --------------------------------------------------
 
 void  write_mem(uint32_t addr, uint32_t word, uint32_t type, bool &access_fault)
@@ -47,12 +46,21 @@ int main(int argc, char** argv)
     const uint32_t sdrCtrlFpgaPortRstWordOffset   = 0x20;
     fpgaSupport    fpga;
     int            error                          = 0;
+    bool           scall                          = false;
 
     printf("\n**********************************\n");
     printf(  "*     Wyvern Semiconductors      *\n");
     printf(  "* rv32i_cpu_core (ARM Cortex-A9) *\n");
     printf(  "*      Copyright (c) 2021        *\n");
     printf(  "**********************************\n\n");
+    
+    if (argc > 1)
+    {
+        if (strcmp(argv[1], "-s") == 0)
+        {
+            scall = true;
+        }
+    }
 
     usleep(1);
 
@@ -76,8 +84,9 @@ int main(int argc, char** argv)
     CCoreAuto* pCore = new CCoreAuto(coreBaseAddr);
 
     // Set up control register for test
-    pCore->pControl->SetHaltOnAddr(1);
-    pCore->pControl->SetHaltOnUnimp(1);
+    pCore->pControl->SetHaltOnAddr(scall  ? 1 : 0);
+    pCore->pControl->SetHaltOnUnimp(scall ? 1 : 0);
+    pCore->pControl->SetHaltOnEcall(scall ? 0 : 1);
     pCore->pHaltAddr->SetHaltAddr(0x00000040);
 
     // Get the base address of IMEM (in the CSR register space)
@@ -90,7 +99,7 @@ int main(int argc, char** argv)
     pCore->pControl->SetClrHalt(1);
 
     // Wait for halt status
-    int32_t  timeout = 1000;
+    int32_t  timeout = 10000;
     while(!pCore->pStatus->GetHalted() && timeout != 0)
     {
         timeout--;
@@ -100,7 +109,10 @@ int main(int argc, char** argv)
     // If reached timeout, flag as an error
     if (timeout == 0)
     {
-        printf("Test timed out: ***FAIL***\n");
+        uint32_t gp = pCore->pGp->GetGp();
+        
+        printf("Test timed out (gp = 0x%08x): ***FAIL***\n", gp);
+        
         error = 2;
     }
     else
