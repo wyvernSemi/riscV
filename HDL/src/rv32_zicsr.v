@@ -295,9 +295,8 @@ begin
     
     // Count the instructions retired by the ALU. When the DISABLE_INSTRET is non-zero, the counter is disabled
     // and will read as zero and can't be written to with CSRxxx instruction.
-    minstret_int                       <= (DISABLE_INSTRET == 0) ? minstret_int  + {31'h0, instr_retired & ~mcountinhibit_ir} : 32'h0;
+    minstret_int                       <= (DISABLE_INSTRET == 0) ? minstret_int  + {31'h0, (instr_retired | |zicsr) & ~mcountinhibit_ir} : 32'h0;
     minstreth_int                      <= (DISABLE_INSTRET == 0) ? minstreth_int + {31'h0, &minstret_int} : 32'h0;
-
 
     // Manage exceptions, updating relvant CSR registers, and jumping to trap vector
     if (interrupt | exception)

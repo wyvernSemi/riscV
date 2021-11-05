@@ -332,7 +332,7 @@ begin
         // ALU inputs A and B
         a                              <= ((ui_instr &  opcode_32[3]) | sys_instr_nozicsr)          ? 32'h0   :    // LUI and system, A = 0
                                           ((jmp_instr & opcode_32[1]) | (ui_instr & ~opcode_32[3])) ? pc_in   :    // AUIPC, JAL, A = PC
-                                          zicsr_imm_instr                                           ? rs1_idx :    // Zicsr imm, A = RS1 index bits
+                                          zicsr_imm_instr                                           ? rs1_idx :    // Zicsr imm, A = RS1 index bits as these are the Zicsr immediate bits
                                                                                                       rs1;         // all others, A = rs1 value
 
         b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value

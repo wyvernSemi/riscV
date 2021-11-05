@@ -82,6 +82,7 @@ help:
 	@echo "make runlog/log    Build and run batch simulation with signal logging"
 	@echo "make waves         Run wave viewer in ModelSim (to view runlog signals)"
 	@echo "make regression    Run the regression test"
+	@echo "make clean         clean previous build artefacts"
 	@echo "make help          Display this message"
 
 #------------------------------------------------------
