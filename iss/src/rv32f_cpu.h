@@ -33,6 +33,7 @@
 
 #include "rv32_extensions.h"
 #include "rv32i_cpu_hdr.h"
+#include "rv32csr_cpu_hdr.h"
 #include RV32F_INCLUDE
 
 class rv32f_cpu : public RV32_F_INHERITANCE_CLASS

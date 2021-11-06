@@ -134,6 +134,10 @@ public:
     LIBRISCV32_API rv32i_hart_state rv32_get_cpu_state(int hart_num = 0)                            { return state.hart[hart_num]; }
     LIBRISCV32_API void             rv32_set_cpu_state(rv32i_hart_state &s, int hart_num = 0)       { state.hart[hart_num] = s; }
 
+    // Dummy method so compilation works when rv32csr_cpu class not included in inheritance.
+    // Will be overloaded by rv32csr_cpu.
+    LIBRISCV32_API void          register_int_callback(p_rv32i_intcallback_t callback_func) { };
+
     // ------------------------------------------------
     // Public member variables
     // ------------------------------------------------

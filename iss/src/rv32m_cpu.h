@@ -29,6 +29,7 @@
 
 #include "rv32_extensions.h"
 #include "rv32i_cpu_hdr.h"
+#include "rv32csr_cpu.h"
 #include RV32M_INCLUDE
 
 class rv32m_cpu : public RV32_M_INHERITANCE_CLASS

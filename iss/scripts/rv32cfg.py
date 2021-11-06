@@ -123,7 +123,7 @@ class rv32gui :
 
     self.opfile.set     ('..\\src\\rv32_extensions.h')
 
-    # Setup up traces on the checkbox varaibles
+    # Setup up traces on the checkbox variables
     self.extF.trace       ('w', self.__rv32ExtFUpdated)
     self.extD.trace       ('w', self.__rv32ExtDUpdated)
     self.extG.trace       ('w', self.__rv32ExtGUpdated)
@@ -196,7 +196,7 @@ class rv32gui :
     # (scanning from left to right, then top to bottom)
     return hdllist
 
-  
+
   # __addRadioButtonRows()
   #
   # Creates an array of labelled radio button widgets. Widgets are
@@ -399,12 +399,17 @@ class rv32gui :
     lastExt = ''
 
     for flag, ext, define, incl in extensions :
+      padStr = '     '
+      if len(define) < 28 :
+        padStr += ' ' * (28 - len(define))
       if flag.get() != 0 :
-        padStr = '     '
-        if len(define) < 28 :
-          padStr += ' ' * (28 - len(define))
         ofp.write ('#define ' + define + padStr + lastExt + '\n')
         lastExt = ext
+      else:
+        if ext != 'rv32d_cpu' :
+          ofp.write ('#define ' + define + padStr + 'rv32i_cpu' + ' /* Excluded, so defaulted to base so will compile */\n')
+        else :
+          ofp.write ('#define ' + define + padStr + 'rv32f_cpu' + ' /* Excluded, so defaulted to rv32f so will compile */\n')
 
     if self.extI.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
       ofp.write('\n// Inheritance for a G spec processor should have all the above\n')
@@ -419,7 +424,7 @@ class rv32gui :
       ofp.write('//')
     ofp.write('#define RV32E_EXTENSION\n')
 
-    lastExt = ''
+    lastExt = 'rv32i_cpu'
 
     ofp.write('\n')
 
@@ -429,13 +434,18 @@ class rv32gui :
     ofp.write('// using forward references (needs a completed class reference).\n\n')
 
     for flag, ext, define, incl in extensions :
-      if flag.get() != 0 :
-        padStr = '                  '
-        if len(incl) < 15 :
-          padStr += ' ' * (15 - len(incl))
-        if ext != 'rv32i_cpu' :
+      padStr = '                  '
+      if len(incl) < 15 :
+        padStr += ' ' * (15 - len(incl))
+      if ext != 'rv32i_cpu' :
+        if flag.get() != 0 :
           ofp.write('#define ' + incl + padStr + '"' + lastExt + '.h"\n')
-        lastExt = ext
+          lastExt = ext
+        else :
+          if ext == 'rv32d_cpu' :
+            ofp.write('#define ' + incl + padStr + '"' + 'rv32f_cpu' + '.h" /* Excluded, so defaulted to rv32f so will compile */\n')
+          else :
+            ofp.write('#define ' + incl + padStr + '"' + 'rv32i_cpu' + '.h" /* Excluded, so defaulted to base so will compile */\n')
 
     ofp.write('\n')
     ofp.write('// Define the extension spec for the target model. Chose the\n')
@@ -523,6 +533,7 @@ class rv32gui :
 
     self.chkHdls[0].config(state = DISABLED)
     self.chkHdls[5].config(state = DISABLED)
+    #self.chkHdls[6].config(state = DISABLED)
 
     flagsframe.grid(row = framerow, padx = 10, pady = 10, sticky = W)
 
