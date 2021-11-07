@@ -502,12 +502,12 @@
             "reset"        : "0",
             "description"  : "Hart ID"
         },
-        "clk_freq_mhz" : {
+        "timer_freq_mhz" : {
             "address"      : "0xfff",
             "width"        : "12",
             "type"         : "r",
-            "reset"        : "100",
-            "description"  : "Custom register giving configured clock/cycle count frequency in MHz. A function of CLK_FREQ_MHZ parameter"
+            "reset"        : "1",
+            "description"  : "Custom register giving configured timer count frequency in MHz."
         }
     }
 }]

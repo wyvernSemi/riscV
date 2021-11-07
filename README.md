@@ -8,7 +8,7 @@ The Verilog Softcore has the following features
 *	All RV32I instructions implemented
 	*	Configurable for RV32E
 	*	Single HART
-*	Configurable Zicsr extenstions
+*	Configurable Zicsr extensions
 	* csrrw, csrrs, csrrc, csrrwi, csrrsi, csrrci, mret instructions implemented
 	* Sub-set of all possible machine registers implemented (see manual)
 	* cycle counts, timer and retired insructions counts readable via unprivileged registers

@@ -1,0 +1,91 @@
+[{
+    "ip_name"     : "core",
+    "bus"         : "csr",
+    "addr_hi_bit" : "17",
+    "addr_lo_bit" : "15",
+    "addr_width"  : "5",
+    "description" : "This block is the core registers",
+    "sub_blocks" : {
+        "local"   :  {
+            "instance"    : "",
+            "process"     : "enabled",
+            "offset"      : "0x00000"
+        },
+        "imem"   :  {
+            "instance"    : "",
+            "process"     : "disabled",
+            "offset"      : "0x08000"
+        },
+        "dmem"   :  {
+            "instance"    : "",
+            "process"     : "disabled",
+            "offset"      : "0x10000"
+        }
+    },
+    "registers" : {
+        "control" : {
+            "address"      : "0",
+            "width"        : "4",
+            "description"  : "Core control register",
+            "fields"       : {
+                "clr_halt"        : {
+                    "type"        : "w0",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Clear test halt status"
+                },
+                "halt_on_addr"    : {
+                    "type"        : "w",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Enable/disable halt on specific address"
+                },
+                "halt_on_unimp"   : {
+                    "type"        : "w",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Halt on unimplemented instruction"
+                },
+                "halt_on_ecall"   : {
+                    "type"        : "w",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Halt on ecall instruction"
+                }
+            }
+        },
+        "status" : {
+            "address"      : "1",
+            "width"        : "2",
+            "description"  : "Status of core",
+            "fields"       : {
+                "halted"     : {
+                    "type"        : "r",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Halted status"
+                },
+                "reset"     : {
+                    "type"        : "r",
+                    "bit_len"     : "1",
+                    "reset"       : "0",
+                    "description" : "Reset status"
+                }
+            }
+        },
+        "halt_addr" : {
+            "address"      : "2",
+            "width"        : "32",
+            "type"         : "w",
+            "reset"        : "0x00000040",
+            "description"  : "Halt address, if halt_on_addr active"
+        },
+        "gp" : {
+            "address"      : "3",
+            "width"        : "32",
+            "type"         : "r",
+            "reset"        : "0",
+            "description"  : "gp register value"
+        }
+    }
+}]

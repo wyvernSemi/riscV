@@ -141,6 +141,7 @@ reg  [31:0] mcycleh_int;
 reg  [63:0] mtime_int;
 reg  [63:0] mtimecmp_int;
 reg  [11:0] usec_count;
+wire [11:0] timer_freq_mhz;
 
 // Instruction counter
 wire        minstret_pulse;
@@ -233,6 +234,7 @@ assign a_int                           = (|regfile_rd_idx == 1'b1 && regfile_rd_
 // Mask zicsr instruction input when stalled
 assign zicsr_int                       = stall ? 2'b00 : zicsr;
 
+assign timer_freq_mhz                  = (DISABLE_TIMER == 0) ? 12'd1 : CLK_FREQ_MHZ[11:0];
 
 // -----------------------------------------------
 // Synchronous logic
@@ -476,7 +478,7 @@ end
     .mip_mtip                          (mip_mtip),
     .mip_meip                          (mip_meip),
     
-    .clk_freq_mhz                      (CLK_FREQ_MHZ[11:0]),
+    .timer_freq_mhz                    (timer_freq_mhz),
 
     .avs_waddress                      (waddr),
     .avs_write                         (write),

@@ -93,6 +93,6 @@
 `define RV32_MIMPID_ADDR_INT                 3859
 `define RV32_MHARTID_ADDR                    12'hF14
 `define RV32_MHARTID_ADDR_INT                3860
-`define RV32_CLK_FREQ_MHZ_ADDR               12'hFFF
-`define RV32_CLK_FREQ_MHZ_ADDR_INT           4095
+`define RV32_TIMER_FREQ_MHZ_ADDR             12'hFFF
+`define RV32_TIMER_FREQ_MHZ_ADDR_INT         4095
 
