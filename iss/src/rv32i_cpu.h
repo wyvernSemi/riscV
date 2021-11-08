@@ -147,6 +147,9 @@ public:
     // Protected member variables
     // ------------------------------------------------
 protected:
+    // Clock cycle count. Protected status so that rvcsr_cpu overriding of process_trap()
+    // method can update it on exceptions.
+    rv32i_time_t          cycle_count;
 
     // ------------------------------------------------
     // Internal constant definitions
@@ -272,8 +275,10 @@ protected:
     // Internal memory
     uint8_t               internal_mem   [4*RV32I_INT_MEM_WORDS+4];
 
-    rv32i_time_t          cycle_count;
+    // Instructions retired count
+    rv32i_time_t          instret_count;
 
+    // Real time counter comparator value
     rv32i_time_t          mtimecmp;
 
     // String forming scratch space
@@ -329,6 +334,7 @@ private:
     virtual void process_trap(int trap_type = 0)
     {
         state.hart[curr_hart].pc = RV32I_FIXED_MTVEC_ADDR;
+        cycle_count += RV32I_TRAP_EXTRA_CYCLES;
     }
 
     // Virtual place holder for adding interrupt features
@@ -394,6 +400,10 @@ protected:
 
     inline uint64_t clk_cycles() {
         return cycle_count;
+    }
+
+    inline uint64_t inst_retired() {
+        return instret_count;
     }
 
     inline uint32_t get_curr_instruction()

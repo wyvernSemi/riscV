@@ -167,29 +167,37 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
 //
 int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, const rv32i_time_t time)
 {
+    // By default, the processed variable indicates that this callback did not
+    // process the access (a negatiave value). Otherwise it is the additional
+    // access wait states (0 upwards). In this model, writes have no wait states,
+    // whilst reads have 2 wait states.
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
-    // If not interrupt address, access memory model
+    // If writing UART TX address, print character
     if (byte_addr == UART_TX_ADDR && type == MEM_WR_ACCESS_BYTE)
     {
-        processed = 1;
+        processed = 0;
         putchar(data & 0xff);
     }
+    // If not interrupt address, access memory model
     else if (byte_addr != INT_ADDR)
     {
         uint32_t addr = byte_addr;
-        processed = 1;
+        processed = 0;
 
         switch (type & MEM_NOT_DBG_MASK)
         {
         case MEM_RD_ACCESS_BYTE:
             data = ReadRamByte(addr, 0);
+            processed = 2;
             break;
         case MEM_RD_ACCESS_HWORD:
             data = ReadRamHWord(addr, true, 0);
+            processed = 2;
             break;
-        case MEM_RD_ACCESS_INSTR:
         case MEM_RD_ACCESS_WORD:
+            processed = 2;
+        case MEM_RD_ACCESS_INSTR:
             data = ReadRamWord(addr, true, 0);
             break;
         case MEM_WR_ACCESS_BYTE:
@@ -210,7 +218,7 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     else if ((type & MEM_NOT_DBG_MASK) == MEM_WR_ACCESS_WORD && byte_addr == INT_ADDR)
     {
         irq       = data & 0x1;
-        processed = 1;
+        processed = 0;
     }
 
     return processed;

@@ -122,6 +122,7 @@ void rv32csr_cpu::process_trap(int trap_type)
     }
 
     state.hart[curr_hart].pc = (state.hart[curr_hart].csr[RV32CSR_ADDR_MTVEC] & ~RV32CSR_MTVEC_MODE_MASK) + offset;
+    cycle_count += RV32I_TRAP_EXTRA_CYCLES;
 }
 
 int rv32csr_cpu::process_interrupts()
@@ -231,9 +232,11 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
         {
             prev_rd_value = (uint32_t)state.hart[curr_hart].x[rd];
 
-            // Take this opportunity to update the cycle count registers
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE]  = clk_cycles() & 0xffffffff;
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH] = (clk_cycles() >> 32) & 0xffffffff;
+            // Take this opportunity to update the cycle count and instructions retired registers
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE]    = clk_cycles() & 0xffffffff;
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH]   = (clk_cycles() >> 32) & 0xffffffff;
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRET]  = inst_retired() & 0xffffffff;
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRETH] = (inst_retired() >> 32) & 0xffffffff;
 
             state.hart[curr_hart].x[rd] = state.hart[curr_hart].csr[addr & 0xfff];
         }

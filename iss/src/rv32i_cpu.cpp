@@ -47,6 +47,9 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     // Cycle count set to 0
     cycle_count              = 0;
 
+    // Instructions retired count set to 0
+    instret_count            = 0;
+
     // Default the current instruction to an unimplemented instruction
     curr_instr               = 0x00000000;
 
@@ -327,7 +330,12 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
  
     (this->*p_entry->p)(&decode);
  
-    cycle_count += 1;
+    // Update cycle count and instructions retired count. By default, the timing model
+    // assumes 1 cycle for each instruction. For jumps and branches, additional cycles
+    // are added in the instruction methods. For memory accesses, the external callbacks
+    // return wait state couts, which are added.
+    cycle_count   += RV32I_DEFAULT_INSTR_CYCLE_COUNT;
+    instret_count += 1;
 
     // If an illegal/unimplemented instruction, or halt on a system instruction, flag to calling function
     if ((halt_rsvd_instr && trap) || (halt_ecall && (trap == SIGTERM || trap == SIGTRAP)))
@@ -1110,6 +1118,7 @@ void rv32i_cpu::beq(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1135,6 +1144,7 @@ void rv32i_cpu::bne(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1160,6 +1170,7 @@ void rv32i_cpu::blt(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1185,6 +1196,7 @@ void rv32i_cpu::bge(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1210,6 +1222,7 @@ void rv32i_cpu::bltu(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1235,6 +1248,7 @@ void rv32i_cpu::bgeu(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_BRANCH_TAKEN_EXTRA_CYCLES;
             RV32I_DISASSEM_PC_JUMP;
         }
     }
@@ -1270,6 +1284,7 @@ void rv32i_cpu::jal(const p_rv32i_decode_t d)
             }
 
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_JUMP_INSTR_EXTRA_CYCLES;
         }
     }
     else
@@ -1297,6 +1312,7 @@ void rv32i_cpu::jalr(const p_rv32i_decode_t d)
         else
         {
             state.hart[curr_hart].pc = access_addr;
+            cycle_count += RV32I_JUMP_INSTR_EXTRA_CYCLES;
 
             if (d->rd)
             {
