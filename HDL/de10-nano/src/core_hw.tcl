@@ -47,6 +47,7 @@ add_fileset_file rv32i_cpu_core.v VERILOG PATH ../../src/rv32i_cpu_core.v
 add_fileset_file zicsr_auto.vh VERILOG PATH ../../src/zicsr_auto.vh
 add_fileset_file zicsr_rv32_regs_auto.v VERILOG PATH ../../src/zicsr_rv32_regs_auto.v
 add_fileset_file rv32_zicsr.v VERILOG PATH ../../src/rv32_zicsr.v
+add_fileset_file rv32_m.v VERILOG PATH ../../src/rv32_m.v
 add_fileset_file core_auto.vh VERILOG_INCLUDE PATH core_auto.vh
 add_fileset_file core_csr_decode_auto.v VERILOG PATH core_csr_decode_auto.v
 add_fileset_file core_csr_regs_auto.v VERILOG PATH core_csr_regs_auto.v

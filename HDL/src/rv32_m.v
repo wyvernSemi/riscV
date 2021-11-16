@@ -1,0 +1,273 @@
+// -----------------------------------------------------------------------------
+//  Title      : RISC-V RV32M divider-multiplier
+//  Project    : rv32_cpu
+// -----------------------------------------------------------------------------
+//  File       : rv32_m.v
+//  Author     : Simon Southwell
+//  Created    : 2021-10-31
+//  Standard   : Verilog 2001
+// -----------------------------------------------------------------------------
+//  Description:
+//  This block defines the RVM extension divider for the (RV32I) RISC-V
+//  soft processor.
+// -----------------------------------------------------------------------------
+//  Copyright (c) 2021 Simon Southwell
+// -----------------------------------------------------------------------------
+//
+//  This is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  It is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this code. If not, see <http://www.gnu.org/licenses/>.
+//
+// -----------------------------------------------------------------------------
+
+`timescale                     1ns / 10ps
+
+`define DIV_WORD_WIDTH         32
+`define DIV_COUNT_RESET        (`DIV_WORD_WIDTH-1)
+
+module rv32_m
+#(parameter
+   RV32M_FIXED_TIMING          = 0,      // Set non-zero if timing must be fixed for all calculations
+   RV32M_MUL_INFERRED          = 1       // Set non-zero if do not want inferred multiplication
+)
+(
+  input                        clk,
+  input                        reset_n,
+
+  input      [31:0]            A,
+  input      [31:0]            B,
+  input       [4:0]            a_rs_idx,
+  input       [4:0]            b_rs_idx,
+  input       [2:0]            funct,
+  input       [4:0]            rd_idx,
+  input                        start,
+  input                        terminate,
+
+  input       [4:0]            regfile_rd_idx,
+  input      [31:0]            regfile_rd_val,
+
+  output     [31:0]            result,
+  output reg  [4:0]            rd,
+  output reg                   done,
+  output reg                   done_int
+);
+
+reg   [4:0] count;
+reg  [31:0] A_saved;
+reg  [31:0] B_saved;
+reg  [31:0] B_reg;
+reg         signed_a_saved;
+reg         signed_b_saved;
+reg         mod_saved;
+reg         mulh_saved;
+reg         div_not_mul_saved;
+reg         result_valid;
+reg  [63:0] a_shift;
+reg  [31:0] b_shift;
+reg         change_op_sign;
+reg [31:0]  div_mull; // Divide or mul (low) result
+reg [31:0]  mod_mulh; // mod_mulh or mulh result
+reg  [4:0]  rd_saved;
+
+// Local decode of function
+wire        div_not_mul        = funct[2];
+wire        mulh               = |funct[1:0];
+wire        mod                = funct[1];
+wire        signed_a           = (~div_not_mul & (funct[1] ^ funct[0])) | (div_not_mul & ~funct[0]);
+wire        signed_b           = (~div_not_mul & ~funct[1] & funct[0])  | (div_not_mul & ~funct[0]);
+
+wire [31:0] a_fb               = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == a_rs_idx) ? regfile_rd_val : A;
+wire [31:0] b_fb               = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == b_rs_idx) ? regfile_rd_val : B;
+
+// Select result 32 bits
+assign      result             = ((div_not_mul_saved & mod_saved) | (~div_not_mul_saved & mulh_saved)) ? mod_mulh : div_mull;
+
+// Flag if there is a valid result, and inputs match last inputs,
+// in which case the previous outputs can be used. This allows
+// both a division and remainder result to be extracted with only
+// one calculation. It will also skip if the inputs happen to be
+// the same as the last completed calculation.
+wire        use_last_result    = result_valid &
+                                 a_fb == A_saved &
+                                 b_fb == B_saved &
+                                 signed_a == signed_a_saved &
+                                 signed_b == signed_b_saved &
+                                 div_not_mul == div_not_mul_saved &
+                                 RV32M_FIXED_TIMING == 0;
+
+// Inputs are negative if a signed division and sign bit set
+wire        A_negative         = signed_a & a_fb[31];
+wire        B_negative         = signed_b & b_fb[31];
+
+// Internal a_fb and b_fb are made positive if negative inputs
+// (Is there a better way to handle signed division?)
+wire [31:0] A_int              = A_negative ? (~a_fb + 32'h1) : a_fb;
+wire [31:0] B_int              = B_negative ? (~b_fb + 32'h1) : b_fb;
+
+// Stop when count reached zero, or being terminated externally
+wire        stop               = ~|count | terminate;
+
+// Modulus value left shifted, and filled with division top bit
+wire [32:0] shifted            = {b_shift, a_shift[31]};
+
+// Shifted value minus the (positive) b_fb input
+wire [32:0] sub                = shifted - {1'b0, B_reg};
+
+// Adjust multiply result sign
+wire [63:0] mul_adjusted       = change_op_sign ? (~{mod_mulh, div_mull} + 64'h1) : {mod_mulh, div_mull};
+
+// Next multiplication value, equals current value plus shifted a_fb, when using logic multiplier,
+// or latched |a_fb| * |b_fb| value, when inferring a DSP multiplier.
+wire [63:0] next_mul           = (RV32M_MUL_INFERRED == 0) ? {mod_mulh, div_mull} + a_shift : (a_shift[31:0] * b_shift);
+
+always @(posedge clk)
+begin
+  if (reset_n == 1'b0)
+  begin
+    count                      <= `DIV_COUNT_RESET;
+    done_int                   <= 1'b1;
+    done                       <= 1'b1;
+    result_valid               <= 1'b0;
+  end
+  else
+  begin
+
+    rd                         <= 5'h0;
+
+    if (~done & done_int)
+    begin
+      rd                       <= rd_saved;
+    end
+
+
+    // Done output a cycle delayed of internal done_int, to allow for output sign change.
+    done                       <= done_int;
+
+    // If idle (done set) and start asserted, then load initial state---but not
+    // if same inputs as last completed calculation, as the division is skipped
+    if (done & start)
+    begin
+
+      rd_saved                 <= rd_idx;
+
+      if (~use_last_result)
+      begin
+        // Save off inputs
+        A_saved                <= a_fb;
+        B_saved                <= b_fb;
+        signed_a_saved         <= signed_a;
+        signed_b_saved         <= signed_b;
+        div_not_mul_saved      <= div_not_mul;
+        mulh_saved             <= mulh;
+        mod_saved              <= mod;
+
+        // Change the output sign if inputs differ in sign
+        change_op_sign         <= (div_not_mul & mod) ? A_negative : (A_negative ^ B_negative);
+
+        B_reg                  <= B_int;
+        a_shift                <= {32'h0, A_int};
+        b_shift                <= div_not_mul ? 32'h00000000 : B_int;
+        div_mull               <= 32'h0;
+        mod_mulh               <= 32'h0;
+        done_int               <= 1'b0;
+        done                   <= 1'b0;
+      end
+      else
+      begin
+        rd                     <= rd_idx;
+      end
+    end
+
+    // Whilst not done_int, update state
+    if (~done_int)
+    begin
+      // Divide
+      if (div_not_mul_saved)
+      begin
+        // If signed inputs and overflow, set results as per Vol 1. sec 7.2, table 7.1,
+        // and flag as done
+        if (signed_a_saved & signed_b_saved & A_saved == 32'h80000000 & B_saved == 32'hffffffff)
+        begin
+          mod_mulh             <= 32'h00000000;
+          div_mull             <= 32'h80000000;
+          done                 <= 1'b1;
+          done_int             <= 1'b1;
+        end
+        // If divide by zero, set results as per Vol 1. sec 7.2, table 7.1,
+        // and flag as done
+        else if (~|B_reg)
+        begin
+          mod_mulh             <= A_saved;
+          div_mull             <= 32'hffffffff;
+          done                 <= 1'b1;
+          done_int             <= 1'b1;
+        end
+        // When no division exception, update division state
+        else
+        begin
+          b_shift              <= sub[32] ? shifted[31:0] : sub[31:0];
+          a_shift[31:0]        <= {a_shift[30:0], ~sub[32]};
+          done_int             <= stop;
+          count                <= count - 5'h01;
+        end
+      end
+      // Multiply
+      else
+      begin
+        if (RV32M_MUL_INFERRED == 0)
+        begin
+          if (b_shift[0])
+          begin
+            div_mull             <= next_mul[31:0];
+            mod_mulh             <= next_mul[63:32];
+          end
+          a_shift                <= {a_shift[62:0], 1'b0};
+          b_shift                <= {1'b0, b_shift[31:1]};
+          count                  <= count - 5'h01;
+          done_int               <= stop;
+        end
+        else
+        begin
+          div_mull               <= next_mul[31:0];
+          mod_mulh               <= next_mul[63:32];
+          done_int               <= 1'b1;
+        end
+      end
+    end
+    else
+    begin
+      count                    <= `DIV_COUNT_RESET;
+
+      if(~done)
+      begin
+        if (div_not_mul_saved)
+        begin
+          // Outputs have sign changed if flagged, else pass unaltered results
+          div_mull             <= change_op_sign ? (~a_shift[31:0] + 32'h1) : a_shift[31:0];
+          mod_mulh             <= change_op_sign ? (~b_shift       + 32'h1) : b_shift;
+        end
+        else
+        begin
+          div_mull             <= mul_adjusted[31:0];
+          mod_mulh             <= mul_adjusted[63:32];
+        end
+      end
+    end
+
+    // There are valid results if the count reaches 1.
+    // If a division is terminated then the results become invalid.
+    result_valid               <= (result_valid | (count == 5'h1)) & ~(terminate & ~done);
+
+  end
+end
+
+endmodule

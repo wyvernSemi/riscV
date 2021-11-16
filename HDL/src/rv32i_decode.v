@@ -34,7 +34,8 @@
 module rv32i_decode
 #(parameter
    RV32I_TRAP_VECTOR                   = 32'h00000004,
-   RV32_ZICSR_EN                       = 1
+   RV32_ZICSR_EN                       = 1,
+   RV32_M_EN                           = 1
 )
 (
   input                                clk,
@@ -109,6 +110,11 @@ module rv32i_decode
   output reg                           shift_arith,
   output reg                           shift_left,
   output reg                           shift_right,
+
+  // RV32M extension control
+  output reg                           extm_instr,
+  output      [2:0]                    extm_funct,
+  output      [4:0]                    extm_rd,
 
   // Zicsr interface
   output reg                           cancelled,
@@ -190,14 +196,17 @@ assign      rs1_prefetch               = stall ? rs1_pf_held : instr[19:15];
 assign      rs2_prefetch               = stall ? rs2_pf_held : instr[24:20];
 
 // Flag if a shift instruction of either direction
-wire        is_shift_instr             = &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4] & ((funct3 == 3'b001 ? 1'b1 : 1'b0) | (funct3 == 3'b101 ? 1'b1: 1'b0));
+wire        is_shift_imm_instr         = &{opcode_32[4:0] ~^ 5'b00100} & ((funct3 == 3'b001 ? 1'b1 : 1'b0) | (funct3 == 3'b101 ? 1'b1: 1'b0));
 
 // Not a 32 bit instruction (16 bits if low two bits not both set),
 // or 48 bits and greater if first 5 bits set)
-wire        invalid_instr              = (~&opcode[1:0] | &opcode[4:0]) | (is_shift_instr & instr_reg[25]);
+wire        invalid_instr              = (~&opcode[1:0] | &opcode[4:0]) | (is_shift_imm_instr & instr_reg[25]);
+
+// Flag indication that an ALU instruction is I-type
+wire        alu_imm                    = ~opcode[5];
 
 // Decode major categories from opcode (less bottom two bits)
-wire        alu_instr                  = ~invalid_instr & &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4];
+wire        alu_instr                  = ~invalid_instr & &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4] & (~instr_reg[25] | alu_imm);
 wire        ld_st_instr                = ~invalid_instr & &{opcode_32[2:0] ~^ 3'b000} & ~opcode_32[4];
 wire        st_instr                   = ~invalid_instr & ld_st_instr &  opcode_32[3];
 wire        ui_instr                   = ~invalid_instr & ~opcode_32[4] & &{opcode_32[2:0] ~^ 3'b101};
@@ -209,10 +218,14 @@ wire        sys_instr_nozicsr          = system_instr & ~RV32_ZICSR_EN[0];
 wire        zicsr_instr                = ~invalid_instr & &{opcode_32      ~^ 5'b11100} &  |funct3 &  RV32_ZICSR_EN[0];
 wire        mret_instr                 = ~invalid_instr & &{opcode_32      ~^ 5'b11100} & ~|funct3 &  instr_reg[21] & instr_reg[29] & RV32_ZICSR_EN[0];
 
-wire        zicsr_imm_instr            = zicsr_instr & funct3[2];
+// Decode an RV32M extension instruction
+wire        mul_div_instr              = ~invalid_instr & &{opcode_32[2:0] ~^ 3'b100} & ~opcode_32[4] & ~alu_imm & instr_reg[25] & RV32_M_EN;
 
-// Flag indication that an ALU instruction is I-type
-wire        alu_imm                    = ~opcode[5];
+// RV32M extensions decoding. This is the same value as for load/store width
+assign      extm_funct                 = ld_st_width;
+assign      extm_rd                    = zicsr_rd;
+
+wire        zicsr_imm_instr            = zicsr_instr & funct3[2];
 
 // Select which version of the immediate value would be used
 // (default to imm_i---the most common)
@@ -230,7 +243,7 @@ wire [31:0] rs1                        = (|fb_rd && fb_rd == rs1_idx) ? fb_rd_va
 wire [31:0] rs2                        = (|fb_rd && fb_rd == rs2_idx) ? fb_rd_val : rs2_rtn;
 
 // No register writeback for store, branch, system and invalid instructions
-wire        no_writeback               = st_instr | branch_instr | sys_instr_nozicsr | invalid_instr | fence_instr | zicsr_instr;
+wire        no_writeback               = st_instr | branch_instr | sys_instr_nozicsr | invalid_instr | fence_instr | zicsr_instr | mul_div_instr;
 
 // Updating PC after a jump/branch executed in ALU, an exception_int, misaligned
 // memory access or a return from exception_int
@@ -261,6 +274,10 @@ begin
   end
   else
   begin
+
+    // RV32M extensions decoding. This is a non-immediate ALU instruction, but with bit 25 set
+    extm_instr                         <= mul_div_instr;
+
     // Phase 2 version of instruction (held if stalled)
     instr_reg                          <= stall ? instr_reg : instr;
 
@@ -289,7 +306,7 @@ begin
     exception_addr                     <= (misaligned_load | misaligned_store) ? misaligned_addr : 32'h0;
 
     // Export the PC to the ALU, aligned to other outputs to ALU (phase 3)
-    pc                                 <= pc_in;
+    pc                                 <= stall ? pc : pc_in;
 
     // When PC is updating, cancel the next instructions to clear pipeline
     if (updating_pc == 1'b1)
@@ -335,15 +352,15 @@ begin
                                           zicsr_imm_instr                                           ? rs1_idx :    // Zicsr imm, A = RS1 index bits as these are the Zicsr immediate bits
                                                                                                       rs1;         // all others, A = rs1 value
 
-        b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr) ? rs2 :               // ALU, store and branch, B = rs2 value
-                                           sys_instr_nozicsr                                 ? RV32I_TRAP_VECTOR : // system, B = trap vector (when no Zicsr extensions)
-                                                                                               imm;                // all others, B = immediate value
+        b                              <= ((alu_instr & ~alu_imm) | st_instr | branch_instr | mul_div_instr) ? rs2 :               // ALU, store and branch, B = rs2 value
+                                           sys_instr_nozicsr                                                 ? RV32I_TRAP_VECTOR : // system, B = trap vector (when no Zicsr extensions)
+                                                                                                               imm;                // all others, B = immediate value
         // Offset for store and branch instructions
         offset                         <= imm;
 
         // Pass forward the RS indexes for A and B if active, else 0
-        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | sys_instr_nozicsr | ui_instr) ? rs1_idx : 5'h0; // JAL, system or ui instructions have no rs fields
-        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr)            ? rs2_idx : 5'h0;
+        a_rs_idx                       <= ~((jmp_instr & opcode_32[1]) | sys_instr_nozicsr | ui_instr)      ? rs1_idx : 5'h0; // JAL, system or ui instructions have no rs fields
+        b_rs_idx                       <= ((alu_instr & ~alu_imm)| st_instr | branch_instr | mul_div_instr) ? rs2_idx : 5'h0;
 
         // ALU operation control outputs
         arith                          <= (alu_instr & ~|funct3) | ui_instr;                            // ADD (or SUB) with alu instr_reg. and funct3 = 0, or for LUI/AUIPC

@@ -1,5 +1,8 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
+add wave -noupdate -group tb /tb/HALT_ON_ADDR
+add wave -noupdate -group tb /tb/HALT_ON_ECALL
+add wave -noupdate -group tb /tb/HALT_ON_UNIMP
 add wave -noupdate -group tb -radix unsigned /tb/clk
 add wave -noupdate -group tb /tb/count
 add wave -noupdate -group tb /tb/reset_n
@@ -56,6 +59,11 @@ add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/RV32I_LOG2_
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/RV32I_REGFILE_USE_MEM
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/RV32I_RESET_VECTOR
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/RV32I_TRAP_VECTOR
+add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/extm_idle
+add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall
+add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall_alu
+add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall_decode
+add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/stall_regfile
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/alu_c
 add wave -noupdate -group rv32i_cpu_core /tb/uut/rv32i_cpu_core_inst/alu_pc
 add wave -noupdate -group rv32i_cpu_core -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu_rd
@@ -124,8 +132,13 @@ add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/system_instr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jmp_instr
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/a
+add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/b
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/branch_instr
 add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr
 add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/instr_reg
+add wave -noupdate -group decode -radix decimal /tb/uut/rv32i_cpu_core_inst/decode/offset
 add wave -noupdate -group decode -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/decode/pc
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/jump
@@ -137,7 +150,7 @@ add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/update_pc_dl
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_left
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/shift_right
-add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/is_shift_instr
+add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/is_shift_imm_instr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_dly
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/exception_int
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/mret_instr
@@ -220,7 +233,6 @@ add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/updating_pc
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_imm_instr
 add wave -noupdate -group decode /tb/uut/rv32i_cpu_core_inst/decode/zicsr_instr
-add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc_in
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/cancelled
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/update_pc
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc
@@ -230,6 +242,8 @@ add wave -noupdate -group alu -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/a_
 add wave -noupdate -group alu -radix unsigned /tb/uut/rv32i_cpu_core_inst/alu/rd
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/stall
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/a
+add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/branch_taken
+add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/pc_in
 add wave -noupdate -group alu -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/alu/offset_decode
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/load_in
 add wave -noupdate -group alu /tb/uut/rv32i_cpu_core_inst/alu/load
@@ -568,6 +582,59 @@ add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs
 add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/uinstreth
 add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/utime
 add wave -noupdate -group regs /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/utimeh
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/clk
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/reset_n
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/start
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/count
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/div_not_mul
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/mulh
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/mod
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/signed_a
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/signed_b
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/signed_a_saved
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/signed_b_saved
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/a_fb
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/b_fb
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/a_rs_idx
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/b_rs_idx
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/regfile_rd_idx
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/regfile_rd_val
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/rd_idx
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/div_mull
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/terminate
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/start
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/stop
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/done_int
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/done
+add wave -noupdate -group rv32_m -radix unsigned /tb/uut/rv32i_cpu_core_inst/extm/ext_m/rd
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/result
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/A
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/A_int
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/A_negative
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/A_saved
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/B
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/B_int
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/B_negative
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/B_reg
+add wave -noupdate -group rv32_m -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/extm/ext_m/B_saved
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/RV32M_FIXED_TIMING
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/RV32M_MUL_INFERRED
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/a_shift
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/b_shift
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/change_op_sign
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/div_not_mul_saved
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/done_int
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/funct
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/mod_mulh
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/mul_adjusted
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/next_mul
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/rd_saved
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/result_valid
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/shifted
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/stop
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/sub
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/terminate
+add wave -noupdate -group rv32_m /tb/uut/rv32i_cpu_core_inst/extm/ext_m/use_last_result
 add wave -noupdate -radix hexadecimal /tb/uut/imem_raddr
 add wave -noupdate -radix hexadecimal /tb/uut/imem_rdata
 add wave -noupdate /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/zicsr
@@ -587,7 +654,7 @@ add wave -noupdate -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zic
 add wave -noupdate -radix hexadecimal /tb/uut/rv32i_cpu_core_inst/zicsr/rv32_zicsr/regs/mscratch
 add wave -noupdate -radix hexadecimal -childformat {{{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[0]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[1]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[2]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[3]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[4]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[5]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[6]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[7]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[8]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[9]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[10]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[11]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[12]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[13]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[14]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[15]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[16]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[17]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[18]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[19]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[20]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[21]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[22]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[23]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[24]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[25]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[26]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[27]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[28]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[29]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[30]} -radix hexadecimal} {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[31]} -radix hexadecimal}} -subitemconfig {{/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[0]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[1]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[2]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[3]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[4]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[5]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[6]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[7]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[8]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[9]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[10]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[11]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[12]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[13]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[14]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[15]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[16]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[17]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[18]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[19]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[20]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[21]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[22]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[23]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[24]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[25]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[26]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[27]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[28]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[29]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[30]} {-height 15 -radix hexadecimal} {/tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data[31]} {-height 15 -radix hexadecimal}} /tb/uut/rv32i_cpu_core_inst/regfile/mem/regfile1/altsyncram_component/m_default/altsyncram_inst/mem_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {1224975 ps} 0}
+WaveRestoreCursors {{Cursor 2} {378576 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 183
 configure wave -valuecolwidth 100
@@ -603,4 +670,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1475250 ps}
+WaveRestoreZoom {0 ps} {3921750 ps}

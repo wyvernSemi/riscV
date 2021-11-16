@@ -72,7 +72,7 @@ for %%i in (^
    grep "Test" sim.log >> test.log
  )
  
-  for %%i in (^
+ for %%i in (^
    scall^
  ) do (
    echo.
@@ -81,6 +81,25 @@ for %%i in (^
    rm -f %%i.exe
    make -f makefile.test SUBDIR=rv32mi FNAME=%%i.S
    make VSIMARGS="-gHALT_ON_ADDR=1 -gHALT_ON_ECALL=0" log
+   grep "Test" sim.log >> test.log
+ )
+ 
+  for %%i in (^
+   mul^
+   mulh^
+   mulhsu^
+   mulhu^
+   div^
+   divu^
+   rem^
+   remu^
+ ) do (
+   echo.
+   echo.
+   echo Running test for %%i test...
+   rm -f %%i.exe
+   make -f makefile.test SUBDIR=rv32um FNAME=%%i.S
+   make log
    grep "Test" sim.log >> test.log
  )
  

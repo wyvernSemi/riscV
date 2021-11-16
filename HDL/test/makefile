@@ -56,7 +56,7 @@ run: all
 	@${VSIMEXE} -c -do sim.do ${VSIMARGS}
 
 rungui: all
-	@${VSIMEXE} -gui -do wave.do -do simg.do ${VSIMARGS}
+	@${VSIMEXE} -gui -do simg.do ${VSIMARGS}
 
 runlog: all
 	@awk -F" " '/add wave/{print "log " $$NF}' < wave.do > batch.do

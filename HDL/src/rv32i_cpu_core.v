@@ -41,7 +41,8 @@ module rv32i_cpu_core
    RV32I_REGFILE_USE_MEM       = 1,
    RV32_ZICSR_EN               = 1,
    RV32_DISABLE_TIMER          = 0,
-   RV32_DISABLE_INSTRET        = 0
+   RV32_DISABLE_INSTRET        = 0,
+   RV32_M_EN                   = 1
 )
 (
   input                        clk,
@@ -139,11 +140,22 @@ wire [31:0] regfile_rd_val;
 // Signals for minstret counter
 wire        retired_instr;
 
-// zicsr exception PC signals
+// Zicsr exception PC signals
 wire        zicsr_update_pc;
 wire [31:0] zicsr_new_pc;
 wire  [4:0] zicsr_rd;
 wire [31:0] zicsr_rd_val;
+
+// RV32M extension decode signals
+wire        decode_extm_instr;
+wire  [2:0] decode_extm_funct;
+wire  [4:0] decode_extm_rd;
+
+// RV32M extension outputs
+wire  [4:0] extm_rd;
+wire [31:0] extm_rd_val;
+wire        extm_idle;
+wire        extm_done;
 
 // Synchronous exception signals
 wire        exception;
@@ -152,10 +164,10 @@ wire  [3:0] exception_type;
 wire [31:0] exception_addr;
 
 // Stall conditions
-wire        stall              = (dread & dwaitrequest);
+wire        stall              = (dread & dwaitrequest) | (decode_extm_instr | ~extm_done);
 wire        stall_regfile      = stall | (decode_load & ~dread);
-wire        stall_decode       = dread;
-wire        stall_alu          = dread;
+wire        stall_decode       = dread | ~extm_idle;
+wire        stall_alu          = dread | ~extm_idle;
 wire        clr_load_op        = dread & ~dwaitrequest;
 
 wire        update_pc          = alu_update_pc | zicsr_update_pc;
@@ -169,8 +181,10 @@ assign iread                   = reset_n & ~(dread & dwaitrequest);
 assign dwritedata              = alu_c;
 
 // Mux the sources of RD updates to the register file
-assign regfile_rd              = alu_rd | zicsr_rd;
-assign regfile_rd_val          = |zicsr_rd ? zicsr_rd_val : alu_c;
+assign regfile_rd              = alu_rd | zicsr_rd | extm_rd;
+assign regfile_rd_val          = |zicsr_rd ? zicsr_rd_val :
+                                 |extm_rd  ? extm_rd_val  :
+                                             alu_c;
 
 // Export writes to register file for test/debug purposes
 assign test_rd_idx             = regfile_rd;
@@ -182,7 +196,8 @@ assign test_rd_val             = regfile_rd_val;
 
   rv32i_decode #(
     .RV32I_TRAP_VECTOR         (RV32I_TRAP_VECTOR),
-    .RV32_ZICSR_EN             (RV32_ZICSR_EN)
+    .RV32_ZICSR_EN             (RV32_ZICSR_EN),
+    .RV32_M_EN                 (RV32_M_EN)
   ) decode
   (
     .clk                       (clk),
@@ -243,6 +258,10 @@ assign test_rd_val             = regfile_rd_val;
     .shift_arith               (decode_shift_arith),
     .shift_left                (decode_shift_left),
     .shift_right               (decode_shift_right),
+
+    .extm_instr                (decode_extm_instr),
+    .extm_funct                (decode_extm_funct),
+    .extm_rd                   (decode_extm_rd),
 
     .exception                 (exception),
     .exception_pc              (exception_pc),
@@ -342,13 +361,13 @@ assign test_rd_val             = regfile_rd_val;
 
   );
 
+generate
+
   // ---------------------------------------------------------
   // zicsr Extension module
   // ---------------------------------------------------------
 
-generate
-
-  if (RV32_ZICSR_EN == 1)
+  if (RV32_ZICSR_EN != 0)
   begin : zicsr
     rv32_zicsr #(.CLK_FREQ_MHZ(CLK_FREQ_MHZ), .DISABLE_TIMER(RV32_DISABLE_TIMER), .DISABLE_INSTRET(RV32_DISABLE_INSTRET)) rv32_zicsr
       (
@@ -397,6 +416,47 @@ generate
     assign zicsr_rd             = 5'h0;
   end
 
+endgenerate
+
+generate
+
+  // ---------------------------------------------------------
+  // RV32M Extension module
+  // ---------------------------------------------------------
+  if (RV32_M_EN != 0)
+  begin : extm
+    rv32_m #(.RV32M_FIXED_TIMING(0), .RV32M_MUL_INFERRED(1)) ext_m
+    (
+      .clk                     (clk),
+      .reset_n                 (reset_n),
+
+      .A                       (decode_a),
+      .B                       (decode_b),
+      .a_rs_idx                (decode_a_rs_idx),
+      .b_rs_idx                (decode_b_rs_idx),
+      
+      .regfile_rd_idx          (regfile_rd),
+      .regfile_rd_val          (regfile_rd_val),
+      
+      .start                   (decode_extm_instr),
+      .funct                   (decode_extm_funct),
+      .rd_idx                  (decode_extm_rd),
+      .terminate               (decode_cancelled),
+
+      .result                  (extm_rd_val),
+      .rd                      (extm_rd),
+      .done                    (extm_idle),
+      .done_int                (extm_done)
+    );
+  end
+  else
+  begin : noextm
+
+    assign extm_rd             = 5'h0;
+    assign extm_idle           = 1'b1;
+    assign extm_done           = 1'b1;
+
+  end
 endgenerate
 
 endmodule
