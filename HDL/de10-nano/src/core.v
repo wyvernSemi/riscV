@@ -44,6 +44,9 @@ module core
             RV32_ZICSR_EN              = 1,
             RV32_DISABLE_TIMER         = 0,
             RV32_DISABLE_INSTRET       = 0,
+            RV32_M_EN                  = 1,
+            RV32M_FIXED_TIMING         = 0,
+            RV32M_MUL_INFERRED         = 1,
             // Next parameters altered strictly for test purposes only
             RV32I_IMEM_SHADOW_WR       = 0,
             RV32I_INCL_TEST_BLOCK      = 0
@@ -358,7 +361,11 @@ end
    .RV32I_REGFILE_USE_MEM              (RV32I_REGFILE_USE_MEM),
    .RV32_ZICSR_EN                      (RV32_ZICSR_EN),
    .RV32_DISABLE_TIMER                 (RV32_DISABLE_TIMER),
-   .RV32_DISABLE_INSTRET               (RV32_DISABLE_INSTRET)
+   .RV32_DISABLE_INSTRET               (RV32_DISABLE_INSTRET),
+   .RV32_M_EN                          (RV32_M_EN),
+   .RV32M_FIXED_TIMING                 (RV32M_FIXED_TIMING),
+   .RV32M_MUL_INFERRED                 (RV32M_MUL_INFERRED)
+
   )
   rv32i_cpu_core_inst
   (

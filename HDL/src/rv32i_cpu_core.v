@@ -42,7 +42,9 @@ module rv32i_cpu_core
    RV32_ZICSR_EN               = 1,
    RV32_DISABLE_TIMER          = 0,
    RV32_DISABLE_INSTRET        = 0,
-   RV32_M_EN                   = 1
+   RV32_M_EN                   = 1,
+   RV32M_FIXED_TIMING          = 0,
+   RV32M_MUL_INFERRED          = 1
 )
 (
   input                        clk,
@@ -152,6 +154,7 @@ wire  [2:0] decode_extm_funct;
 wire  [4:0] decode_extm_rd;
 
 // RV32M extension outputs
+wire        extm_update_rd;
 wire  [4:0] extm_rd;
 wire [31:0] extm_rd_val;
 wire        extm_idle;
@@ -181,10 +184,8 @@ assign iread                   = reset_n & ~(dread & dwaitrequest);
 assign dwritedata              = alu_c;
 
 // Mux the sources of RD updates to the register file
-assign regfile_rd              = alu_rd | zicsr_rd | extm_rd;
-assign regfile_rd_val          = |zicsr_rd ? zicsr_rd_val :
-                                 |extm_rd  ? extm_rd_val  :
-                                             alu_c;
+assign regfile_rd              = alu_rd | zicsr_rd;
+assign regfile_rd_val          = |zicsr_rd ? zicsr_rd_val : alu_c;
 
 // Export writes to register file for test/debug purposes
 assign test_rd_idx             = regfile_rd;
@@ -357,7 +358,11 @@ assign test_rd_val             = regfile_rd_val;
     .store                     (dwrite),
     .addr                      (daddress),
     .st_be                     (dbyteenable),
-    .ld_data                   (dreaddata)
+    .ld_data                   (dreaddata),
+    
+    .extm_update_rd            (extm_update_rd),
+    .extm_rd_idx               (extm_rd),
+    .extm_rd_val               (extm_rd_val)
 
   );
 
@@ -425,7 +430,7 @@ generate
   // ---------------------------------------------------------
   if (RV32_M_EN != 0)
   begin : extm
-    rv32_m #(.RV32M_FIXED_TIMING(0), .RV32M_MUL_INFERRED(1)) ext_m
+    rv32_m #(.RV32M_FIXED_TIMING(RV32M_FIXED_TIMING), .RV32M_MUL_INFERRED(RV32M_MUL_INFERRED)) ext_m
     (
       .clk                     (clk),
       .reset_n                 (reset_n),
@@ -445,6 +450,7 @@ generate
 
       .result                  (extm_rd_val),
       .rd                      (extm_rd),
+      .update_rd               (extm_update_rd),
       .done                    (extm_idle),
       .done_int                (extm_done)
     );
@@ -452,6 +458,7 @@ generate
   else
   begin : noextm
 
+    assign extm_update_rd      = 1'b0;
     assign extm_rd             = 5'h0;
     assign extm_idle           = 1'b1;
     assign extm_done           = 1'b1;

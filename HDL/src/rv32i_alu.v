@@ -84,6 +84,10 @@ module rv32i_alu
   input                                shift_left,
   input                                shift_right,
 
+  input                                extm_update_rd,
+  input       [4:0]                    extm_rd_idx,
+  input      [31:0]                    extm_rd_val,
+
   // Pipeline control
   input                                clr_load_op,
   output reg  [4:0]                    rd,
@@ -167,6 +171,10 @@ wire               branch_taken        = branch_in & cmp[0];
 // PC is result of addition if jump or trap, and PC + offset if branch taken
 wire        [31:0] next_pc             = (jump_in | system_in) ? add :
                                                                  pc_in + offset_decode;
+                                                                 
+wire [4:0] next_rd                     = extm_update_rd ? extm_rd_idx :
+                                         stall          ? rd          : 
+                                                          ((~update_pc & ~((jump_in | branch_taken) & |next_pc[1:0])) ? rd_in : 5'h0);
 
 // Next memory address is the A input plus the offset from the decoder
 wire        [31:0] next_addr           = a + offset_decode;
@@ -201,7 +209,11 @@ begin
     retired_instr                      <= ~stall & ~cancelled;
 
     // Update C output based on active operation
-    if (load)
+    if (extm_update_rd)
+    begin
+      c                                <= extm_rd_val;
+    end
+    else if (load)
     begin
       // Clear the unused bits of the shifted load data, based on load width (byte, hword, word)
       c                                <= (ld_data_shift & {{16{ld_width[1]}}, {8{|ld_width[1:0]}}, 8'hff}) |
@@ -242,8 +254,8 @@ begin
       addr_lo                          <= stall ? addr [1:0] : next_addr[1:0];
     end
 
-    // Te RD register is updated (i.e. not 0) when the PC isn't being updated (and instructions 'deleted') and not a misaligned instruction read
-    rd                                 <= stall ? rd : ((~update_pc & ~((jump_in | branch_taken) & |next_pc[1:0])) ? rd_in : 5'h0);
+    // The RD register is updated (i.e. not 0) when the PC isn't being updated (and instructions 'deleted') and not a misaligned instruction read
+    rd                                 <= next_rd;
 
     // Update PC when a system, jump or taken branch instruction
     pc                                 <= stall ? pc : next_pc;

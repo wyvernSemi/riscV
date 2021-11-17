@@ -72,6 +72,9 @@ module tb
   IMEM_ADDR_WIDTH                      = 16,              // rv32i_cpu_core instruction memory address width (i.e. 2^IMEM_ADDR_WIDTH = num words)
   IMEM_INIT_FILE                       = "test.mif",      // IMEM initialisation file ("UNUSED" for no initialisation file)
   ZICSR_EN                             = 1,               // rv32i_cpu_core Enable/disable Zicsr extensions
+  M_EN                                 = 1,               // Enable/disable RV32M extensions
+  M_FIXED_TIMING                       = 0,               // With RV32M extensions, set to fixed timings (i.e. remove optimsation logic) when 1
+  M_MUL_INFERRED                       = 1,               // With RV32M extensions, infer DSP multiplication when set, else use logic implmentation
   IMEM_SHADOW_WR                       = 1,               // **TEST ONLY**: 1 => shadow dmem writes to imem, 0 => no shadow writes
   INCL_TEST_BLOCK                      = 1,               // **TEST ONLY**: 1 => include core test block logic, 0 => no test block
   TIMEOUT_COUNT                        = 10000
@@ -170,11 +173,11 @@ always @(posedge clk)
 begin
   avs_csr_write                        <= 1'b0;
   avs_csr_address                      <= `CORE_CONTROL_ADDR;
-  avs_csr_writedata                    <= `CLR_HALT_BIT_MASK                                | 
-                                          (HALT_ON_ADDR  ? `HALT_ON_ADDR_BIT_MASK  : 32'h0) | 
+  avs_csr_writedata                    <= `CLR_HALT_BIT_MASK                                |
+                                          (HALT_ON_ADDR  ? `HALT_ON_ADDR_BIT_MASK  : 32'h0) |
                                           (HALT_ON_UNIMP ? `HALT_ON_UNIMP_BIT_MASK : 32'h0) |
                                           (HALT_ON_ECALL ? `HALT_ON_ECALL_BIT_MASK : 32'h0);
-  
+
   if (count == (`RESET_PERIOD + 5))
   begin
     avs_csr_write                      <= 1'b1;
@@ -196,6 +199,9 @@ end
     .RV32I_IMEM_INIT_FILE              (IMEM_INIT_FILE),
     .RV32I_DMEM_INIT_FILE              (IMEM_INIT_FILE), // Load DMEM with same image as IMEM for fence_i test
     .RV32_ZICSR_EN                     (ZICSR_EN),
+    .RV32_M_EN                         (M_EN),
+    .RV32M_FIXED_TIMING                (M_FIXED_TIMING),
+    .RV32M_MUL_INFERRED                (M_MUL_INFERRED),
     .RV32I_IMEM_SHADOW_WR              (IMEM_SHADOW_WR),
     .RV32I_INCL_TEST_BLOCK             (INCL_TEST_BLOCK)
   )
@@ -209,7 +215,7 @@ end
     .avs_csr_writedata                 (avs_csr_writedata),
     .avs_csr_read                      (avs_csr_read),
     .avs_csr_readdata                  (avs_csr_readdata),
-    
+
     .gpio_in                           ({{71{1'bz}}, irq_n})
   );
 

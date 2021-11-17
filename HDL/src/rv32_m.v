@@ -36,7 +36,7 @@
 
 module rv32_m
 #(parameter
-   RV32M_FIXED_TIMING          = 0,      // Set non-zero if timing must be fixed for all calculations
+   RV32M_FIXED_TIMING          = 0,      // Set non-zero if timing must be fixed for all calculations (removed optimisation logic)
    RV32M_MUL_INFERRED          = 1       // Set non-zero if do not want inferred multiplication
 )
 (
@@ -56,7 +56,8 @@ module rv32_m
   input      [31:0]            regfile_rd_val,
 
   output     [31:0]            result,
-  output reg  [4:0]            rd,
+  output      [4:0]            rd,
+  output                       update_rd,
   output reg                   done,
   output reg                   done_int
 );
@@ -87,9 +88,6 @@ wire        signed_b           = (~div_not_mul & ~funct[1] & funct[0])  | (div_n
 
 wire [31:0] a_fb               = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == a_rs_idx) ? regfile_rd_val : A;
 wire [31:0] b_fb               = (|regfile_rd_idx == 1'b1 && regfile_rd_idx == b_rs_idx) ? regfile_rd_val : B;
-
-// Select result 32 bits
-assign      result             = ((div_not_mul_saved & mod_saved) | (~div_not_mul_saved & mulh_saved)) ? mod_mulh : div_mull;
 
 // Flag if there is a valid result, and inputs match last inputs,
 // in which case the previous outputs can be used. This allows
@@ -129,6 +127,20 @@ wire [63:0] mul_adjusted       = change_op_sign ? (~{mod_mulh, div_mull} + 64'h1
 // or latched |a_fb| * |b_fb| value, when inferring a DSP multiplier.
 wire [63:0] next_mul           = (RV32M_MUL_INFERRED == 0) ? {mod_mulh, div_mull} + a_shift : (a_shift[31:0] * b_shift);
 
+// Select result 32 bits
+wire        result_high_bits   = (div_not_mul_saved & mod_saved) | (~div_not_mul_saved & mulh_saved);
+
+wire [31:0] next_div_result    = result_high_bits ? (change_op_sign ? (~b_shift       +32'h1) : b_shift) :
+                                                    (change_op_sign ? (~a_shift[31:0] +32'h1) : a_shift[31:0]);
+
+wire [31:0] next_mul_result    = result_high_bits ? mul_adjusted[63:32] : mul_adjusted[31:0];
+
+assign      update_rd          = ~done & done_int;
+
+assign      result             = div_not_mul_saved ? next_div_result : next_mul_result;
+
+assign      rd                 = update_rd ? rd_saved : 5'h00;
+
 always @(posedge clk)
 begin
   if (reset_n == 1'b0)
@@ -141,13 +153,7 @@ begin
   else
   begin
 
-    rd                         <= 5'h0;
-
-    if (~done & done_int)
-    begin
-      rd                       <= rd_saved;
-    end
-
+    //rd                         <= next_rd;
 
     // Done output a cycle delayed of internal done_int, to allow for output sign change.
     done                       <= done_int;
@@ -183,7 +189,7 @@ begin
       end
       else
       begin
-        rd                     <= rd_idx;
+        done                   <= 1'b0;
       end
     end
 
@@ -227,41 +233,29 @@ begin
         begin
           if (b_shift[0])
           begin
-            div_mull             <= next_mul[31:0];
-            mod_mulh             <= next_mul[63:32];
+            div_mull           <= next_mul[31:0];
+            mod_mulh           <= next_mul[63:32];
           end
-          a_shift                <= {a_shift[62:0], 1'b0};
-          b_shift                <= {1'b0, b_shift[31:1]};
-          count                  <= count - 5'h01;
-          done_int               <= stop;
+          a_shift              <= {a_shift[62:0], 1'b0};
+          b_shift              <= {1'b0, b_shift[31:1]};
+          count                <= count - 5'h01;
+          done_int             <= stop;
         end
         else
         begin
-          div_mull               <= next_mul[31:0];
-          mod_mulh               <= next_mul[63:32];
-          done_int               <= 1'b1;
+          div_mull             <= next_mul[31:0];
+          mod_mulh             <= next_mul[63:32];
+          done_int             <= 1'b1;
         end
       end
     end
     else
     begin
       count                    <= `DIV_COUNT_RESET;
-
-      if(~done)
-      begin
-        if (div_not_mul_saved)
-        begin
-          // Outputs have sign changed if flagged, else pass unaltered results
-          div_mull             <= change_op_sign ? (~a_shift[31:0] + 32'h1) : a_shift[31:0];
-          mod_mulh             <= change_op_sign ? (~b_shift       + 32'h1) : b_shift;
-        end
-        else
-        begin
-          div_mull             <= mul_adjusted[31:0];
-          mod_mulh             <= mul_adjusted[63:32];
-        end
-      end
     end
+
+    // Update result output
+    //result                     <= next_result;
 
     // There are valid results if the count reaches 1.
     // If a division is terminated then the results become invalid.
