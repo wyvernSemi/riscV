@@ -45,8 +45,8 @@ module core
             RV32_DISABLE_TIMER         = 0,
             RV32_DISABLE_INSTRET       = 0,
             RV32_M_EN                  = 1,
-            RV32M_FIXED_TIMING         = 0,
-            RV32M_MUL_INFERRED         = 1,
+            RV32M_FIXED_TIMING         = 1,
+            RV32M_MUL_INFERRED         = 0,
             // Next parameters altered strictly for test purposes only
             RV32I_IMEM_SHADOW_WR       = 0,
             RV32I_INCL_TEST_BLOCK      = 0

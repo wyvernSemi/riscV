@@ -173,7 +173,33 @@ set_parameter_property RV32I_INCL_TEST_BLOCK UNITS None
 set_parameter_property RV32I_INCL_TEST_BLOCK ALLOWED_RANGES -2147483648:2147483647
 set_parameter_property RV32I_INCL_TEST_BLOCK DESCRIPTION "**TEST ONLY**: Include the core test block logic"
 set_parameter_property RV32I_INCL_TEST_BLOCK HDL_PARAMETER true
-
+add_parameter RV32_M_EN INTEGER 1 "Enable/disable RV32M extensions"
+set_parameter_property RV32_M_EN DEFAULT_VALUE 1
+set_parameter_property RV32_M_EN DISPLAY_NAME RV32_M_EN
+set_parameter_property RV32_M_EN TYPE INTEGER
+set_parameter_property RV32_M_EN ENABLED true
+set_parameter_property RV32_M_EN UNITS None
+set_parameter_property RV32_M_EN ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32_M_EN DESCRIPTION "Enable/disable RV32M extensions"
+set_parameter_property RV32_M_EN HDL_PARAMETER true
+add_parameter RV32M_FIXED_TIMING INTEGER 1 "Enable/disable fixed timings for RV32M extensions (no optimistaion logic)"
+set_parameter_property RV32M_FIXED_TIMING DEFAULT_VALUE 0
+set_parameter_property RV32M_FIXED_TIMING DISPLAY_NAME RV32M_FIXED_TIMING
+set_parameter_property RV32M_FIXED_TIMING TYPE INTEGER
+set_parameter_property RV32M_FIXED_TIMING ENABLED true
+set_parameter_property RV32M_FIXED_TIMING UNITS None
+set_parameter_property RV32M_FIXED_TIMING ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32M_FIXED_TIMING DESCRIPTION "Enable/disable fixed timings for RV32M extensions (no optimistaion logic)"
+set_parameter_property RV32M_FIXED_TIMING HDL_PARAMETER true
+add_parameter RV32M_MUL_INFERRED INTEGER 1 "Enable/disable inferred multiplication for RV32M extensions (FPGA DSP elements)"
+set_parameter_property RV32M_MUL_INFERRED DEFAULT_VALUE 1
+set_parameter_property RV32M_MUL_INFERRED DISPLAY_NAME RV32M_MUL_INFERRED
+set_parameter_property RV32M_MUL_INFERRED TYPE INTEGER
+set_parameter_property RV32M_MUL_INFERRED ENABLED true
+set_parameter_property RV32M_MUL_INFERRED UNITS None
+set_parameter_property RV32M_MUL_INFERRED ALLOWED_RANGES -2147483648:2147483647
+set_parameter_property RV32M_MUL_INFERRED DESCRIPTION "Enable/disable inferred multiplication for RV32M extensions (FPGA DSP elements)"
+set_parameter_property RV32M_MUL_INFERRED HDL_PARAMETER true
 
 # 
 # display items
@@ -190,6 +216,9 @@ add_display_item MEMORY RV32I_DMEM_INIT_FILE PARAMETER ""
 add_display_item EXTENSIONS RV32_ZICSR_EN PARAMETER ""
 add_display_item EXTENSIONS RV32_DISABLE_TIMER PARAMETER ""
 add_display_item EXTENSIONS RV32_DISABLE_INSTRET PARAMETER ""
+add_display_item EXTENSIONS RV32_M_EN PARAMETER ""
+add_display_item EXTENSIONS RV32M_FIXED_TIMING PARAMETER ""
+add_display_item EXTENSIONS RV32M_MUL_INFERRED PARAMETER ""
 add_display_item TEST RV32I_IMEM_SHADOW_WR PARAMETER ""
 add_display_item TEST RV32I_INCL_TEST_BLOCK PARAMETER ""
 

@@ -43,8 +43,8 @@ module rv32i_cpu_core
    RV32_DISABLE_TIMER          = 0,
    RV32_DISABLE_INSTRET        = 0,
    RV32_M_EN                   = 1,
-   RV32M_FIXED_TIMING          = 0,
-   RV32M_MUL_INFERRED          = 1
+   RV32M_FIXED_TIMING          = 1,
+   RV32M_MUL_INFERRED          = 0
 )
 (
   input                        clk,

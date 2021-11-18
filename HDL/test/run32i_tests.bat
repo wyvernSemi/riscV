@@ -1,8 +1,32 @@
 
 @echo off
 
+REM ##################################################################
+REM  Simulation regression test batch script
+REM 
+REM  Copyright (c) 2021 Simon Southwell
+REM 
+REM  This code is free software: you can redistribute it and/or modify
+REM  it under the terms of the GNU General Public License as published by
+REM  the Free Software Foundation, either version 3 of the License, or
+REM  (at your option) any later version.
+REM 
+REM  The code is distributed in the hope that it will be useful,
+REM  but WITHOUT ANY WARRANTY; without even the implied warranty of
+REM  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+REM  GNU General Public License for more details.
+REM 
+REM  You should have received a copy of the GNU General Public License
+REM  along with this code. If not, see <http://www.gnu.org/licenses/>.
+REM 
+REM ##################################################################
+
+REM Remove key directories anf file to ensure a clean build and run
+
 rm -rf obj
 rm -f test.log
+
+REM Run all the rv32ui tests
 
  for %%i in (^
    simple^
@@ -54,7 +78,9 @@ rm -f test.log
      grep "Test" sim.log >> test.log
   )
 
-  for %%i in (^
+REM Run the rv32mi tests, except scall which need different parameters
+
+ for %%i in (^
     csr^
     mcsr^
     sbreak^
@@ -72,6 +98,8 @@ rm -f test.log
     grep "Test" sim.log >> test.log
   )
 
+REM Run the rv32mi scall test
+
  for %%i in (^
    scall^
  ) do (
@@ -84,7 +112,8 @@ rm -f test.log
    grep "Test" sim.log >> test.log
  )
 
- REM multiplication tests for inferred DSP configuration
+REM RV32M tests for default (non-inferred multiplication, fixed timing) configuration
+
  for %%i in (^
    mul^
    mulh^
@@ -104,20 +133,27 @@ rm -f test.log
    grep "Test" sim.log >> test.log
  )
 
- REM repeat multiplication tests for non-inferred logic configuration
+REM repeat RV32M tests for no fixed timing and inferred (DSP) multiplication logic configuration
+
  for %%i in (^
    mul^
    mulh^
    mulhsu^
    mulhu^
+   div^
+   divu^
+   rem^
+   remu^
  ) do (
    echo.
    echo.
    echo Running test for %%i test...
    rm -f %%i.exe
    make -f makefile.test SUBDIR=rv32um FNAME=%%i.S
-   make VSIMARGS="-gM_MUL_INFERRED=0" log
+   make VSIMARGS="-gM_MUL_INFERRED=1 -gM_FIXED_TIMING=0" log
    grep "Test" sim.log >> test.log
  )
+
+REM display the test log
 
  cat test.log

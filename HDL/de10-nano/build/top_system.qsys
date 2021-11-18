@@ -248,8 +248,11 @@
   <parameter name="RV32I_REGFILE_USE_MEM" value="true" />
   <parameter name="RV32I_RESET_VECTOR" value="0" />
   <parameter name="RV32I_TRAP_VECTOR" value="4" />
+  <parameter name="RV32M_FIXED_TIMING" value="1" />
+  <parameter name="RV32M_MUL_INFERRED" value="0" />
   <parameter name="RV32_DISABLE_INSTRET" value="0" />
   <parameter name="RV32_DISABLE_TIMER" value="0" />
+  <parameter name="RV32_M_EN" value="1" />
   <parameter name="RV32_ZICSR_EN" value="1" />
  </module>
  <module name="hps_0" kind="altera_hps" version="18.1" enabled="1">

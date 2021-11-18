@@ -73,8 +73,8 @@ module tb
   IMEM_INIT_FILE                       = "test.mif",      // IMEM initialisation file ("UNUSED" for no initialisation file)
   ZICSR_EN                             = 1,               // rv32i_cpu_core Enable/disable Zicsr extensions
   M_EN                                 = 1,               // Enable/disable RV32M extensions
-  M_FIXED_TIMING                       = 0,               // With RV32M extensions, set to fixed timings (i.e. remove optimsation logic) when 1
-  M_MUL_INFERRED                       = 1,               // With RV32M extensions, infer DSP multiplication when set, else use logic implmentation
+  M_FIXED_TIMING                       = 1,               // With RV32M extensions, set to fixed timings (i.e. remove optimsation logic) when 1
+  M_MUL_INFERRED                       = 0,               // With RV32M extensions, infer DSP multiplication when set, else use logic implmentation
   IMEM_SHADOW_WR                       = 1,               // **TEST ONLY**: 1 => shadow dmem writes to imem, 0 => no shadow writes
   INCL_TEST_BLOCK                      = 1,               // **TEST ONLY**: 1 => include core test block logic, 0 => no test block
   TIMEOUT_COUNT                        = 10000
