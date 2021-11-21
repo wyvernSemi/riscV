@@ -174,7 +174,7 @@ begin
 
     // If idle (done set) and start asserted, then load initial state---but not
     // if same inputs as last completed calculation, as the division is skipped
-    if (done & start)
+    if (done & start & ~terminate)
     begin
 
       // Save the RD index, whether using last result or not as the destination registering
