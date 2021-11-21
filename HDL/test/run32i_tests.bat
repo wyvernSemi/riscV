@@ -21,7 +21,7 @@ REM  along with this code. If not, see <http://www.gnu.org/licenses/>.
 REM 
 REM ##################################################################
 
-REM Remove key directories anf file to ensure a clean build and run
+REM Remove key directories and files to ensure a clean build and run
 
 rm -rf obj
 rm -f test.log
@@ -78,7 +78,7 @@ REM Run all the rv32ui tests
      grep "Test" sim.log >> test.log
   )
 
-REM Run the rv32mi tests, except scall which need different parameters
+REM Run the rv32mi tests, except scall which needs different parameters
 
  for %%i in (^
     csr^
