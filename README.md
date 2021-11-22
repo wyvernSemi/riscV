@@ -13,6 +13,9 @@ The Verilog Softcore has the following features
 	* Sub-set of all possible machine registers implemented (see manual)
 	* cycle counts, timer and retired insructions counts readable via unprivileged registers
 	* Timer and retired instruction counts removable via parameters to save area
+*	Configurable RV32M extension functionality
+	* mul, mulh, mulhu, mulhsu, div, divu, rem and remu instructions implemented
+    * Configuarble for implied DSP multiplier inference and for repated operand optimisations
 *	Separate instruction and data memory interfaces (Harvard architecture)
 *	5 deep pipeline architecture
 *	1 cycle operations for all instructions except branch, jump and load
