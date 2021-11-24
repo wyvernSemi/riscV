@@ -280,7 +280,7 @@
 // MSTATUS bit masks
 #define RV32CSR_MIE_BITMASK                            0x00000008
 #define RV32CSR_MPIE_BITMASK                           0x00000080
-#define RV32CSR_MPP_BITMASK                            0x00000c00
+#define RV32CSR_MPP_BITMASK                            0x00001800
 #define RV32CSR_MPRV_BITMASK                           0x00010000
 
 #define RV32CSR_MTVEC_MODE_MASK                        0x00000003

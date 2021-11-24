@@ -442,7 +442,7 @@ void rv32csr_cpu::mret(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        // Set MSTATUS MIE to MPIE
+        // Set MSTATUS MIE to MPIE. Note: MPP is not updated to user mode as this is not yet supported.
         state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] &= ~RV32CSR_MIE_BITMASK;
         state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] |= (state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] & RV32CSR_MPIE_BITMASK) ? RV32CSR_MIE_BITMASK : 0;
 

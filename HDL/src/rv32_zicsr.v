@@ -245,7 +245,7 @@ begin
   begin
     mstatus_mie_int                    <=  1'b0;
     mstatus_mpie_int                   <=  1'b0;
-    mstatus_mpp_int                    <=  2'h0;
+    mstatus_mpp_int                    <=  2'b11;
     mepc_int                           <= 30'h0;
     mcause_code_int                    <=  4'h0;
     mcause_interrupt_int               <=  1'b0;
@@ -324,7 +324,7 @@ begin
     if (mret)
     begin
       mstatus_mie_int                  <= mstatus_mpie_int;
-      mstatus_mpp_int                  <= 2'b00;
+      mstatus_mpp_int                  <= 2'b11; // Note: at this time user mode is not suppprted, so MPP set to M mode
       mstatus_mpie_int                 <= 1'b0;
 
       zicsr_update_pc                  <= 1'b1;
