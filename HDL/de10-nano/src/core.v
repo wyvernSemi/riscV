@@ -30,6 +30,7 @@
 // -----------------------------------------------------------------------------
 
 `timescale 1ns / 10ps
+`include "rv32.vh"
 
 module core
 #(parameter CLK_FREQ_MHZ               = 100,
@@ -274,7 +275,7 @@ assign wr_mtime_val                    = avs_csr_writedata;
 // Local Synchronous Logic
 // ---------------------------------------------------------
 
-always @ (posedge clk)
+always @ (posedge clk `RESET)
 begin
   if (~reset_n)
   begin

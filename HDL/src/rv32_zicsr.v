@@ -28,7 +28,8 @@
 //
 // -----------------------------------------------------------------------------
 
-`timescale 1ns / 10ps
+`timescale                             1ns / 10ps
+`include                               "rv32.vh"
 
 `define MACH_SW_INT_CODE               4'd0
 `define MACH_TIMER_INT_CODE            4'd7
@@ -239,7 +240,7 @@ assign timer_freq_mhz                  = (DISABLE_TIMER == 0) ? 12'd1 : CLK_FREQ
 // -----------------------------------------------
 // Synchronous logic
 // -----------------------------------------------
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin

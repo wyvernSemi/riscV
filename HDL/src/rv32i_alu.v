@@ -28,7 +28,8 @@
 //
 // -----------------------------------------------------------------------------
 
- `timescale 1ns / 10ps
+`timescale                             1ns / 10ps
+`include                               "rv32.vh"
 
 module rv32i_alu
 (
@@ -191,7 +192,7 @@ assign             misaligned_addr     = next_addr;
 // The returned load data is shifted dependant of the address low bits
 wire        [31:0] ld_data_shift = ld_data >> {addr_lo, 3'b000};
 
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin

@@ -28,9 +28,11 @@
 //
 // -----------------------------------------------------------------------------
 
- `timescale 1ns / 10ps
+ `timescale                    1ns / 10ps
 
-`define RV32I_NOP                32'h00000013
+ `include                      "rv32.vh"
+
+`define RV32I_NOP              32'h00000013
 
 module rv32i_cpu_core
 #(parameter
@@ -359,7 +361,7 @@ assign test_rd_val             = regfile_rd_val;
     .addr                      (daddress),
     .st_be                     (dbyteenable),
     .ld_data                   (dreaddata),
-    
+
     .extm_update_rd            (extm_update_rd),
     .extm_rd_idx               (extm_rd),
     .extm_rd_val               (extm_rd_val)
@@ -439,10 +441,10 @@ generate
       .B                       (decode_b),
       .a_rs_idx                (decode_a_rs_idx),
       .b_rs_idx                (decode_b_rs_idx),
-      
+
       .regfile_rd_idx          (regfile_rd),
       .regfile_rd_val          (regfile_rd_val),
-      
+
       .start                   (decode_extm_instr),
       .funct                   (decode_extm_funct),
       .rd_idx                  (decode_extm_rd),

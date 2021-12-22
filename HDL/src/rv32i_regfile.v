@@ -29,7 +29,8 @@
 //
 // -----------------------------------------------------------------------------
 
- `timescale 1ns / 10ps
+`timescale                     1ns / 10ps
+`include                       "rv32.vh"
 
 module rv32i_regfile
 #(parameter
@@ -83,7 +84,7 @@ assign      pc                 = start_up[1] ? RESET_VECTOR   : pc_int;
 assign      last_pc            = |start_up   ? RESET_VECTOR   : last_pc_int;
 
 // Process to update the program counter
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin
@@ -170,7 +171,7 @@ generate
     assign rs2_int             = rs2_reg;
 
     // Process for accessing the register file array
-    always @(posedge clk)
+    always @(posedge clk `RESET)
     begin
       if (reset_n == 1'b0)
       begin

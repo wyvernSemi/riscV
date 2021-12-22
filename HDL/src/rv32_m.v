@@ -30,6 +30,7 @@
 // -----------------------------------------------------------------------------
 
 `timescale                     1ns / 10ps
+`include                       "rv32.vh"
 
 `define DIV_WORD_WIDTH         32
 `define DIV_COUNT_RESET        (`DIV_WORD_WIDTH-1)
@@ -154,7 +155,7 @@ assign      update_rd          = ~done & done_int;
 assign      rd                 = update_rd ? rd_saved : 5'h00;
 
 // Synchronous process
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin

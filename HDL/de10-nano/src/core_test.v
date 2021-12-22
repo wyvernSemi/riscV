@@ -29,7 +29,8 @@
 //
 // -----------------------------------------------------------------------------
 
-`timescale 1ns / 10ps
+`timescale                     1ns / 10ps
+`include                       "rv32.vh"
 
 `define GP_IDX                 5'd3
 `define UNIMP_INSTR            32'hC0001073
@@ -59,7 +60,7 @@ module core_test
   output reg [31:0] gp
 );
 
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin

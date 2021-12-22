@@ -29,7 +29,9 @@
 //
 // -----------------------------------------------------------------------------
 
-`timescale 1ns / 10ps
+`timescale                             1ns / 10ps
+
+`include                               "rv32.vh"
 
 module rv32i_decode
 #(parameter
@@ -256,7 +258,7 @@ wire        updating_pc                = update_pc       | update_pc_dly    |
 // Export synchronous exception, but mask if just taking a branch, as following (possibly invalid) instructions are not executed
 assign      exception                  = exception_int & ~(update_pc | update_pc_dly);
 
-always @(posedge clk)
+always @(posedge clk `RESET)
 begin
   if (reset_n == 1'b0)
   begin

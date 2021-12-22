@@ -554,3 +554,6 @@
 { "" "" "" "Synthesized away the following node(s):" {  } {  } 0 14284 "" 0 0 "Design Software" 0 -1 0 ""}
 { "" "" "" "Following 96 pins have no output enable or a GND or VCC output enable - later changes to this connectivity may change fitting results" {  } {  } 0 169064 "" 0 0 "Design Software" 0 -1 0 ""}
 { "" "" "" "Verilog HDL Case Statement warning at core_csr_decode_auto.v(82): incomplete case statement has no default case item" {  } {  } 0 10270 "" 0 0 "Design Software" 0 -1 0 ""}
+{ "" "" "" "Verilog HDL assignment warning at rv32i_decode.v(224): truncated value with size 32 to match size of target (1)" {  } {  } 0 10230 "" 0 0 "Design Software" 0 -1 0 ""}
+{ "" "" "" "Verilog HDL assignment warning at rv32_m.v(162): truncated value with size 32 to match size of target (5)" {  } {  } 0 10230 "" 0 0 "Design Software" 0 -1 0 ""}
+{ "" "" "" "Verilog HDL assignment warning at rv32_m.v(286): truncated value with size 32 to match size of target (5)" {  } {  } 0 10230 "" 0 0 "Design Software" 0 -1 0 ""}
