@@ -52,13 +52,14 @@ extern "C" {
 }
 
 #include "rv32.h"
+#include "rv32i_cpu.h"
 #include "rv32_cpu_gdb.h"
 
 // ------------------------------------------------
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:xm:M:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART_TX_ADDR                       0x80000000
@@ -127,6 +128,15 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
                 error = 1;
             }
             break;
+        case 'x':
+            cfg.dump_regs = true;
+            break;
+        case 'm':
+            cfg.num_mem_dump_words = atoi(optarg);
+            break;
+        case 'M':
+            cfg.mem_dump_start = atoi(optarg);
+            break;
         case 'g':
             cfg.gdb_mode = true;
             break;
@@ -139,7 +149,8 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s -t <test executable> [-hHebdrg][-n <num instructions>]\n      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-hHebdrgx][-t <test executable>][-n <num instructions>]\n", argv[0]);
+            fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o / p filename>][-p <port num>][-m <num words>][-M <addr>]\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
@@ -149,6 +160,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
+            fprintf(stderr, "   -x Dump x0 to x31 on exit (default no dump)\n");
+            fprintf(stderr, "   -m Dump specified number of 32 bit words from data memory on exit (default 0)\n");
+            fprintf(stderr, "   -M Start byte address of memory dump (default 0x1000)\n");
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -S Specify start address (default 0)\n");
@@ -234,6 +248,42 @@ uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 }
 
 // -------------------------------
+// Dump registers
+//
+
+void reg_dump(rv32* pCpu, FILE* dfp)
+{
+    fprintf(dfp, "\nRegister state:\n\n  ");
+    for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
+    {
+        uint32_t rval = pCpu->regi_val(idx);
+        fprintf(dfp, "x%d%s = 0x%08x  ", idx, (idx < 10) ? " " : "", rval);
+        if ((idx % 4) == 3)
+        {
+            fprintf(dfp, "\n  ");
+        }
+    }
+    fprintf(dfp, "\n");
+}
+
+// -------------------------------
+// Dump memory
+//
+
+void mem_dump(uint32_t num, uint32_t start, rv32* pCpu, FILE* dfp)
+{
+    bool fault;
+
+    fprintf(dfp, "\nMEM state:\n\n");
+    for (uint32_t idx = start; idx < ((start & 0xfffffffc) + num*4); idx+=4)
+    {
+        uint32_t rval = pCpu->read_mem(idx, MEM_RD_ACCESS_WORD, fault);
+        fprintf(dfp, "  0x%08x : 0x%08x\n", idx, rval);
+    }
+    fprintf(dfp, "\n");
+}
+
+// -------------------------------
 // MAIN
 //
 int main(int argc, char** argv)
@@ -297,6 +347,17 @@ int main(int argc, char** argv)
 
                 printf(" pc=0x%08x\n", pCpu->pc_val());
 #endif
+                // If enabled, dump the registers
+                if (cfg.dump_regs)
+                {
+                    reg_dump(pCpu, cfg.dbg_fp);
+                }
+
+                // If specified dump the numbr of DMEM words
+                if (cfg.num_mem_dump_words)
+                {
+                    mem_dump(cfg.num_mem_dump_words, cfg.mem_dump_start, pCpu, cfg.dbg_fp);
+                }
 
                 // Print result
                 if (!cfg.dis_en)
