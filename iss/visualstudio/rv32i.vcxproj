@@ -152,6 +152,7 @@
     <ClCompile Include="..\src\cpurv32i.cpp" />
     <ClCompile Include="..\src\getopt.c" />
     <ClCompile Include="..\src\mem.c" />
+    <ClCompile Include="..\src\uart.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\librv32\librv32.vcxproj">
@@ -162,6 +163,7 @@
     <ClInclude Include="..\src\mem.h" />
     <ClInclude Include="..\src\rv32.h" />
     <ClInclude Include="..\src\rv32_cpu_gdb.h" />
+    <ClInclude Include="..\src\uart.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

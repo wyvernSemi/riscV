@@ -54,6 +54,7 @@ extern "C" {
 #include "rv32.h"
 #include "rv32i_cpu.h"
 #include "rv32_cpu_gdb.h"
+#include "uart.h"
 
 // ------------------------------------------------
 // DEFINES
@@ -62,13 +63,13 @@ extern "C" {
 #define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:xm:M:"
 
 #define INT_ADDR                           0xaffffffc
-#define UART_TX_ADDR                       0x80000000
+#define UART0_BASE_ADDR                    0x80000000
 
 // ------------------------------------------------
 // LOCAL VARIABLES
 // ------------------------------------------------
 
-static uint32_t irq = 0;
+static uint32_t swirq = 0;
 
 // ------------------------------------------------
 // TYPE DEFINITIONS
@@ -187,11 +188,21 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     // whilst reads have 2 wait states.
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
-    // If writing UART TX address, print character
-    if (byte_addr == UART_TX_ADDR && type == MEM_WR_ACCESS_BYTE)
+    // If accessing the UART addresses then process here
+    if ((byte_addr & UART_REG_ADDR_MASK) == UART0_BASE_ADDR)
     {
         processed = 0;
-        putchar(data & 0xff);
+        // If writing to the UART registers, call the model's write function
+        if (type == MEM_WR_ACCESS_BYTE || type == MEM_WR_ACCESS_HWORD || type == MEM_WR_ACCESS_WORD)
+        {
+            uart_write(byte_addr & 0x3, data & 0xff);
+        }
+        else if (type == MEM_RD_ACCESS_BYTE || type == MEM_RD_ACCESS_HWORD || type == MEM_RD_ACCESS_WORD)
+        {
+            uint32_t rxdata;
+            uart_read(byte_addr & 0x3, &rxdata);
+            data = rxdata;
+        }
     }
     // If not interrupt address, access memory model
     else if (byte_addr != INT_ADDR)
@@ -231,7 +242,7 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     }
     else if ((type & MEM_NOT_DBG_MASK) == MEM_WR_ACCESS_WORD && byte_addr == INT_ADDR)
     {
-        irq       = data & 0x1;
+        swirq       = data & 0x1;
         processed = 0;
     }
 
@@ -243,8 +254,13 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
 //
 uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 {
+    bool terminate;
+
     *wakeup_time = time + 1;
-    return irq;
+    
+    bool uart_irq = uart_tick(time, terminate, true);
+
+    return swirq | (uart_irq ? 1 : 0);
 }
 
 // -------------------------------

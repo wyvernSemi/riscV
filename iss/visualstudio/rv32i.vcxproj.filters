@@ -20,6 +20,9 @@
     <ClCompile Include="..\src\mem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\uart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\rv32.h">
@@ -29,6 +32,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\uart.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
