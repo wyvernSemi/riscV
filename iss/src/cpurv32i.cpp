@@ -60,7 +60,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbert:n:D:A:p:S:xm:M:"
+#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -112,6 +112,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'r':
             cfg.rt_dis = true;
             break;
+        case 'a':
+            cfg.abi_en = true;
+            break;
         case 'd':
             cfg.dis_en          = true;
             cfg.hlt_on_inst_err = true;
@@ -150,12 +153,14 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s [-hHebdrgx][-t <test executable>][-n <num instructions>]\n", argv[0]);
-            fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o / p filename>][-p <port num>][-m <num words>][-M <addr>]\n");
+            fprintf(stderr, "Usage: %s [-hHebdragx][-t <test executable>][-n <num instructions>]\n", argv[0]);
+            fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
+            fprintf(stderr, "      [-m <num words>][-M <addr>]\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
+            fprintf(stderr, "   -a display ABI register names when disassembling (default x names)\n");
             fprintf(stderr, "   -H Halt on unimplemented instructions (default trap)\n");
             fprintf(stderr, "   -e Halt on ecall/ebreak instruction (default trap)\n");
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
@@ -267,18 +272,35 @@ uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 // Dump registers
 //
 
-void reg_dump(rv32* pCpu, FILE* dfp)
+void reg_dump(rv32* pCpu, FILE* dfp, bool abi_en)
 {
     fprintf(dfp, "\nRegister state:\n\n  ");
+
+    // Loop through all the registers
     for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
     {
+        // Get the appropriate mapped register name (ABI or x)
+        const char* map_str = abi_en ? pCpu->rmap_str[idx] : pCpu->xmap_str[idx];
+
+        // Get the length of the register name string
+        size_t  slen = strlen(map_str);
+
+        // Fetch the value of the register indexed
         uint32_t rval = pCpu->regi_val(idx);
-        fprintf(dfp, "x%d%s = 0x%08x  ", idx, (idx < 10) ? " " : "", rval);
+
+        // Print out the register name (right justified) followed by the value
+        fprintf(dfp, "%s%s = 0x%08x ", (slen == 2) ? "  " : (slen == 3) ? " ": "",
+                                         map_str,
+                                         rval);
+
+        // After every fourth value, output a new line
         if ((idx % 4) == 3)
         {
             fprintf(dfp, "\n  ");
         }
     }
+
+    // Add a final new line
     fprintf(dfp, "\n");
 }
 
@@ -366,7 +388,7 @@ int main(int argc, char** argv)
                 // If enabled, dump the registers
                 if (cfg.dump_regs)
                 {
-                    reg_dump(pCpu, cfg.dbg_fp);
+                    reg_dump(pCpu, cfg.dbg_fp, cfg.abi_en);
                 }
 
                 // If specified dump the numbr of DMEM words

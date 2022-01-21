@@ -143,6 +143,29 @@ public:
     // ------------------------------------------------
 public:
 
+    // Mappings of register indexes to register name strings 
+    const char* rmap_str[32] = { "zero", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
+                                 "s0",   "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
+                                 "a6",   "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
+                                 "s8",   "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
+    // Mappings of register indexes to register name strings 
+    const char* xmap_str[32] = { "x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
+                                 "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
+                                 "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
+                                 "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31"};
+
+    // Mappings of register indexes to register name strings 
+    const char* fmap_str[32] = { "ft0", "ft1", "ft2",  "ft3",  "ft4", "ft5", "ft6",  "ft7",
+                                 "fs0", "fs1", "fa0",  "fa1",  "fa2", "fa3", "fa4",  "fa5",
+                                 "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
+                                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"};
+
+    // Mappings of register indexes to register name strings 
+    const char* fxmap_str[32] = { "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",
+                                  "f8",  "f9",  "f10", "f11", "f12", "f13", "f14", "f15",
+                                  "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",
+                                  "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31"};
+
     // ------------------------------------------------
     // Protected member variables
     // ------------------------------------------------
@@ -155,17 +178,6 @@ protected:
     // Internal constant definitions
     // ------------------------------------------------
 
-    // Mappings of register indexes to register name strings 
-    const char* rmap_str[32] = { "zero", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
-                                 "s0",   "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
-                                 "a6",   "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
-                                 "s8",   "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
-
-    // Mappings of register indexes to register name strings 
-    const char* fmap_str[32] = { "ft0", "ft1", "ft2",  "ft3",  "ft4", "ft5", "ft6",  "ft7",
-                                 "fs0", "fs1", "fa0",  "fa1",  "fa2", "fa3", "fa4",  "fa5",
-                                 "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
-                                 "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"};
 
     // String constants for instruction disassembly
     const char reserved_str[DISASSEM_STR_SIZE] = "reserved ";
@@ -285,6 +297,8 @@ protected:
     char                  str            [NUM_DISASSEM_BUFS][DISASSEM_STR_SIZE];
     int                   str_idx;
 
+    bool                  abi_en;
+
     // Pointer to external memory callback function
     p_rv32i_memcallback_t p_mem_callback;
 
@@ -362,9 +376,12 @@ protected:
 
         strcpy(str[str_idx], "         ");                            // Initialise with spaces
 
-        size_t len         = strlen(rmap_str[r]);                     // Get length of indexed abi string
+        // Select approriate mapping table on whethjer ABI or normal register naming
+        const char* map_str = abi_en ? rmap_str[r] : xmap_str[r];
 
-        strncpy(str[str_idx], rmap_str[r], DISASSEM_STR_SIZE);        // Lookup and copy abi string from reg index
+        size_t len         = strlen(map_str);                         // Get length of indexed abi string
+
+        strncpy(str[str_idx], map_str, DISASSEM_STR_SIZE);            // Lookup and copy abi string from reg index
 
         str[str_idx][len]  = ',';                                     // Add a comma
         str[str_idx][slen] = 0;                                       // Terminate string at fixed width
@@ -382,9 +399,12 @@ protected:
 
         strcpy(str[str_idx], "         ");                            // Initialise with spaces
 
-        size_t len         = strlen(fmap_str[r]);                     // Get length of indexed abi string
+        // Select approriate mapping table on whethjer ABI or normal register naming
+        const char* map_str = abi_en ? fmap_str[r] : fxmap_str[r];
 
-        strncpy(str[str_idx], fmap_str[r], DISASSEM_STR_SIZE);        // Lookup and copy abi string from reg index
+        size_t len = strlen(map_str);                                 // Get length of indexed abi string
+
+        strncpy(str[str_idx], map_str, DISASSEM_STR_SIZE);            // Lookup and copy abi string from reg index
 
         str[str_idx][len]  = ',';                                     // Add a comma
         str[str_idx][slen] = 0;                                       // Terminate string at fixed width
