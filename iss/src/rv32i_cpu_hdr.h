@@ -515,6 +515,7 @@ struct  rv32i_cfg_s {
     unsigned       num_instr;
     bool           rt_dis;
     bool           dis_en;
+    bool           abi_en;
     bool           hlt_on_inst_err;
     bool           hlt_on_ecall;
     bool           en_brk_on_addr;
@@ -535,6 +536,7 @@ struct  rv32i_cfg_s {
         num_instr          = 0;
         rt_dis             = false;
         dis_en             = false;
+        abi_en             = false;
         hlt_on_inst_err    = false;
         hlt_on_ecall       = false;
         en_brk_on_addr     = false;

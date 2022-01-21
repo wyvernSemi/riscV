@@ -61,6 +61,8 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     cmp_instr                = false;
     RV32_IADDR_ALIGN_MASK = 0x00000003;
 
+    abi_en                   = true;
+
     // Reset state
     reset();
 
@@ -257,6 +259,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     // Set disassemble switches
     rt_disassem = cfg.rt_dis;
     disassemble = cfg.dis_en;
+    abi_en      = cfg.abi_en;
 
     // Set halt switches
     halt_rsvd_instr = cfg.hlt_on_inst_err;
@@ -642,7 +645,7 @@ void rv32i_cpu::addi(const p_rv32i_decode_t d)
 
     if (d->rd)
     {
-        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] + d->imm_i;
+        state.hart[curr_hart].x[d->rd] = (uint32_t)state.hart[curr_hart].x[d->rs1] + (int32_t)d->imm_i;
     }
 
     increment_pc();
@@ -1386,5 +1389,6 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
     else
     {
         increment_pc();
+        trap = halt_ecall ? SIGTRAP : trap;
     }
 }
