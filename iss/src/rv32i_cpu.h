@@ -238,6 +238,9 @@ protected:
     // Flag to halt on ecall
     bool                  halt_ecall;
 
+    // Debug ABI register names enable flag
+    bool                  abi_en;
+
     // Holds CSR and HART (pc and regs) state
     rv32i_state           state;
 
@@ -296,8 +299,6 @@ protected:
     // String forming scratch space
     char                  str            [NUM_DISASSEM_BUFS][DISASSEM_STR_SIZE];
     int                   str_idx;
-
-    bool                  abi_en;
 
     // Pointer to external memory callback function
     p_rv32i_memcallback_t p_mem_callback;
