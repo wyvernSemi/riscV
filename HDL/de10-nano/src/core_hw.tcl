@@ -41,6 +41,7 @@ set_fileset_property QUARTUS_SYNTH ENABLE_RELATIVE_INCLUDE_PATHS false
 set_fileset_property QUARTUS_SYNTH ENABLE_FILE_OVERWRITE_MODE false
 add_fileset_file dp_ram.v VERILOG PATH ip/intel/dp_ram.v
 add_fileset_file rv32.vh VERILOG_INCLUDE PATH ../../src/rv32.vh
+add_fileset_file rv32_c.v VERILOG PATH ../../src/rv32_c.v
 add_fileset_file rv32i_alu.v VERILOG PATH ../../src/rv32i_alu.v
 add_fileset_file rv32i_decode.v VERILOG PATH ../../src/rv32i_decode.v
 add_fileset_file rv32i_regfile.v VERILOG PATH ../../src/rv32i_regfile.v
