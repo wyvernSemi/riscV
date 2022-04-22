@@ -86,6 +86,42 @@
             "type"         : "r",
             "reset"        : "0",
             "description"  : "gp register value"
+        },
+        "test_timer_lo" : {
+            "address"      : "4",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "mtime mem-mapped register tests access write port, low bits"
+        },
+        "test_timer_hi" : {
+            "address"      : "5",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "mtime mem-mapped register tests access write port, high bits"
+        },
+        "test_time_cmp_lo" : {
+            "address"      : "6",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "mtimecmp mem-mapped register tests access write port, low bits"
+        },
+        "test_time_cmp_hi" : {
+            "address"      : "7",
+            "width"        : "32",
+            "type"         : "wp",
+            "reset"        : "0",
+            "description"  : "mtimecmp mem-mapped register tests access write port, high bits"
+        },
+        "test_ext_sw_interrupt" : {
+            "address"      : "8",
+            "width"        : "1",
+            "type"         : "w",
+            "reset"        : "0",
+            "description"  : "Test external software interrupt"
         }
+        
     }
 }]
