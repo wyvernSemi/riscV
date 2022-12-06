@@ -26,9 +26,18 @@
 
 FNAME         = add.S
 START_ADDR    = 0
-ARCHCHAIN     = riscv64-unknown-elf-
 
-TESTSRCROOT   = c:/git
+# Get OS type
+OSTYPE:=$(shell uname)
+
+# Set OS specific variables between Linux and Windows (MinGW)
+ifeq (${OSTYPE}, Linux)
+  ARCHCHAIN   = riscv32-unknown-elf-
+else
+  ARCHCHAIN   = riscv64-unknown-elf-
+endif
+
+TESTSRCROOT   = ../../..
 
 TESTDIR       = ${TESTSRCROOT}/riscv-tests
 TESTENVDIR    = ${TESTSRCROOT}/riscv-test-env
@@ -68,9 +77,9 @@ ${OBJDIR}:
 
 %.exe: ${OBJDIR}/%.o
 	@${LD} $< ${LDOPTS} -o $@
-    
+
 ${OBJDIR}/%.o : ${DIR32UI}/%.S
 	@${CC} ${COPTS} -o $@ $<
 
 clean:
-	@rm -rf ${OBJS} ${EXEC}
+	@rm -rf ${OBJS} ${EXEC} *.exe

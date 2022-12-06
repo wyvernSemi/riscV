@@ -803,10 +803,13 @@ int rv32gdb_process_gdb (rv32* cpu, int port_num, rv32i_cfg_s &cfg)
     void* pty_fd;
 
     // Create a TCP/IP socket
-    if ((pty_fd = (void *)rv32gdb_connect_skt(port_num)) < 0)
+    rv32gdb_skt_t hdl = rv32gdb_connect_skt(port_num);
+    if (hdl < 0)
     {
         return PTY_ERROR;
     }
+    
+    pty_fd = (void *)hdl;
 
     while (!detached && rv32gdb_read(pty_fd, &ipbyte))
     {
