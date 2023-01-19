@@ -108,7 +108,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.en_brk_on_addr = true;
             break;
         case 'A':
-            cfg.brk_addr = strtol(optarg, NULL, 0);
+            cfg.brk_addr = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'r':
             cfg.rt_dis = true;
@@ -150,10 +150,10 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'S':
             cfg.update_rst_vec = true;
-            cfg.new_rst_vec    = strtol(optarg, NULL, 0);
+            cfg.new_rst_vec    = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'u':
-            uart0_base_addr    = strtol(optarg, NULL, 0);
+            uart0_base_addr    = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'h':
         default:
