@@ -68,9 +68,28 @@
 #define PF_W                      0x2             /* Writable. */
 #define PF_R                      0x4             /* Readable. */
 
+#define PT_NULL                   0
+#define PT_LOAD                   1
+#define PT_DYNAMIC                2
+#define PT_INTERP                 3
+#define PT_NOTE                   4
+#define PT_SHLIB                  5
+#define PT_PHDR                   6
+#define PT_LOSUNW                 0x6ffffffa
+#define PT_SUNWBSS                0x6ffffffb
+#define PT_SUNWSTACK              0x6ffffffa
+#define PT_HISUNW                 0x6fffffff
+#define PT_LOPROC                 0x70000000
+#define PT_HIPROC                 0x7fffffff
+
 #define PrintPhdr(_P) {\
     fprintf(stderr, " p_type = %x\n p_offset = %x\n p_vaddr = %x\n p_paddr = %x\n p_filesz = %x\n p_memsz = %x\n p_flags = %x\n p_align = %x\n\n", \
                     SWAP(_P->p_type), SWAP(_P->p_offset),  SWAP(_P->p_vaddr), SWAP(_P->p_paddr),  SWAP(_P->p_filesz), SWAP(_P->p_memsz),  SWAP(_P->p_flags), SWAP(_P->p_align)); }
+
+
+#define PrintPhdrNoSwap(_P) {\
+    fprintf(stderr, " p_type = %x\n p_offset = %x\n p_vaddr = %x\n p_paddr = %x\n p_filesz = %x\n p_memsz = %x\n p_flags = %x\n p_align = %x\n\n", \
+                    (_P->p_type), (_P->p_offset),  (_P->p_vaddr), (_P->p_paddr),  (_P->p_filesz), (_P->p_memsz),  (_P->p_flags), (_P->p_align)); }
 
 // -------------------------------------------------------------------------
 // TYPEDEFS

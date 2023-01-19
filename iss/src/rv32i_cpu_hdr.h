@@ -82,7 +82,7 @@
 #define BIT21_MASK                                     0x001fffff
 #define WORD_MASK                                      0xffffffff
                                                        
-#define MEM_SIZE_BITS                                  31
+#define MEM_SIZE_BITS                                  32
 #define MAXCODEMEM                                     (0x1ULL << MEM_SIZE_BITS)
 
 // Exit code types

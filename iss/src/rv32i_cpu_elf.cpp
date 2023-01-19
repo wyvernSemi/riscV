@@ -126,6 +126,9 @@ int rv32i_cpu::read_elf (const char * const filename)
     for (pcount=0 ; pcount < h->e_phnum; pcount++)
     {
         h2[pcount] = (pElf32_Phdr) &buf2[pcount * sizeof(Elf32_Phdr)];
+        
+        if (h2[pcount]->p_type != PT_LOAD)
+            continue;
 
         // Gobble bytes until section start
         for (; bytecount < h2[pcount]->p_offset; bytecount++)
@@ -138,7 +141,7 @@ int rv32i_cpu::read_elf (const char * const filename)
         }
 
         // Check we can load the segment to memory
-        if ((h2[pcount]->p_vaddr + h2[pcount]->p_memsz) >= (1U << MEM_SIZE_BITS))
+        if ((h2[pcount]->p_vaddr + h2[pcount]->p_memsz) >= (1ULL << MEM_SIZE_BITS))
         {
             fprintf(stderr, "*** ReadElf(): segment memory footprint outside of internal memory range\n"); //LCOV_EXCL_LINE
             return USER_ERROR;                                                                        //LCOV_EXCL_LINE

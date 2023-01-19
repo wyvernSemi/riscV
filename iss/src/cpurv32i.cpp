@@ -60,7 +60,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:"
+#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:u:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -69,7 +69,8 @@ extern "C" {
 // LOCAL VARIABLES
 // ------------------------------------------------
 
-static uint32_t swirq = 0;
+static uint32_t swirq           = 0;
+static uint32_t uart0_base_addr = UART0_BASE_ADDR;
 
 // ------------------------------------------------
 // TYPE DEFINITIONS
@@ -151,11 +152,14 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.update_rst_vec = true;
             cfg.new_rst_vec    = strtol(optarg, NULL, 0);
             break;
+        case 'u':
+            uart0_base_addr    = strtol(optarg, NULL, 0);
+            break;
         case 'h':
         default:
             fprintf(stderr, "Usage: %s [-hHebdragx][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
-            fprintf(stderr, "      [-m <num words>][-M <addr>]\n\n");
+            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
@@ -172,6 +176,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -S Specify start address (default 0)\n");
+            fprintf(stderr, "   -u Specify UART base address (default 0x80000000)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -187,6 +192,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
 //
 int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, const rv32i_time_t time)
 {
+    
     // By default, the processed variable indicates that this callback did not
     // process the access (a negatiave value). Otherwise it is the additional
     // access wait states (0 upwards). In this model, writes have no wait states,
@@ -194,7 +200,7 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
     // If accessing the UART addresses then process here
-    if ((byte_addr & UART_REG_ADDR_MASK) == UART0_BASE_ADDR)
+    if ((byte_addr & UART_REG_ADDR_MASK) == uart0_base_addr)
     {
         processed = 0;
         // If writing to the UART registers, call the model's write function
@@ -250,6 +256,8 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
         swirq       = data & 0x1;
         processed = 0;
     }
+    
+    //fprintf(stderr, "addr=%08x data=%08x type=%d processed=%d\n", byte_addr, data, type, processed);
 
     return processed;
 }
