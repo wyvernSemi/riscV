@@ -32,6 +32,8 @@
 
 #if !defined _WIN32 && !defined _WIN64
 #include <unistd.h>
+
+#define STRDUP strdup
 #else
 # undef   UNICODE
 # define  WIN32_LEAN_AND_MEAN
@@ -39,6 +41,8 @@
 # include <windows.h>
 # include <winsock2.h>
 # include <ws2tcpip.h>
+
+#define STRDUP _strdup
 
 extern "C" {
 
@@ -55,6 +59,7 @@ extern "C" {
 #include "rv32i_cpu.h"
 #include "rv32_cpu_gdb.h"
 #include "uart.h"
+#include "ini.h"
 
 // ------------------------------------------------
 // DEFINES
@@ -64,6 +69,9 @@ extern "C" {
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
+
+#define MATCH(s, n)                        (strcmp(section, (s)) == 0 && strcmp(name, (n)) == 0)
+#define IS_TRUE(s)                         (strcmp((s), "true") == 0 || strcmp(s, "TRUE") == 0)
 
 // ------------------------------------------------
 // LOCAL VARIABLES
@@ -140,7 +148,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.num_mem_dump_words = atoi(optarg);
             break;
         case 'M':
-            cfg.mem_dump_start = atoi(optarg);
+            cfg.mem_dump_start = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'g':
             cfg.gdb_mode = true;
@@ -184,6 +192,99 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
     }
 
     return error;
+}
+
+// -------------------------------
+// .ini file handler
+//
+static int handler(void* user, const char* section, const char* name, const char* value)
+{
+    rv32i_cfg_s* pconfig = (rv32i_cfg_s*)user;
+
+    if (MATCH("program", "executable"))
+    {
+        pconfig->exec_fname = STRDUP(value);
+        pconfig->user_fname = true;
+    }
+    else if (MATCH("program", "start_addr"))
+    {
+        pconfig->new_rst_vec = (uint32_t)strtoll(value, NULL, 0);
+        pconfig->update_rst_vec = true;
+    }
+    else if (MATCH("control", "num_instructions"))
+    {
+        pconfig->num_instr = atoi(value);
+    }
+    else if (MATCH("control", "halt_on_unimp"))
+    {
+        pconfig->hlt_on_inst_err = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_on_ecall"))
+    {
+        pconfig->hlt_on_ecall = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_on_addr"))
+    {
+        pconfig->en_brk_on_addr = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_address"))
+    {
+        pconfig->brk_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("debug", "static_disassemble"))
+    {
+        pconfig->dis_en = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "run_time_disassemble"))
+    {
+        pconfig->rt_dis = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "use_abi"))
+    {
+        pconfig->abi_en = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "debug_file"))
+    {
+        if (!strcmp(value, "stdout"))
+        {
+            pconfig->dbg_fp = stdout;
+        }
+        else if (!strcmp(value, "stderr"))
+        {
+            pconfig->dbg_fp = stderr;
+        }
+        else if ((pconfig->dbg_fp = fopen(value, "wb")) == NULL)
+        {
+            fprintf(stderr, "**ERROR: unable to open specified debug file (%s) for writing.\n", value);
+            return 0;
+        }
+    }
+    else if (MATCH("debug", "dump_registers"))
+    {
+        pconfig->dump_regs = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "mem_dump_words"))
+    {
+        pconfig->num_mem_dump_words = atoi(value);
+    }
+    else if (MATCH("debug", "mem_dump_start_addr"))
+    {
+        pconfig->mem_dump_start = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("debug", "gdb_mode"))
+    {
+        pconfig->gdb_mode = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "gdb_port_num"))
+    {
+        pconfig->gdb_ip_portnum = atoi(value);
+    }
+    else if (MATCH("peripherals", "uart_base_addr"))
+    {
+        uart0_base_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+
+    return 1;
 }
 
 // -------------------------------
@@ -334,13 +435,21 @@ void mem_dump(uint32_t num, uint32_t start, rv32* pCpu, FILE* dfp)
 //
 int main(int argc, char** argv)
 {
-    int         error = 0;
+    int           error = 0;
 
-    rv32*         pCpu;
+    rv32* pCpu;
     rv32i_cfg_s   cfg;
-    
+
+    // Look for an INI file and parse it if it exsists
+    int parse_status = ini_parse("rv32.ini", handler, &cfg);
+
+    // If not OK and not an unfound file, then flag an error
+    if (parse_status != 0 && parse_status != -1)
+    {
+        error = 1;
+    }
     // Process command line arguments
-    if (!(error = parse_args(argc, argv, cfg)))
+    else if (!(error = parse_args(argc, argv, cfg)))
     {
         // Create and configure the top level cpu object
         pCpu = new rv32(cfg.dbg_fp);
