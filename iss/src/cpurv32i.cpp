@@ -32,6 +32,8 @@
 
 #if !defined _WIN32 && !defined _WIN64
 #include <unistd.h>
+
+#define STRDUP strdup
 #else
 # undef   UNICODE
 # define  WIN32_LEAN_AND_MEAN
@@ -39,6 +41,8 @@
 # include <windows.h>
 # include <winsock2.h>
 # include <ws2tcpip.h>
+
+#define STRDUP _strdup
 
 extern "C" {
 
@@ -55,21 +59,26 @@ extern "C" {
 #include "rv32i_cpu.h"
 #include "rv32_cpu_gdb.h"
 #include "uart.h"
+#include "ini.h"
 
 // ------------------------------------------------
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:"
+#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:u:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
+
+#define MATCH(s, n)                        (strcmp(section, (s)) == 0 && strcmp(name, (n)) == 0)
+#define IS_TRUE(s)                         (strcmp((s), "true") == 0 || strcmp(s, "TRUE") == 0)
 
 // ------------------------------------------------
 // LOCAL VARIABLES
 // ------------------------------------------------
 
-static uint32_t swirq = 0;
+static uint32_t swirq           = 0;
+static uint32_t uart0_base_addr = UART0_BASE_ADDR;
 
 // ------------------------------------------------
 // TYPE DEFINITIONS
@@ -107,7 +116,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.en_brk_on_addr = true;
             break;
         case 'A':
-            cfg.brk_addr = strtol(optarg, NULL, 0);
+            cfg.brk_addr = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'r':
             cfg.rt_dis = true;
@@ -139,7 +148,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.num_mem_dump_words = atoi(optarg);
             break;
         case 'M':
-            cfg.mem_dump_start = atoi(optarg);
+            cfg.mem_dump_start = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'g':
             cfg.gdb_mode = true;
@@ -149,13 +158,16 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'S':
             cfg.update_rst_vec = true;
-            cfg.new_rst_vec    = strtol(optarg, NULL, 0);
+            cfg.new_rst_vec    = (uint32_t)strtoll(optarg, NULL, 0);
+            break;
+        case 'u':
+            uart0_base_addr    = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'h':
         default:
             fprintf(stderr, "Usage: %s [-hHebdragx][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
-            fprintf(stderr, "      [-m <num words>][-M <addr>]\n\n");
+            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
@@ -172,6 +184,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -S Specify start address (default 0)\n");
+            fprintf(stderr, "   -u Specify UART base address (default 0x80000000)\n");
             fprintf(stderr, "   -h display this help message\n");
             error = 1;
             break;
@@ -182,11 +195,105 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
 }
 
 // -------------------------------
+// .ini file handler
+//
+static int handler(void* user, const char* section, const char* name, const char* value)
+{
+    rv32i_cfg_s* pconfig = (rv32i_cfg_s*)user;
+
+    if (MATCH("program", "executable"))
+    {
+        pconfig->exec_fname = STRDUP(value);
+        pconfig->user_fname = true;
+    }
+    else if (MATCH("program", "start_addr"))
+    {
+        pconfig->new_rst_vec = (uint32_t)strtoll(value, NULL, 0);
+        pconfig->update_rst_vec = true;
+    }
+    else if (MATCH("control", "num_instructions"))
+    {
+        pconfig->num_instr = atoi(value);
+    }
+    else if (MATCH("control", "halt_on_unimp"))
+    {
+        pconfig->hlt_on_inst_err = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_on_ecall"))
+    {
+        pconfig->hlt_on_ecall = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_on_addr"))
+    {
+        pconfig->en_brk_on_addr = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_address"))
+    {
+        pconfig->brk_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("debug", "static_disassemble"))
+    {
+        pconfig->dis_en = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "run_time_disassemble"))
+    {
+        pconfig->rt_dis = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "use_abi"))
+    {
+        pconfig->abi_en = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "debug_file"))
+    {
+        if (!strcmp(value, "stdout"))
+        {
+            pconfig->dbg_fp = stdout;
+        }
+        else if (!strcmp(value, "stderr"))
+        {
+            pconfig->dbg_fp = stderr;
+        }
+        else if ((pconfig->dbg_fp = fopen(value, "wb")) == NULL)
+        {
+            fprintf(stderr, "**ERROR: unable to open specified debug file (%s) for writing.\n", value);
+            return 0;
+        }
+    }
+    else if (MATCH("debug", "dump_registers"))
+    {
+        pconfig->dump_regs = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "mem_dump_words"))
+    {
+        pconfig->num_mem_dump_words = atoi(value);
+    }
+    else if (MATCH("debug", "mem_dump_start_addr"))
+    {
+        pconfig->mem_dump_start = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("debug", "gdb_mode"))
+    {
+        pconfig->gdb_mode = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "gdb_port_num"))
+    {
+        pconfig->gdb_ip_portnum = atoi(value);
+    }
+    else if (MATCH("peripherals", "uart_base_addr"))
+    {
+        uart0_base_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+
+    return 1;
+}
+
+// -------------------------------
 // External memory map access
 // callback function
 //
 int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, const rv32i_time_t time)
 {
+    
     // By default, the processed variable indicates that this callback did not
     // process the access (a negatiave value). Otherwise it is the additional
     // access wait states (0 upwards). In this model, writes have no wait states,
@@ -194,7 +301,7 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
     // If accessing the UART addresses then process here
-    if ((byte_addr & UART_REG_ADDR_MASK) == UART0_BASE_ADDR)
+    if ((byte_addr & UART_REG_ADDR_MASK) == uart0_base_addr)
     {
         processed = 0;
         // If writing to the UART registers, call the model's write function
@@ -250,6 +357,8 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
         swirq       = data & 0x1;
         processed = 0;
     }
+    
+    //fprintf(stderr, "addr=%08x data=%08x type=%d processed=%d\n", byte_addr, data, type, processed);
 
     return processed;
 }
@@ -326,13 +435,21 @@ void mem_dump(uint32_t num, uint32_t start, rv32* pCpu, FILE* dfp)
 //
 int main(int argc, char** argv)
 {
-    int         error = 0;
+    int           error = 0;
 
-    rv32*         pCpu;
+    rv32* pCpu;
     rv32i_cfg_s   cfg;
-    
+
+    // Look for an INI file and parse it if it exsists
+    int parse_status = ini_parse("rv32.ini", handler, &cfg);
+
+    // If not OK and not an unfound file, then flag an error
+    if (parse_status != 0 && parse_status != -1)
+    {
+        error = 1;
+    }
     // Process command line arguments
-    if (!(error = parse_args(argc, argv, cfg)))
+    else if (!(error = parse_args(argc, argv, cfg)))
     {
         // Create and configure the top level cpu object
         pCpu = new rv32(cfg.dbg_fp);

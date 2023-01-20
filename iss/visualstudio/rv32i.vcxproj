@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\cpurv32i.cpp" />
     <ClCompile Include="..\src\getopt.c" />
+    <ClCompile Include="..\src\ini.c" />
     <ClCompile Include="..\src\mem.c" />
     <ClCompile Include="..\src\uart.cpp" />
   </ItemGroup>
@@ -160,6 +161,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\ini.h" />
     <ClInclude Include="..\src\mem.h" />
     <ClInclude Include="..\src\rv32.h" />
     <ClInclude Include="..\src\rv32_cpu_gdb.h" />

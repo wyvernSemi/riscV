@@ -1,5 +1,5 @@
 //=============================================================
-// 
+//
 // Copyright (c) 2021 Simon Southwell. All rights reserved.
 //
 // Date: 5th July 2021
@@ -68,17 +68,17 @@ int rv32i_cpu::read_elf (const char * const filename)
     {
         buf[i] = fgetc(elf_fp);
         bytecount++;
-        if (buf[i] == EOF) 
+        if (buf[i] == EOF)
         {
             fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                           //LCOV_EXCL_LINE
            return USER_ERROR;                                                       //LCOV_EXCL_LINE
-        } 
+        }
     }
 
     //LCOV_EXCL_START
     // Check some things
     ptr= ELF_IDENT;
-    for (i = 0; i < 4; i++) 
+    for (i = 0; i < 4; i++)
     {
         if (h->e_ident[i] != ptr[i])
         {
@@ -116,7 +116,7 @@ int rv32i_cpu::read_elf (const char * const filename)
             {
                 fprintf(stderr, "*** ReadElf(): unexpected EOF\n");                         //LCOV_EXCL_LINE
                 return USER_ERROR;                                                     //LCOV_EXCL_LINE
-            } 
+            }
             buf2[i+(pcount * sizeof(Elf32_Phdr))] = c;
             bytecount++;
         }
@@ -127,8 +127,20 @@ int rv32i_cpu::read_elf (const char * const filename)
     {
         h2[pcount] = (pElf32_Phdr) &buf2[pcount * sizeof(Elf32_Phdr)];
 
+        // If not a load segment skip it
+        if (h2[pcount]->p_type != PT_LOAD)
+        {
+            continue;
+        }
+        else
+        {
+            // Segment offsets in file can be out of order in memory, so always rewind
+            // file top start from the beginning.
+            rewind(elf_fp);
+        }
+
         // Gobble bytes until section start
-        for (; bytecount < h2[pcount]->p_offset; bytecount++)
+        for (bytecount = 0; bytecount < h2[pcount]->p_offset; bytecount++)
         {
             c = fgetc(elf_fp);
             if (c == EOF) {
@@ -138,7 +150,7 @@ int rv32i_cpu::read_elf (const char * const filename)
         }
 
         // Check we can load the segment to memory
-        if ((h2[pcount]->p_vaddr + h2[pcount]->p_memsz) >= (1U << MEM_SIZE_BITS))
+        if ((h2[pcount]->p_vaddr + h2[pcount]->p_memsz) >= (1ULL << MEM_SIZE_BITS))
         {
             fprintf(stderr, "*** ReadElf(): segment memory footprint outside of internal memory range\n"); //LCOV_EXCL_LINE
             return USER_ERROR;                                                                        //LCOV_EXCL_LINE
