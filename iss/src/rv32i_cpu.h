@@ -238,6 +238,9 @@ protected:
     // Flag to halt on ecall
     bool                  halt_ecall;
 
+    // Flag to halt on ebreak
+    bool                  halt_ebreak;
+
     // Debug ABI register names enable flag
     bool                  abi_en;
 
@@ -415,8 +418,12 @@ protected:
 
     // Return real time as the number of microseconds 
     inline uint64_t real_time_us() {
+#ifdef RV32_MTIME_CYCLE_COUNT
+        return cycle_count;
+#else
         using namespace std::chrono;
         return time_point_cast<microseconds>(system_clock::now()).time_since_epoch().count();
+#endif
     };
 
     inline uint64_t clk_cycles() {

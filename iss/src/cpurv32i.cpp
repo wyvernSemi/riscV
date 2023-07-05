@@ -65,7 +65,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdberat:n:D:A:p:S:xm:M:u:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbeErat:n:D:A:p:S:xm:M:u:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -134,6 +134,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'e':
             cfg.hlt_on_ecall = true;
             break;
+        case 'E':
+            cfg.hlt_on_ebreak = true;
+            break;
         case 'D':
             if ((cfg.dbg_fp = fopen(optarg, "wb")) == NULL)
             {
@@ -174,7 +177,8 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
             fprintf(stderr, "   -a display ABI register names when disassembling (default x names)\n");
             fprintf(stderr, "   -H Halt on unimplemented instructions (default trap)\n");
-            fprintf(stderr, "   -e Halt on ecall/ebreak instruction (default trap)\n");
+            fprintf(stderr, "   -e Halt on ecall instruction (default trap)\n");
+            fprintf(stderr, "   -E Halt on ebreak instruction (default trap)\n");
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
@@ -222,6 +226,10 @@ static int handler(void* user, const char* section, const char* name, const char
     else if (MATCH("control", "halt_on_ecall"))
     {
         pconfig->hlt_on_ecall = IS_TRUE(value);
+    }
+    else if (MATCH("control", "halt_on_ebreak"))
+    {
+        pconfig->hlt_on_ebreak = IS_TRUE(value);
     }
     else if (MATCH("control", "halt_on_addr"))
     {

@@ -540,6 +540,7 @@ struct  rv32i_cfg_s {
     bool           abi_en;
     bool           hlt_on_inst_err;
     bool           hlt_on_ecall;
+    bool           hlt_on_ebreak;
     bool           en_brk_on_addr;
     bool           dump_regs;
     uint32_t       num_mem_dump_words;
@@ -561,6 +562,7 @@ struct  rv32i_cfg_s {
         abi_en             = false;
         hlt_on_inst_err    = false;
         hlt_on_ecall       = false;
+        hlt_on_ebreak      = false;
         en_brk_on_addr     = false;
         dump_regs          = false;
         num_mem_dump_words = 0;
