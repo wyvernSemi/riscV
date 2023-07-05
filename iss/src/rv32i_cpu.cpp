@@ -572,7 +572,6 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
         {
             mtimecmp &= 0xFFFFFFFFULL;
             mtimecmp |= (uint64_t)word << 32;
-            printf("mtimecmp = %016llx\n", mtimecmp);
         }
         // Accessing lower word
         else
