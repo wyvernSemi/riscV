@@ -125,6 +125,12 @@ public:
         return (uint32_t)state.hart[curr_hart].x[reg_idx % RV32I_NUM_OF_REGISTERS];
     };
 
+    // Return value of indexed CSR register
+    LIBRISCV32_API uint32_t    csr_val                       (uint32_t reg_idx)
+    {
+        return (uint32_t)state.hart[curr_hart].csr[reg_idx % RV32I_CSR_SPACE_SIZE];
+    };
+
     // Return value of indexed integer register
     LIBRISCV32_API uint32_t    pc_val                         ()
     {

@@ -65,7 +65,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbeErat:n:D:A:p:S:xm:M:u:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbeErat:n:D:A:p:S:xcm:M:u:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -147,6 +147,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'x':
             cfg.dump_regs = true;
             break;
+        case 'c':
+            cfg.dump_csrs = true;
+            break;
         case 'm':
             cfg.num_mem_dump_words = atoi(optarg);
             break;
@@ -168,7 +171,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s [-hHebdragx][-t <test executable>][-n <num instructions>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-hHeEbdragxc][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
             fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
@@ -183,6 +186,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
             fprintf(stderr, "   -x Dump x0 to x31 on exit (default no dump)\n");
+            fprintf(stderr, "   -c Dump CSR registers on exit (default no dump)\n");
             fprintf(stderr, "   -m Dump specified number of 32 bit words from data memory on exit (default 0)\n");
             fprintf(stderr, "   -M Start byte address of memory dump (default 0x1000)\n");
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
@@ -270,6 +274,10 @@ static int handler(void* user, const char* section, const char* name, const char
     else if (MATCH("debug", "dump_registers"))
     {
         pconfig->dump_regs = IS_TRUE(value);
+    }
+    else if (MATCH("debug", "dump_csrs"))
+    {
+        pconfig->dump_csrs = IS_TRUE(value);
     }
     else if (MATCH("debug", "mem_dump_words"))
     {
@@ -422,6 +430,34 @@ void reg_dump(rv32* pCpu, FILE* dfp, bool abi_en)
 }
 
 // -------------------------------
+// Dump CSRs
+//
+void csr_dump(rv32* pCpu, FILE* dfp)
+{
+    fprintf(dfp, "CSR state:\n\n");
+    fprintf(dfp, "  mstatus    = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MSTATUS));
+    fprintf(dfp, "  mie        = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MIE));
+    fprintf(dfp, "  mvtec      = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MTVEC));
+    fprintf(dfp, "  mscratch   = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MSCRATCH));
+    fprintf(dfp, "  mepc       = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MEPC));
+    fprintf(dfp, "  mcause     = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MCAUSE));
+    fprintf(dfp, "  mtval      = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MTVAL));
+    fprintf(dfp, "  mip        = 0x%08x\n",     pCpu->csr_val(RV32CSR_ADDR_MIP));
+    fprintf(dfp, "  mcycle     = 0x%08x%08x\n", pCpu->csr_val(RV32CSR_ADDR_MCYCLEH),   pCpu->csr_val(RV32CSR_ADDR_MCYCLE));
+    fprintf(dfp, "  minstret   = 0x%08x%08x\n", pCpu->csr_val(RV32CSR_ADDR_MINSTRETH), pCpu->csr_val(RV32CSR_ADDR_MINSTRET));
+
+    bool fault;
+    uint32_t mtimel = pCpu->read_mem(RV32I_RTCLOCK_ADDRESS,   MEM_RD_ACCESS_WORD, fault);
+    uint32_t mtimeh = pCpu->read_mem(RV32I_RTCLOCK_ADDRESS+4, MEM_RD_ACCESS_WORD, fault);
+    fprintf(dfp, "  mtime      = 0x%08x%08x\n", mtimeh, mtimel);
+
+    mtimel = pCpu->read_mem(RV32I_RTCLOCK_CMP_ADDRESS,   MEM_RD_ACCESS_WORD, fault);
+    mtimeh = pCpu->read_mem(RV32I_RTCLOCK_CMP_ADDRESS+4, MEM_RD_ACCESS_WORD, fault);
+    fprintf(dfp, "  mtimecmp   = 0x%08x%08x\n", mtimeh, mtimel);
+
+}
+
+// -------------------------------
 // Dump memory
 //
 
@@ -514,6 +550,12 @@ int main(int argc, char** argv)
                 if (cfg.dump_regs)
                 {
                     reg_dump(pCpu, cfg.dbg_fp, cfg.abi_en);
+                }
+
+                // If enabled, dump the CSRs
+                if (cfg.dump_csrs)
+                {
+                    csr_dump(pCpu, cfg.dbg_fp);
                 }
 
                 // If specified dump the numbr of DMEM words

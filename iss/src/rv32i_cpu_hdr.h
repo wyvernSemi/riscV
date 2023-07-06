@@ -543,6 +543,7 @@ struct  rv32i_cfg_s {
     bool           hlt_on_ebreak;
     bool           en_brk_on_addr;
     bool           dump_regs;
+    bool           dump_csrs;
     uint32_t       num_mem_dump_words;
     uint32_t       mem_dump_start;
     bool           gdb_mode;
@@ -565,6 +566,7 @@ struct  rv32i_cfg_s {
         hlt_on_ebreak      = false;
         en_brk_on_addr     = false;
         dump_regs          = false;
+        dump_csrs          = false;
         num_mem_dump_words = 0;
         mem_dump_start     = 0x1000;
         gdb_mode           = false;
