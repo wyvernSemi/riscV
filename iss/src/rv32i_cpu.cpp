@@ -416,8 +416,8 @@ rv32i_decode_table_t* rv32i_cpu::primary_decode(const opcode_t instr, rv32i_deco
                 if (decoded_data.opcode == RV32I_SYS_OPCODE && decoded_data.funct3 == 0)
                 {
                     // Mask imm value to ensure within table bounds.
-                    // TODO: Should really check for all 0s on other bits.
-                    p_entry = &p_entry->ref.p_entry[decoded_data.imm_i & 0x3];
+                    // TODO: Should really check funct7 which differentiates xRET types
+                    p_entry = &p_entry->ref.p_entry[decoded_data.imm_i & 0x1f];
                 }
                 else
                 {
