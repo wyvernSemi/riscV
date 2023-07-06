@@ -50,6 +50,9 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     // Instructions retired count set to 0
     instret_count            = 0;
 
+    // Default the timer compare to max value
+    mtimecmp                 = (uint64_t)(-1);
+
     // Default the current instruction to an unimplemented instruction
     curr_instr               = 0x00000000;
 
@@ -264,6 +267,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     // Set halt switches
     halt_rsvd_instr = cfg.hlt_on_inst_err;
     halt_ecall      = cfg.hlt_on_ecall;
+    halt_ebreak     = cfg.hlt_on_ebreak;
 
     // If a new start address specified, update the reset vector
     if (cfg.update_rst_vec)
@@ -341,7 +345,7 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
     instret_count += 1;
 
     // If an illegal/unimplemented instruction, or halt on a system instruction, flag to calling function
-    if ((halt_rsvd_instr && trap) || (halt_ecall && (trap == SIGTERM || trap == SIGTRAP)))
+    if ((halt_rsvd_instr && trap) || ((halt_ecall || halt_ebreak) && (trap == SIGTERM || trap == SIGTRAP)))
     {
         error = trap;
         trap = 0;
@@ -412,8 +416,8 @@ rv32i_decode_table_t* rv32i_cpu::primary_decode(const opcode_t instr, rv32i_deco
                 if (decoded_data.opcode == RV32I_SYS_OPCODE && decoded_data.funct3 == 0)
                 {
                     // Mask imm value to ensure within table bounds.
-                    // TODO: Should really check for all 0s on other bits.
-                    p_entry = &p_entry->ref.p_entry[decoded_data.imm_i & 0x3];
+                    // TODO: Should really check funct7 which differentiates xRET types
+                    p_entry = &p_entry->ref.p_entry[decoded_data.imm_i & 0x1f];
                 }
                 else
                 {
@@ -462,7 +466,7 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
 
     fault = false;
 
-    int  mem_callback_delay    = RV32I_EXT_MEM_NOT_PROCESSED;
+    int  mem_callback_delay    = 1;
 
     // Check alignment
     if (((byte_addr & 0x1) && type != MEM_RD_ACCESS_BYTE) ||
@@ -473,9 +477,19 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
         return 0;
     }
 
+    // Check if accessing the real time clock memory mapped csr register
+    if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
+    {
+        rd_val = (uint32_t)(real_time_us() >> ((byte_addr & 0x00000004) ? 32 : 0));
+    }
+    // Check if accessing the memory mapped time compare register
+    else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
+    {
+        rd_val = (uint32_t)(mtimecmp >> ((byte_addr & 0x00000004) ? 32 : 0)); 
+    }
     // If a callback registered for memory accesses call it now,
     // unless accessing the memory mapped real time clock CSR register
-    if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
+    else if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
     {
         // Execute callback function
         mem_callback_delay = p_mem_callback(byte_addr, rd_val, type, cycle_count);
@@ -484,36 +498,23 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
     // If no external processing of read, access the internal memory.
     if (mem_callback_delay == RV32I_EXT_MEM_NOT_PROCESSED)
     {
-        // Check if accessing the real time clock memory mapped csr register
-        if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
+        // Check input is a valid address
+        if (byte_addr > RV32I_INT_MEM_WORDS)
         {
-            word = (uint32_t)(real_time_us() >> ((byte_addr & 0x00000004) ? 32 : 0));
-        }
-        // Check if accessing the memory mapped time compare register
-        else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
-        {
-            word = (uint32_t)(mtimecmp >> ((byte_addr & 0x00000004) ? 32 : 0)); 
-        }
-        else
-        {
-            // Check input is a valid address
-            if (byte_addr > RV32I_INT_MEM_WORDS)
+            // Flag as a bus error only if this is not a debug access, as debugger may try
+            // to inspect non-valid addresses.
+            if (!(type & MEM_DBG_MASK))
             {
-                // Flag as a bus error only if this is not a debug access, as debugger may try
-                // to inspect non-valid addresses.
-                if (!(type & MEM_DBG_MASK))
-                {
-                    process_trap(RV32I_LOAD_ACCESS_FAULT);
-                    fault = true;
-                }
-                return 0;
+                process_trap(RV32I_LOAD_ACCESS_FAULT);
+                fault = true;
             }
-
-            word = (internal_mem[byte_addr + 0] << 0) |
-                   (internal_mem[byte_addr + 1] << 8) |
-                   (internal_mem[byte_addr + 2] << 16) |
-                   (internal_mem[byte_addr + 3] << 24);
+            return 0;
         }
+
+        word = (internal_mem[byte_addr + 0] << 0) |
+               (internal_mem[byte_addr + 1] << 8) |
+               (internal_mem[byte_addr + 2] << 16) |
+               (internal_mem[byte_addr + 3] << 24);
 
         switch (type & MEM_NOT_DBG_MASK)
         {
@@ -543,7 +544,7 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
 
 void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const int type, bool &fault)
 {
-    int       mem_callback_delay    = RV32I_EXT_MEM_NOT_PROCESSED;
+    int       mem_callback_delay    = 1;
     uint32_t  word = data;
 
     fault = false;
@@ -557,9 +558,31 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
         return;
     }
 
+    if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
+    {
+        // At this time, don't write as this is a free running RT clock,
+        // but have to handle to avoid attempt to write to internal
+        // memory at an out-of-range address 
+    }
+    // Check if accessing the memory mapped time compare register
+    else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
+    {
+        // Accessing upper word
+        if (byte_addr & 0x00000004)
+        {
+            mtimecmp &= 0xFFFFFFFFULL;
+            mtimecmp |= (uint64_t)word << 32;
+        }
+        // Accessing lower word
+        else
+        {
+            mtimecmp &= 0xFFFFFFFF00000000ULL;
+            mtimecmp |= (uint64_t)word;
+        }
+    }
     // If a callback registered for memory accesses call it now,
     // unless accessing the memory mapped real time clock CSR register
-    if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
+    else if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
     {
         // Execute callback function
         mem_callback_delay = p_mem_callback(byte_addr, word, type, cycle_count);
@@ -577,18 +600,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
             return;
         }
 
-        if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
-        {
-            // At this time, don't write as this is a free running RT clock,
-            // but have to handle to avoid attempt to write to internal
-            // memory at an out-of-range address 
-        }
-        // Check if accessing the memory mapped time compare register
-        else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
-        {
-            mtimecmp = (mtimecmp & ((byte_addr & 0x00000004) ? 0xFFFFFFFF00000000ULL : 0xFFFFFFFFULL)) | 
-                                   ((uint64_t)word << ((byte_addr & 0x00000004) ? 32 : 0)) ;
-        }
+
         else
         {
             switch (type)
@@ -1377,7 +1389,7 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
 
     if (!disassemble)
     {
-        if (halt_ecall)
+        if (halt_ebreak)
         {
             trap = SIGTRAP;
         }
@@ -1389,6 +1401,6 @@ void rv32i_cpu::ebreak(const p_rv32i_decode_t d)
     else
     {
         increment_pc();
-        trap = halt_ecall ? SIGTRAP : trap;
+        trap = halt_ebreak ? SIGTRAP : trap;
     }
 }

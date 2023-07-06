@@ -228,7 +228,7 @@
 #define RV32I_NUM_PRIMARY_OPCODES                      32
 #define RV32I_NUM_SECONDARY_OPCODES                    8
 #define RV32I_NUM_TERTIARY_OPCODES                     128
-#define RV32I_NUM_SYSTEM_OPCODES                       4
+#define RV32I_NUM_SYSTEM_OPCODES                       32
 #define RV32I_INT_MEM_WORDS                            (16*1024)
 
 // The RV32I base class has a hardwired MTVEC location since
@@ -540,8 +540,10 @@ struct  rv32i_cfg_s {
     bool           abi_en;
     bool           hlt_on_inst_err;
     bool           hlt_on_ecall;
+    bool           hlt_on_ebreak;
     bool           en_brk_on_addr;
     bool           dump_regs;
+    bool           dump_csrs;
     uint32_t       num_mem_dump_words;
     uint32_t       mem_dump_start;
     bool           gdb_mode;
@@ -561,8 +563,10 @@ struct  rv32i_cfg_s {
         abi_en             = false;
         hlt_on_inst_err    = false;
         hlt_on_ecall       = false;
+        hlt_on_ebreak      = false;
         en_brk_on_addr     = false;
         dump_regs          = false;
+        dump_csrs          = false;
         num_mem_dump_words = 0;
         mem_dump_start     = 0x1000;
         gdb_mode           = false;

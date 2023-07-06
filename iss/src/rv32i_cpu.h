@@ -125,6 +125,12 @@ public:
         return (uint32_t)state.hart[curr_hart].x[reg_idx % RV32I_NUM_OF_REGISTERS];
     };
 
+    // Return value of indexed CSR register
+    LIBRISCV32_API uint32_t    csr_val                       (uint32_t reg_idx)
+    {
+        return (uint32_t)state.hart[curr_hart].csr[reg_idx % RV32I_CSR_SPACE_SIZE];
+    };
+
     // Return value of indexed integer register
     LIBRISCV32_API uint32_t    pc_val                         ()
     {
@@ -237,6 +243,9 @@ protected:
 
     // Flag to halt on ecall
     bool                  halt_ecall;
+
+    // Flag to halt on ebreak
+    bool                  halt_ebreak;
 
     // Debug ABI register names enable flag
     bool                  abi_en;
@@ -415,8 +424,12 @@ protected:
 
     // Return real time as the number of microseconds 
     inline uint64_t real_time_us() {
+#ifdef RV32_MTIME_CYCLE_COUNT
+        return cycle_count;
+#else
         using namespace std::chrono;
         return time_point_cast<microseconds>(system_clock::now()).time_since_epoch().count();
+#endif
     };
 
     inline uint64_t clk_cycles() {
