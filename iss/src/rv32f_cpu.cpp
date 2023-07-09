@@ -39,7 +39,7 @@ rv32f_cpu::rv32f_cpu(FILE* dbgfp) : RV32_F_INHERITANCE_CLASS(dbgfp)
     state.hart[curr_hart].csr[RV32CSR_ADDR_MISA]   |=  RV32CSR_EXT_F;
 
     // Initialise FS field to Initial
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = RV32CSR_MSTATUS_FS_INITIAL;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = (state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] & ~RV32CSR_MSTATUS_FS_MASK) | RV32CSR_MSTATUS_FS_INITIAL;
 
     curr_rnd_method = RV32I_RMM;
     fesetround(FE_TONEAREST);

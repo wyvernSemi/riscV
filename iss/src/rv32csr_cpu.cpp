@@ -258,7 +258,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
 
                 if (RV32CSR_OP_RW(funct3))
                 {
-                    state.hart[curr_hart].csr[addr & 0xfff] = value & wr_mask;
+                    state.hart[curr_hart].csr[addr & 0xfff] = (state.hart[curr_hart].csr[addr & 0xfff] & ~((uint64_t)wr_mask)) | (value & wr_mask);
                 }
                 else if (RV32CSR_OP_RS(funct3))
                 {
