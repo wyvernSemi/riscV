@@ -234,12 +234,12 @@
 
 // CSR write masks (from perspective of CSR instructions)
 #define RV32CSR_MISA_WR_MASK                           0x00000000 /* can't update in this implementation */
-#define RV32CSR_MSTATUS_WR_MASK                        0x00000008
+#define RV32CSR_MSTATUS_WR_MASK                        0x00000088
 #define RV32CSR_MIP_WR_MASK                            0x00000000
 #define RV32CSR_MIE_WR_MASK                            0x00000888
 #define RV32CSR_MTVEC_WR_MASK                          0xffffffff
 #define RV32CSR_MCYCLE_WR_MASK                         0xffffffff
-#define RV32CSR_MINSTRET_WR_MASK                       0x00000000 /* Reg implemented, counter not. TODO: implement counter*/
+#define RV32CSR_MINSTRET_WR_MASK                       0x00000000
 #define RV32CSR_MHPMCOUNTERX_WR_MASK                   0x00000000 /* Reg implemented, counter not. */
 #define RV32CSR_MHPMEVENTX_WR_MASK                     0x00000000 /* Reg implemented, hardwired 0 */
 #define RV32CSR_MCOUNTEREN_WR_MASK                     0x00000000
