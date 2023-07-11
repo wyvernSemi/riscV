@@ -65,7 +65,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbeErat:n:D:A:p:S:xcm:M:u:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbeEraCt:n:D:A:p:S:xcm:M:u:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -150,6 +150,9 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'c':
             cfg.dump_csrs = true;
             break;
+        case 'C':
+            cfg.use_cycles_for_mtime = true;
+            break;
         case 'm':
             cfg.num_mem_dump_words = atoi(optarg);
             break;
@@ -171,7 +174,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s [-hHeEbdragxc][-t <test executable>][-n <num instructions>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-hHeEbdragxcC][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
             fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
@@ -179,6 +182,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
             fprintf(stderr, "   -a display ABI register names when disassembling (default x names)\n");
+            fprintf(stderr, "   -C Use cycle count for mtime (default real-time)\n");
             fprintf(stderr, "   -H Halt on unimplemented instructions (default trap)\n");
             fprintf(stderr, "   -e Halt on ecall instruction (default trap)\n");
             fprintf(stderr, "   -E Halt on ebreak instruction (default trap)\n");

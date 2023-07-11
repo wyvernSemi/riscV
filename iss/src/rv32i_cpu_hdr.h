@@ -544,6 +544,7 @@ struct  rv32i_cfg_s {
     bool           en_brk_on_addr;
     bool           dump_regs;
     bool           dump_csrs;
+    bool           use_cycles_for_mtime;
     uint32_t       num_mem_dump_words;
     uint32_t       mem_dump_start;
     bool           gdb_mode;
@@ -555,26 +556,27 @@ struct  rv32i_cfg_s {
 
     rv32i_cfg_s()
     {
-        exec_fname         = "test.exe";
-        user_fname         = false;
-        num_instr          = 0;
-        rt_dis             = false;
-        dis_en             = false;
-        abi_en             = false;
-        hlt_on_inst_err    = false;
-        hlt_on_ecall       = false;
-        hlt_on_ebreak      = false;
-        en_brk_on_addr     = false;
-        dump_regs          = false;
-        dump_csrs          = false;
-        num_mem_dump_words = 0;
-        mem_dump_start     = 0x1000;
-        gdb_mode           = false;
-        gdb_ip_portnum     = RV32_DEFAULT_TCP_PORT;
-        brk_addr           = RISCV_TEST_ENV_TERMINATE_ADDR;
-        update_rst_vec     = false;
-        new_rst_vec        = RV32I_RESET_VECTOR;
-        dbg_fp             = stdout;
+        exec_fname           = "test.exe";
+        user_fname           = false;
+        num_instr            = 0;
+        rt_dis               = false;
+        dis_en               = false;
+        abi_en               = false;
+        hlt_on_inst_err      = false;
+        hlt_on_ecall         = false;
+        hlt_on_ebreak        = false;
+        en_brk_on_addr       = false;
+        use_cycles_for_mtime = false;
+        dump_regs            = false;
+        dump_csrs            = false;
+        num_mem_dump_words   = 0;
+        mem_dump_start       = 0x1000;
+        gdb_mode             = false;
+        gdb_ip_portnum       = RV32_DEFAULT_TCP_PORT;
+        brk_addr             = RISCV_TEST_ENV_TERMINATE_ADDR;
+        update_rst_vec       = false;
+        new_rst_vec          = RV32I_RESET_VECTOR;
+        dbg_fp               = stdout;
     }
 };
 
