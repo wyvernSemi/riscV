@@ -1,5 +1,7 @@
 # FreeRTOS port for rv32
-This directory contains a port of Amazon Web Service's [FreeRTOS](https://www.freertos.org/) real-time operating system, meant as an example of running an embedded OS on the RISC-V model. Currently this has only been tested on the instructions set simulator (ISS) on both Linux and Windows, but will be ported to the HDL soon. There is a `makefile` for compiling some demonstration code in the `demo` directory, which produces a `main.exe` executable. To run this with the ISS, from the `freertos` folder, use:
+This directory contains a port of Amazon Web Service's [FreeRTOS](https://www.freertos.org/) real-time operating system, meant as an example of running an embedded OS on the RISC-V model. Currently this has only been tested on the instructions set simulator (ISS) on both Linux and Windows, but will be ported to the HDL soon. There is a `makefile` for compiling some demonstration code in the `demo` directory, which produces a `main.exe` executable. It expects FreeRTOS to be checked out in the same directory as the `riscV` directory, or this can be overridden using the makefile's `FREERTOSDIR` variable.
+
+To run this with the ISS, from the `iss/freertos` folder, use:
 
 ```
    <path to ISS executable folder>/rv32.exe -t main.exe
