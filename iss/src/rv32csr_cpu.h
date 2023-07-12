@@ -39,6 +39,19 @@ public:
 
     LIBRISCV32_API void          register_int_callback          (p_rv32i_intcallback_t callback_func) { p_int_callback = callback_func; };
 
+    // Overload run method
+    LIBRISCV32_API int           run(rv32i_cfg_s& cfg)
+    {
+        // Call base run method
+        int rstatus =  rv32i_cpu::run(cfg);
+
+        // Ensure cycle and instruction retired CSR counts are up to date
+        // before returning in case the CSR registers are dumped.
+        update_csr_counts();
+
+        return rstatus;
+    }
+
 private:
     // ------------------------------------------------
     // Private member variables
@@ -70,6 +83,8 @@ private:
     // Process interrupts
     int  process_interrupts();
 
+    //void update_csr_counts();
+
     // Return from trap instruction
     void mret                            (const p_rv32i_decode_t);
 
@@ -87,6 +102,9 @@ protected:
 
     // Return write mask (bit set equals writable) for given CSR, with unimplemented status flag
     virtual uint32_t csr_wr_mask         (const uint32_t addr, bool& unimp);
+
+    // Update cycle and instrunction retired CSR register counts
+    void update_csr_counts(void);
 
 };
 

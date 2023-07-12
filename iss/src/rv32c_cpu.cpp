@@ -126,7 +126,7 @@ uint32_t rv32c_cpu::compressed_decode(const opcode_t instr)
             // Immediate = imm[5:4|9:6|2|3]
             imm = (((instr >> 6)  & 0x1) << 2) |
                   (((instr >> 5)  & 0x1) << 3) |
-                  (((instr >> 10) & 0x3) << 4) |
+                  (((instr >> 11) & 0x3) << 4) |
                   (((instr >> 7)  & 0xf) << 6);
 
             // sp = x2, funct3 = 0 rd = c.rd + 8
@@ -166,8 +166,9 @@ uint32_t rv32c_cpu::compressed_decode(const opcode_t instr)
 
         // C.FSD
         case 5:
-            imm = (((instr >> 10) & 0x7) << 3) |
-                  (((instr >>  5) & 0x3) << 6);
+            imm = (((instr >> 6)  & 0x1) << 2) |
+                  (((instr >> 10) & 0x7) << 3) |
+                  (((instr >> 5)  & 0x1) << 6);
 
             rtn_instr = fsd_opcode | (fwidth_dbl << 12) | (rs1tick << 15) | (rs2tick << 20) | ((imm & 0x1f) << 7) | ((imm >> 5) << 25);
             break;
@@ -278,7 +279,7 @@ uint32_t rv32c_cpu::compressed_decode(const opcode_t instr)
                 // C.SRLI
                 if (sub_select_rs1 == 0)
                 {
-                    imm = (((instr >> 2) & 0x1f) << 0) |
+                    imm = (((instr >> 2)  & 0x1f) << 0) |
                           (((instr >> 12) & 0x01) << 5);
 
                     rtn_instr = addi_opcode | (rdtick << 7) | (rs1tick << 15) | (0x05 << 12) | (imm << 20);
@@ -286,7 +287,7 @@ uint32_t rv32c_cpu::compressed_decode(const opcode_t instr)
                 // C.SRAI
                 else if (sub_select_rs1 == 1)
                 {
-                    imm = (((instr >> 2) & 0x1f) << 0) |
+                    imm = (((instr >> 2)  & 0x1f) << 0) |
                           (((instr >> 12) & 0x01) << 5);
 
                     rtn_instr = addi_opcode | (rdtick << 7) | (rs1tick << 15) | (0x05 << 12) | (imm << 20) | (1 << 30);
@@ -378,8 +379,8 @@ uint32_t rv32c_cpu::compressed_decode(const opcode_t instr)
         {
         // C.SLLI => slli rd, rd, imm
         case 0:
-            // Note: shamt[5] is 0 for RV32C
-            imm = (((instr >> 2) & 0x1f) << 0);
+            imm = (((instr >> 2)  & 0x1f) << 0) |
+                  (((instr >> 12) & 0x01) << 5);
 
             rtn_instr = addi_opcode | (rdq2 << 7) | (rs1q2 << 15) | (1 << 12) | (imm << 20);
             break;

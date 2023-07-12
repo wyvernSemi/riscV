@@ -250,6 +250,8 @@ protected:
     // Debug ABI register names enable flag
     bool                  abi_en;
 
+    bool                  use_cycles_for_mtime;
+
     // Holds CSR and HART (pc and regs) state
     rv32i_state           state;
 
@@ -424,12 +426,15 @@ protected:
 
     // Return real time as the number of microseconds 
     inline uint64_t real_time_us() {
-#ifdef RV32_MTIME_CYCLE_COUNT
-        return cycle_count;
-#else
-        using namespace std::chrono;
-        return time_point_cast<microseconds>(system_clock::now()).time_since_epoch().count();
-#endif
+        if (use_cycles_for_mtime)
+        {
+            return cycle_count;
+        }
+        else
+        {
+            using namespace std::chrono;
+            return time_point_cast<microseconds>(system_clock::now()).time_since_epoch().count();
+        }
     };
 
     inline uint64_t clk_cycles() {

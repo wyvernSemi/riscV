@@ -65,6 +65,7 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     RV32_IADDR_ALIGN_MASK = 0x00000003;
 
     abi_en                   = true;
+    use_cycles_for_mtime     = false;
 
     // Reset state
     reset();
@@ -260,14 +261,15 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     unsigned instr_count;
 
     // Set disassemble switches
-    rt_disassem = cfg.rt_dis;
-    disassemble = cfg.dis_en;
-    abi_en      = cfg.abi_en;
+    rt_disassem          = cfg.rt_dis;
+    disassemble          = cfg.dis_en;
+    abi_en               = cfg.abi_en;
+    use_cycles_for_mtime = cfg.use_cycles_for_mtime;
 
     // Set halt switches
-    halt_rsvd_instr = cfg.hlt_on_inst_err;
-    halt_ecall      = cfg.hlt_on_ecall;
-    halt_ebreak     = cfg.hlt_on_ebreak;
+    halt_rsvd_instr      = cfg.hlt_on_inst_err;
+    halt_ecall           = cfg.hlt_on_ecall;
+    halt_ebreak          = cfg.hlt_on_ebreak;
 
     // If a new start address specified, update the reset vector
     if (cfg.update_rst_vec)
@@ -283,7 +285,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     rv32i_decode_table_t* p_entry;
 
     for (instr_count = 0; 
-         (cfg.num_instr == 0 || instr_count < cfg.num_instr) && !error && !(cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc);
+         (cfg.num_instr == 0 || instret_count < cfg.num_instr) && !error && !(cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc);
          instr_count++)
     {
         // Firstly, check interrupt status
@@ -318,7 +320,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     {
         error = SIGTERM;
     }
-    else if (cfg.num_instr != 0 && instr_count >= cfg.num_instr)
+    else if (cfg.num_instr != 0 && instret_count >= cfg.num_instr)
     {
         error = SIGTRAP;
     }
@@ -340,7 +342,7 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
     // Update cycle count and instructions retired count. By default, the timing model
     // assumes 1 cycle for each instruction. For jumps and branches, additional cycles
     // are added in the instruction methods. For memory accesses, the external callbacks
-    // return wait state couts, which are added.
+    // return wait state counts, which are added.
     cycle_count   += RV32I_DEFAULT_INSTR_CYCLE_COUNT;
     instret_count += 1;
 

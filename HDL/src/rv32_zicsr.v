@@ -336,6 +336,7 @@ begin
     if (mstatus_pulse)
     begin
       mstatus_mie_int                  <= mstatus_mie_wval;
+      mstatus_mpie_int                 <= mstatus_mpie_wval;
     end
 
     if (mtval_pulse)

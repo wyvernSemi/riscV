@@ -201,6 +201,17 @@ int rv32csr_cpu::process_interrupts()
 }
 
 // -----------------------------------------------------------
+// Update cycle and instruction counts
+// -----------------------------------------------------------
+void rv32csr_cpu::update_csr_counts(void)
+{
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE]    = clk_cycles() & 0xffffffff;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH]   = (clk_cycles() >> 32) & 0xffffffff;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRET]  = inst_retired() & 0xffffffff;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRETH] = (inst_retired() >> 32) & 0xffffffff;
+}
+
+// -----------------------------------------------------------
 // CSR access methods
 // -----------------------------------------------------------
 
@@ -233,10 +244,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
             prev_rd_value = (uint32_t)state.hart[curr_hart].x[rd];
 
             // Take this opportunity to update the cycle count and instructions retired registers
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE]    = clk_cycles() & 0xffffffff;
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH]   = (clk_cycles() >> 32) & 0xffffffff;
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRET]  = inst_retired() & 0xffffffff;
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRETH] = (inst_retired() >> 32) & 0xffffffff;
+            update_csr_counts();
 
             state.hart[curr_hart].x[rd] = state.hart[curr_hart].csr[addr & 0xfff];
         }
@@ -258,7 +266,7 @@ uint32_t rv32csr_cpu::access_csr(const unsigned funct3, const uint32_t addr, con
 
                 if (RV32CSR_OP_RW(funct3))
                 {
-                    state.hart[curr_hart].csr[addr & 0xfff] = value & wr_mask;
+                    state.hart[curr_hart].csr[addr & 0xfff] = (state.hart[curr_hart].csr[addr & 0xfff] & ~((uint64_t)wr_mask)) | (value & wr_mask);
                 }
                 else if (RV32CSR_OP_RS(funct3))
                 {

@@ -39,7 +39,7 @@ rv32d_cpu::rv32d_cpu(FILE* dbgfp) : RV32_D_INHERITANCE_CLASS(dbgfp)
     state.hart[curr_hart].csr[RV32CSR_ADDR_MISA]   |=  RV32CSR_EXT_D;
 
     // Initialise FS field to Initial
-    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = RV32CSR_MSTATUS_FS_INITIAL;
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = (state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] & ~RV32CSR_MSTATUS_FS_MASK) | RV32CSR_MSTATUS_FS_INITIAL;
 
     curr_rnd_method = RV32I_RMM;
     fesetround(FE_TONEAREST);
@@ -177,7 +177,7 @@ uint32_t rv32d_cpu::csr_wr_mask(const uint32_t addr, bool& unimp)
 
     // The MSTATUS FS bits are made writable in this class to satisfy
     // test 13 of risv-tests/isa/rv32mi/csr.S which writes to these bits
-    // to clear then, despite [2] Sec. 3.1.6.5 stating it's a read
+    // to clear them, despite [2] Sec. 3.1.6.5 stating it's a read
     // only field. fsw stores are disabled when FS == 0 (off).
     if (addr == RV32CSR_ADDR_MSTATUS)
     {
