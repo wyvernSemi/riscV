@@ -29,7 +29,7 @@ DEMODIR         = demo
 FREERTOSDIR     = ../../FreeRTOS/FreeRTOS
 USRFLAGS        = -DRV32_ISS
 
-RV32SRC         = $(wildcard ${DEMODIR}/*.c)                                                \
+RV32SRC         = $(wildcard ${DEMODIR}/*.c)                                       \
                   $(wildcard ${SRCDIR}/*.c)                                        \
                   $(wildcard ${SRCDIR}/*.S)
 
@@ -38,7 +38,7 @@ FREERTOSSRC     = $(wildcard ${FREERTOSDIR}/Source/portable/GCC/RISC-V/*.c)     
                   ${FREERTOSDIR}/Source/portable/MemMang/heap_4.c                  \
                   ${FREERTOSDIR}/Source/portable/GCC/RISC-V/portASM.S
 
-CFLAGS          = -march=rv32i -mabi=ilp32                                         \
+CFLAGS          = -march=rv32imc -mabi=ilp32                                       \
                   -Wall -nostartfiles                                              \
                   -g -Wl,--gc-section                                              \
                   -DportasmHANDLE_INTERRUPT=interrupt_handler                      \

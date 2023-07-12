@@ -245,7 +245,7 @@
 #define RV32CSR_MCOUNTEREN_WR_MASK                     0x00000000
 #define RV32CSR_MCOUNTINHIBIT_WR_MASK                  0x00000001
 #define RV32CSR_MSCRATCH_WR_MASK                       0xffffffff
-#define RV32CSR_MEPC_WR_MASK                           0xfffffffc
+#define RV32CSR_MEPC_WR_MASK                           0xfffffffe
 #define RV32CSR_MCAUSE_WR_MASK                         0xffffffff
 #define RV32CSR_MTVAL_WR_MASK                          0xffffffff
 #define RV32CSR_FFLAGS_WR_MASK                         0x0000001f

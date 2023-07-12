@@ -174,6 +174,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             break;
         case 'h':
         default:
+            fprintf(stderr, "\nrv32 version %d.%d. Copyright (c) 2021-2023 Simon Southwell.\n\n", rv32::major_ver, rv32::minor_ver);
             fprintf(stderr, "Usage: %s [-hHeEbdragxcC][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
             fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
@@ -302,6 +303,10 @@ static int handler(void* user, const char* section, const char* name, const char
     else if (MATCH("peripherals", "uart_base_addr"))
     {
         uart0_base_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("cpu", "use_cycles_for_mtime"))
+    {
+        pconfig->use_cycles_for_mtime = IS_TRUE(value);
     }
 
     return 1;
