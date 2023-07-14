@@ -332,12 +332,12 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
         // If writing to the UART registers, call the model's write function
         if (type == MEM_WR_ACCESS_BYTE || type == MEM_WR_ACCESS_HWORD || type == MEM_WR_ACCESS_WORD)
         {
-            uart_write(byte_addr & 0x3, data & 0xff);
+            uart_write(byte_addr & 0x1f, data & 0xff);
         }
         else if (type == MEM_RD_ACCESS_BYTE || type == MEM_RD_ACCESS_HWORD || type == MEM_RD_ACCESS_WORD)
         {
             uint32_t rxdata;
-            uart_read(byte_addr & 0x3, &rxdata);
+            uart_read(byte_addr & 0x1f, &rxdata);
             data = rxdata;
         }
     }

@@ -37,7 +37,7 @@
 
 // The  UART has 8 registers
 #define UART_NUM_REGS                   8
-#define UART_REG_ADDR_MASK              0xfffffffc
+#define UART_REG_ADDR_MASK              0xffffffe0
 
 // Up to 4 UART contexts supported
 #define MAX_NUM_UARTS                   4

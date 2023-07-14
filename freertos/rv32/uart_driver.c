@@ -28,21 +28,26 @@
 #define UART_LSR_OFFSET   0x14
 
 #define UART_LSR_DR_BIT   0
+#define UART_LSR_OE_BIT   1
+#define UART_LSR_PE_BIT   2
+#define UART_LSR_FE_BIT   3
+#define UART_LSR_BI_BIT   4
+#define UART_LSR_THRR_BIT 5
 #define UART_LSR_TEMT_BIT 6
 
-volatile uint32_t *uart_tx  = (volatile uint32_t *) (UART_BASE_ADDR + UART_RBR_OFFSET);
-volatile uint32_t *uart_rx  = (volatile uint32_t *) (UART_BASE_ADDR + UART_RBR_OFFSET);
-volatile uint32_t *uart_lsr = (volatile uint32_t *) (UART_BASE_ADDR + UART_LSR_OFFSET);
+
+volatile uint32_t *uart_txrx  = (volatile uint32_t *) (UART_BASE_ADDR + UART_RBR_OFFSET);
+volatile uint32_t *uart_lsr   = (volatile uint32_t *) (UART_BASE_ADDR + UART_LSR_OFFSET);
 
 // -------------------------------------------------------------------------
 // Output a single byte over the UART
 // -------------------------------------------------------------------------
 int outbyte(int c)
 {
-    // Wait until transmitter isn't busy
-    //while ((*uart_lsr & (1 < UART_LSR_TEMT_BIT)) == 0);
+    // Wait until transmitter is ready for a new byte
+    while ((*uart_lsr & (1 << UART_LSR_THRR_BIT)) == 0);
     
-    *uart_tx = c;
+    *uart_txrx = c;
      
     return 0;
 }
@@ -52,9 +57,9 @@ int outbyte(int c)
 // -------------------------------------------------------------------------
 int inbyte(void)
 {
-    // Wait for a byte available
+    // Wait for a byte to become available
     while ((*uart_lsr & (1 << UART_LSR_DR_BIT)) == 0);
      
-    return *uart_rx;
+    return *uart_txrx;
 }
 
