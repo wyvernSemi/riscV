@@ -397,7 +397,7 @@ uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 
     *wakeup_time = time + 1;
     
-    bool uart_irq = uart_tick(time, terminate, true);
+    bool uart_irq = uart_tick(time, terminate);
 
     return swirq | (uart_irq ? 1 : 0);
 }
