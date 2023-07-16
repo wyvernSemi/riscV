@@ -24,38 +24,54 @@
 #
 ###################################################################
 
-SRCDIR          = rv32
-DEMODIR         = demo
+# -----------------------------------------------------------------
+# User overridable variables
+#
+#   MAINDIR         location of application code, including main()
+#   FREERTOSDIR     location of FreeRTOS kernel source code
+#   USRFLAGS        User defined C flags (default -DRV32_ISS)
+#   ARCH            RISC-V architecture spec. (default. rv32imc)
+#   OPT             Compilation optimisation flag (default -g)
+#   MEMMANGNUM      FreeRTOS memory management scheme (valid values 1 to 5)
+#   TARGET          Name of output executable (default main.exe)
+#
+
+MAINDIR         = demo
 FREERTOSDIR     = ../../FreeRTOS/FreeRTOS
 USRFLAGS        = -DRV32_ISS
+ARCH            = rv32imc
+OPT             = -g
+MEMMANGNUM      = 1
+TARGET          = main.exe
 
-RV32SRC         = $(wildcard ${DEMODIR}/*.c)                                       \
-                  $(wildcard ${SRCDIR}/*.c)                                        \
-                  $(wildcard ${SRCDIR}/*.S)
+# -----------------------------------------------------------------
+
+PORTSRCDIR      = rv32
+
+RV32SRC         = $(wildcard ${MAINDIR}/*.c)                                       \
+                  $(wildcard ${PORTSRCDIR}/*.c)                                    \
+                  $(wildcard ${PORTSRCDIR}/*.S)
 
 FREERTOSSRC     = $(wildcard ${FREERTOSDIR}/Source/portable/GCC/RISC-V/*.c)        \
                   $(wildcard ${FREERTOSDIR}/Source/*.c)                            \
-                  ${FREERTOSDIR}/Source/portable/MemMang/heap_4.c                  \
+                  ${FREERTOSDIR}/Source/portable/MemMang/heap_${MEMMANGNUM}.c      \
                   ${FREERTOSDIR}/Source/portable/GCC/RISC-V/portASM.S
 
-CFLAGS          = -march=rv32imc -mabi=ilp32                                       \
+CFLAGS          = -march=${ARCH} -mabi=ilp32                                       \
                   -Wall -nostartfiles                                              \
-                  -g -Wl,--gc-section                                              \
-                  -DportasmHANDLE_INTERRUPT=interrupt_handler                      \
-                  -I ${SRCDIR}                                                     \
+                  ${OPT} -Wl,--gc-section                                          \
+                  -I ${PORTSRCDIR}                                                 \
                   -I ${FREERTOSDIR}/Source/portable/GCC/RISC-V                     \
                   -I ${FREERTOSDIR}/Source/include                                 \
                   ${USRFLAGS}
 
-LDFLAGS         = 
+LDFLAGS         = ${CFLAGS}
 
 TOOLPREFIX      = riscv64-unknown-elf-
 
 CC              = ${TOOLPREFIX}gcc
 C++             = ${TOOLPREFIX}g++
 LD              = ${TOOLPREFIX}ld
-
-TARGET          = main.exe
 
 ALLSRC          = ${FREERTOSSRC} ${RV32SRC}
 CBASE           = $(filter %c,   ${ALLSRC})
@@ -70,6 +86,8 @@ LDSCRIPT        = rv32.ld
 # BUILD RULES
 # ---------------------------------------------------------------------
 
+all: ${TARGET}
+
 %.o: %.S
 	@${CC} -c ${CFLAGS} $< -o $@
 
@@ -77,12 +95,11 @@ LDSCRIPT        = rv32.ld
 %.o: %.c
 	@${CC} -c ${CFLAGS} $< -o $@
 
-
 %.o: %.cpp
 	@${C++} -c ${CFLAGS} $< -o $@
 
 ${TARGET}: ${OBJS} ${LDSCRIPT}
-	@${CC} ${CFLAGS} ${LDFLAGS} -T ${LDSCRIPT} ${OBJS}  -o $@
+	@${CC} ${LDFLAGS} -T ${LDSCRIPT} ${OBJS}  -o $@
 
 clean:
 	@rm -rf ${OBJS} ${TARGET}
