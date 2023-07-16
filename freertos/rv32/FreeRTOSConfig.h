@@ -97,7 +97,7 @@
 #define configUSE_TICK_HOOK                     0
 #define configCPU_CLOCK_HZ                      1000000
 #ifdef RV32_ISS
-  #define configTICK_RATE_HZ                    (( TickType_t ) 10 )
+  #define configTICK_RATE_HZ                    (( TickType_t ) 100 )
 #else
   #define configTICK_RATE_HZ                    (( TickType_t ) 1000 )
 #endif
@@ -109,10 +109,10 @@
 #define configUSE_TRACE_FACILITY                0
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 0
-#define configUSE_MUTEXES                       1
+#define configUSE_MUTEXES                       0
 #define configQUEUE_REGISTRY_SIZE               8
 #define configCHECK_FOR_STACK_OVERFLOW          0
-#define configUSE_RECURSIVE_MUTEXES             1
+#define configUSE_RECURSIVE_MUTEXES             0
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_APPLICATION_TASK_TAG          0
 #define configUSE_COUNTING_SEMAPHORES           1
@@ -127,7 +127,7 @@
 #define configMAX_CO_ROUTINE_PRIORITIES         (2)
 
 // Software timer definitions.
-#define configUSE_TIMERS                        1
+#define configUSE_TIMERS                        0
 #define configTIMER_TASK_PRIORITY               (configMAX_PRIORITIES - 1)
 #define configTIMER_QUEUE_LENGTH                4
 #define configTIMER_TASK_STACK_DEPTH            (configMINIMAL_STACK_SIZE)
@@ -154,6 +154,6 @@
 
 // Normal assert() semantics without relying on the provision of an assert.h
 //header file.
-#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); __asm volatile( "ebreak" ); for( ;; ); }
+//#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); __asm volatile( "ebreak" ); for( ;; ); }
 
 #endif /* FREERTOS_CONFIG_H */
