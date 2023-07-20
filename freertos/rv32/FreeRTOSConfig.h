@@ -67,6 +67,8 @@
     1 tab == 4 spaces!
 */
 
+// Modified for rv32 RISC-V ISS by Simon Southwell July 2023
+
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H

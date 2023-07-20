@@ -64,26 +64,26 @@ SECTIONS
 
     KEEP(*(.text.crt0));
 
-    *(.text .text.*)
+    *(.text)
 
   } > rom
 
   .rodata : ALIGN(4)
   {
-    *(.rodata .rodata.* .srodata)
+    *(.rodata)
 
   } > rom
 
   .data : ALIGN(4)
   {
-    *(.data .data.* .sdata .sdata1)
+    *(.data)
     __global_pointer$ = . + 0x800;
   } > ram
 
   .bss : ALIGN(4)
   {
     PROVIDE(__crt0_bss_start           = .);
-    *(.bss .bss.* .sbss)
+    *(.bss .sbss)
 
     PROVIDE(__crt0_bss_end             = .);
   } > ram

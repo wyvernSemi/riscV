@@ -21,6 +21,9 @@
 //
 //=============================================================
 
+#ifndef _RV32_FREERTOS_H_
+#define _RV32_FREERTOS_H_
+
 // Machine Trap Setup
 #define CSR_MSTATUS                           0x300
 #define CSR_MISA                              0x301
@@ -65,3 +68,5 @@ inline void __attribute__ ((always_inline)) csr_read(const int idx, uint32_t *da
 
 int printf_(const char* format, ...);
 int sprintf_(char* buffer, const char* format, ...);
+
+#endif

@@ -21,6 +21,10 @@
 //
 //=============================================================
 
+// -------------------------------------------------------------
+// INCLUDES
+// -------------------------------------------------------------
+
 #include <stdint.h>
 
 // FreeRTOS kernel includes
@@ -31,10 +35,31 @@
 
 #include "rv32_freertos.h"
 
+// -------------------------------------------------------------
+// DEFINES
+// -------------------------------------------------------------
+
 #define DELAY_PERIOD_SEC         1000
 #define COUNT_LOOPS              20
 #define DEFAULT_COUNT_START      10000
 #define SLEEP_DELAY_SEC          (100 * DELAY_PERIOD_SEC)
+
+#define TASK_STACK_SIZE          256
+#define TASK_PRIORITY            1
+#define TASK_NULL_HANDLE         NULL
+
+// -------------------------------------------------------------
+// TYPEDEFS
+// -------------------------------------------------------------
+
+typedef struct {
+    int task_num;
+    int count_init;
+} task_param_t;
+
+// -------------------------------------------------------------
+// FUNCTION PROTOTYPES
+// -------------------------------------------------------------
 
 // FreeRTOS interrupt handler
 void freertos_risc_v_trap_handler( void );
@@ -43,42 +68,18 @@ void freertos_risc_v_trap_handler( void );
 // Task
 // -------------------------------------------------------------
 
-void myFunc0(void* ptr)
+void task (void* ptr)
 {
     TickType_t xLastExecutionTime;
     TickType_t xDelayPeriod = DELAY_PERIOD_SEC;
 
     xLastExecutionTime = xTaskGetTickCount();
 
-    uint32_t count  = DEFAULT_COUNT_START;
+    uint32_t count  = ((task_param_t*)ptr)->count_init;
 
     for (int idx = 0; idx < COUNT_LOOPS; idx++)
     {
-        printf_("myFunc0: count = %d\n", count);
-        count--;
-        vTaskDelayUntil( &xLastExecutionTime, pdMS_TO_TICKS(xDelayPeriod));
-    }
-
-    while(1)
-        vTaskDelay(pdMS_TO_TICKS(SLEEP_DELAY_SEC));
-}
-
-// -------------------------------------------------------------
-// Task
-// -------------------------------------------------------------
-
-void myFunc1(void* ptr)
-{
-    TickType_t xLastExecutionTime;
-    TickType_t xDelayPeriod = DELAY_PERIOD_SEC;
-
-    xLastExecutionTime = xTaskGetTickCount();
-
-    uint32_t count  = 2 * DEFAULT_COUNT_START;
-
-    for (int idx = 0; idx < COUNT_LOOPS; idx++)
-    {
-        printf_("myFunc1: count = %d\n", count);
+        printf_("task%d: count = %d\n", ((task_param_t*)ptr)->task_num, count);
         count--;
         vTaskDelayUntil( &xLastExecutionTime, pdMS_TO_TICKS(xDelayPeriod));
     }
@@ -93,29 +94,36 @@ void myFunc1(void* ptr)
 
 int main( void )
 {
-  printf_("Entered main()\n");
+    printf_("Entered main()\n");
 
-  // Program the FreeRTOS trap handler as the one to use from now on 
-  csr_write(CSR_MTVEC, (uint32_t)&freertos_risc_v_trap_handler);
+    task_param_t t0_params, t1_params;
 
-  // Create task
-  if (xTaskCreate(myFunc0, "myFunc0", 256, NULL, 1, NULL) != pdPASS)
-  {
-      printf_("***ERROR: failed to create task\n");
-      return 1;
-  }
+    // Initialise task paramters
+    t0_params.task_num   = 0;
+    t0_params.count_init = DEFAULT_COUNT_START;
 
-  // Create task
-  if (xTaskCreate(myFunc1, "myFunc1", 256, NULL, 1, NULL) != pdPASS)
-  {
-      printf_("***ERROR: failed to create task\n");
-      return 1;
-  }
+    t1_params.task_num   = 1;
+    t1_params.count_init = 2* DEFAULT_COUNT_START;
 
-  vTaskStartScheduler();
+    // Program the FreeRTOS trap handler as the one to use from now on
+    csr_write(CSR_MTVEC, (uint32_t)&freertos_risc_v_trap_handler);
 
-  while(1);
+    // Create task 0
+    if (xTaskCreate(task, "task0", TASK_STACK_SIZE, &t0_params, TASK_PRIORITY, TASK_NULL_HANDLE) != pdPASS)
+    {
+        printf_("***ERROR: failed to create task 0\n");
+        return 1;
+    }
 
+    // Create task 1
+    if (xTaskCreate(task, "task1", TASK_STACK_SIZE, &t1_params, TASK_PRIORITY, TASK_NULL_HANDLE) != pdPASS)
+    {
+        printf_("***ERROR: failed to create task 1\n");
+        return 1;
+    }
+
+    // Start the scheduler. Should not return from here
+    vTaskStartScheduler();
 }
 
 // -------------------------------------------------------------

@@ -46,6 +46,7 @@ VLIB            = lib${PROJECT}.a
 EXEC            = ${PROJECT}
 
 ARCHFLAG        = -m64
+OPTFLAGS        = -g
 
 LIB_CPP_BASE    = rv32i_cpu_elf.cpp                     \
                   rv32_cpu_gdb.cpp                      \
@@ -69,7 +70,7 @@ CC              = gcc
 C++             = g++
 CFLAGS          = -fPIC                                 \
                   ${ARCHFLAG}                           \
-                  -g                                    \
+                  ${OPTFLAGS}                           \
                   -I${SRCDIR}                           \
                   -D_REENTRANT
 
