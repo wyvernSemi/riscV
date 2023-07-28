@@ -1,10 +1,10 @@
 ###################################################################
-# 
+#
 # Copyright (c) 2021 Simon Southwell. All rights reserved.
 #
 # Date: 14th August 2021
 #
-# Make file compiling MinGW library and MSVC batch build
+# Make file compiling MSYS2/mingw64 library and MSVC batch build
 #
 # This file is part of the base RISC-V instruction set simulator
 # (rv32_cpu).
@@ -23,20 +23,8 @@
 # along with this code. If not, see <http://www.gnu.org/licenses/>.
 #
 ###################################################################
-#
-# Requires MINGW and MSYS binary directories to be in the PATH
-# for compiling MinGW library. E.g.:
-#    c:\MinGW\bin
-#    c:\MinGW\msys\1.0\bin
-#
-# Requires MSBuild binary directory to be in the PATH for compiling
-# Visual Studio executable. E.g:
-#    C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin
-#
-###################################################################
 
 PROJECT         = rv32
-ARCHFLAG        = -m32
 
 #
 # MinGW library variables
@@ -44,8 +32,12 @@ ARCHFLAG        = -m32
 VOBJDIR         = obj
 SRCDIR          = src
 VLIB            = lib${PROJECT}.a
+EXEC            = ${PROJECT}.exe
 
-CPP_BASE        = rv32i_cpu_elf.cpp                     \
+ARCHFLAG        = -m64
+OPTFLAGS        = -g
+
+LIB_CPP_BASE    = rv32i_cpu_elf.cpp                     \
                   rv32_cpu_gdb.cpp                      \
                   rv32i_cpu.cpp                         \
                   rv32csr_cpu.cpp                       \
@@ -55,14 +47,23 @@ CPP_BASE        = rv32i_cpu_elf.cpp                     \
                   rv32d_cpu.cpp                         \
                   rv32c_cpu.cpp
 
-VOBJS           = ${addprefix ${VOBJDIR}/, ${CPP_BASE:%.cpp=%.o}}
+EXEC_CPP_BASE   = cpurv32i.cpp                          \
+                  uart.cpp
 
+EXEC_C_BASE     = mem.c ini.c
+
+VOBJS           = ${addprefix ${VOBJDIR}/, ${LIB_CPP_BASE:%.cpp=%.o}}
+VOBJSEXEC       = ${addprefix ${VOBJDIR}/, ${EXEC_CPP_BASE:%.cpp=%.o} ${EXEC_C_BASE:%.c=%.o}}
+
+CC              = gcc
 C++             = g++
 CFLAGS          = -fPIC                                 \
                   ${ARCHFLAG}                           \
-                  -g                                    \
+                  ${OPTFLAGS}                           \
                   -I${SRCDIR}                           \
                   -D_REENTRANT
+
+LDFLAGS         = -lWs2_32
 
 #
 # Visual Studio variables
@@ -79,15 +80,21 @@ MSVCTGT         = ${MSVCDIR}\${MSVCPLATFORM}\${MSVCCFG}\${PROJECT}.exe
 # -----------------------------------------------------------------
 
 # Default to builing MinGW library only
-all: ${VLIB}
+all: ${VOBJDIR} ${EXEC}
 
 # Recipe for object files
 ${VOBJDIR}/%.o: ${SRCDIR}/%.cpp ${SRCDIR}/*.h
 	@${C++} -Wno-write-strings -c ${CFLAGS} $< -o $@
 
+${VOBJDIR}/%.o: ${SRCDIR}/%.c ${SRCDIR}/*.h
+	@${CC} -Wno-write-strings -c ${CFLAGS} $< -o $@
+
 # Recipe for library archive file
 ${VLIB} : ${VOBJS} ${VOBJDIR}
 	@ar cr ${VLIB} ${VOBJS}
+
+${EXEC} : ${VOBJSEXEC} ${VLIB}
+	@${C++} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 # Recipe to make object files dependant on object folder
 ${VOBJS}: | ${VOBJDIR}
@@ -106,6 +113,7 @@ ${MSVCTGT}:
 
 # Recipe to clean intermediate files
 clean:
+	@rm -rf ${EXEC}
 	@rm -rf ${VOBJDIR}
 	@rm -f ${VLIB}
 	@${MSVCBUILD} ${MSVCSLN} ${MSVCARGS} -t:clean
