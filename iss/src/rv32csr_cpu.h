@@ -83,8 +83,6 @@ private:
     // Process interrupts
     int  process_interrupts();
 
-    //void update_csr_counts();
-
     // Return from trap instruction
     void mret                            (const p_rv32i_decode_t);
 

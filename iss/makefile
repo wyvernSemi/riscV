@@ -36,6 +36,7 @@
 ###################################################################
 
 PROJECT         = rv32
+ARCHFLAG        = -m32
 
 #
 # MinGW library variables
@@ -58,7 +59,7 @@ VOBJS           = ${addprefix ${VOBJDIR}/, ${CPP_BASE:%.cpp=%.o}}
 
 C++             = g++
 CFLAGS          = -fPIC                                 \
-                  -m32                                  \
+                  ${ARCHFLAG}                           \
                   -g                                    \
                   -I${SRCDIR}                           \
                   -D_REENTRANT
