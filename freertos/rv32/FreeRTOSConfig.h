@@ -112,7 +112,7 @@
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 0
 #define configUSE_MUTEXES                       0
-#define configQUEUE_REGISTRY_SIZE               8
+#define configQUEUE_REGISTRY_SIZE               0
 #define configCHECK_FOR_STACK_OVERFLOW          0
 #define configUSE_RECURSIVE_MUTEXES             0
 #define configUSE_MALLOC_FAILED_HOOK            0
@@ -134,11 +134,6 @@
 #define configTIMER_QUEUE_LENGTH                4
 #define configTIMER_TASK_STACK_DEPTH            (configMINIMAL_STACK_SIZE)
 
-// Task priorities.  Allow these to be overridden.
-#ifndef uartPRIMARY_PRIORITY
-  #define uartPRIMARY_PRIORITY                  (configMAX_PRIORITIES - 3)
-#endif
-
 // Set the following definitions to 1 to include the API function, or zero
 // to exclude the API function.
 #define INCLUDE_vTaskPrioritySet                0
@@ -156,6 +151,6 @@
 
 // Normal assert() semantics without relying on the provision of an assert.h
 //header file.
-//#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); __asm volatile( "ebreak" ); for( ;; ); }
+#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); __asm volatile( "ebreak" ); for( ;; ); }
 
 #endif /* FREERTOS_CONFIG_H */
