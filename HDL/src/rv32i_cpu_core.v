@@ -65,7 +65,7 @@ module rv32i_cpu_core
   input  [31:0]                dreaddata,
   input                        dwaitrequest,
 
-  // External execption signals
+  // External exception signals
   input                        irq,
   input                        ext_sw_interrupt,
 
@@ -74,11 +74,23 @@ module rv32i_cpu_core
   input                        wr_mtimecmp,
   input                        wr_mtime_upper,
   input  [31:0]                wr_mtime_val,
+  
+`ifdef MTIME_RD_PORT
+  input                        rd_mtime,
+  input                        rd_mtimecmp,
+  output [31:0]                rd_mtime_val,
+`endif
 
   // Outputs for an external test block
   output  [4:0]                test_rd_idx,
   output [31:0]                test_rd_val
 );
+
+`ifndef MTIME_RD_PORT
+wire                           rd_mtime       = 1'b0;
+wire                           rd_mtimecmp    = 1'b0;
+wire  [31:0]                   rd_mtime_val;
+`endif
 
 // Decode pipeline outputs
 wire  [4:0] decode_rd;
@@ -407,6 +419,9 @@ generate
         .wr_mtimecmp           (wr_mtimecmp),
         .wr_mtime_upper        (wr_mtime_upper),
         .wr_mtime_val          (wr_mtime_val),
+        .rd_mtime              (rd_mtime),
+        .rd_mtimecmp           (rd_mtimecmp),
+        .rd_mtime_val          (rd_mtime_val),
 
         .zicsr_update_pc       (zicsr_update_pc),
         .zicsr_new_pc          (zicsr_new_pc),

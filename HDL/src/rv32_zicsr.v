@@ -80,6 +80,9 @@ module rv32_zicsr
   input                                wr_mtimecmp,
   input                                wr_mtime_upper,
   input      [31:0]                    wr_mtime_val,
+  input                                rd_mtime,
+  input                                rd_mtimecmp,
+  output reg [31:0]                    rd_mtime_val,
 
   // Update program counter port
   output reg                           zicsr_update_pc,
@@ -382,15 +385,18 @@ begin
     end
 
     // Update mtime/mtimecmp
-    if (wr_mtime && DISABLE_TIMER == 0)
+    if (DISABLE_TIMER == 0)
     begin
-      if (wr_mtime_upper)
+      if (wr_mtime)
       begin
-        mtime_int[63:32]               <= wr_mtime_val;
-      end
-      else
-      begin
-        mtime_int[31:0]                <= wr_mtime_val;
+        if (wr_mtime_upper)
+        begin
+          mtime_int[63:32]               <= wr_mtime_val;
+        end
+        else
+        begin
+          mtime_int[31:0]                <= wr_mtime_val;
+        end
       end
     end
 
@@ -405,6 +411,9 @@ begin
         mtimecmp_int[31:0]             <= wr_mtime_val;
       end
     end
+    
+    rd_mtime_val                       <= rd_mtime ? (wr_mtime_upper ? mtime_selected[63:32] : mtime_selected[31:0]) :
+                                                     (wr_mtime_upper ? mtimecmp_int[63:32]   : mtimecmp_int[31:0]);
 
   end
 end
