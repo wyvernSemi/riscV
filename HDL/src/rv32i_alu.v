@@ -172,7 +172,7 @@ wire               branch_taken        = branch_in & cmp[0];
 wire        [31:0] next_pc             = (jump_in | system_in) ? add :
                                                                  pc_in + offset_decode;
                                                                  
-wire [4:0] next_rd                     = extm_update_rd ? extm_rd_idx :
+wire         [4:0] next_rd             = extm_update_rd ? extm_rd_idx :
                                          stall          ? rd          : 
                                                           ((~update_pc & ~((jump_in | branch_taken) & |next_pc[1:0])) ? rd_in : 5'h0);
 
@@ -250,8 +250,8 @@ begin
     // For load store, address is result of ALU's addition
     if (load_in | store_in)
     begin
-      addr                             <= stall ? addr       : {next_addr[31:2], 2'b00};
-      addr_lo                          <= stall ? addr [1:0] : next_addr[1:0];
+      addr                             <= stall ? addr          : {next_addr[31:2], 2'b00};
+      addr_lo                          <= stall ? addr_lo [1:0] : next_addr[1:0];
     end
 
     // The RD register is updated (i.e. not 0) when the PC isn't being updated (and instructions 'deleted') and not a misaligned instruction read
