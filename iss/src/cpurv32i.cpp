@@ -177,7 +177,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             fprintf(stderr, "\nrv32 version %d.%d. Copyright (c) 2021-2023 Simon Southwell.\n\n", rv32::major_ver, rv32::minor_ver);
             fprintf(stderr, "Usage: %s [-hHeEbdragxcC][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
-            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>\n\n");
+            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>]\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
