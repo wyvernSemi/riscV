@@ -3,6 +3,12 @@ An open source Verilog  Softcore and C++ Instruction Set Simulator and logic RIS
 
 The project, at this time, limits itself to the 32 bit specifications, but the implementations are architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see HDL/doc/manual.pdf and iss/doc/iss_manual.pdf).
 
+## HDL
+
+<p align="center">
+<img src="https://github.com/wyvernSemi/riscV/assets/21970031/2f990f74-3681-44f7-aab2-d425e8599b4d" width=600>
+</p>
+
 The Verilog Softcore has the following features
 
 *	All RV32I instructions implemented
@@ -32,6 +38,11 @@ The Verilog Softcore has the following features
 *	Example FPGA target platform using the terasIC DE10-nano development board (employing the Intel Cyclone V 5CSEBA6U23I7 FPGA).
 	*	Targeting 100MHz clock operation
 	*	< 1000 ALMs (~2600 LEs) when also employing Zicsr and RV32M extensions (RV32I implementation currently around 700 ALMs, ~1900 LEs).
+
+## ISS
+<p align="center">
+<img src="https://github.com/wyvernSemi/riscV/assets/21970031/61eb37df-3997-43bc-aaf7-9a63da63149c" width=600>
+</p>
 
 The ISS has the following features:
 
