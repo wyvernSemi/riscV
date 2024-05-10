@@ -66,6 +66,7 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
 
     abi_en                   = true;
     use_cycles_for_mtime     = false;
+    use_external_timer       = false;
 
     // Reset state
     reset();
@@ -261,15 +262,16 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     unsigned instr_count;
 
     // Set disassemble switches
-    rt_disassem          = cfg.rt_dis;
-    disassemble          = cfg.dis_en;
-    abi_en               = cfg.abi_en;
-    use_cycles_for_mtime = cfg.use_cycles_for_mtime;
+    rt_disassem            = cfg.rt_dis;
+    disassemble            = cfg.dis_en;
+    abi_en                 = cfg.abi_en;
+    use_cycles_for_mtime   = cfg.use_cycles_for_mtime;
+    use_external_timer     = cfg.use_external_timer;
 
     // Set halt switches
-    halt_rsvd_instr      = cfg.hlt_on_inst_err;
-    halt_ecall           = cfg.hlt_on_ecall;
-    halt_ebreak          = cfg.hlt_on_ebreak;
+    halt_rsvd_instr        = cfg.hlt_on_inst_err;
+    halt_ecall             = cfg.hlt_on_ecall;
+    halt_ebreak            = cfg.hlt_on_ebreak;
 
     // If a new start address specified, update the reset vector
     if (cfg.update_rst_vec)
@@ -480,18 +482,18 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
     }
 
     // Check if accessing the real time clock memory mapped csr register
-    if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
+    if (!use_external_timer && (byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
     {
         rd_val = (uint32_t)(real_time_us() >> ((byte_addr & 0x00000004) ? 32 : 0));
     }
     // Check if accessing the memory mapped time compare register
-    else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
+    else if (!use_external_timer && (byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
     {
         rd_val = (uint32_t)(mtimecmp >> ((byte_addr & 0x00000004) ? 32 : 0)); 
     }
     // If a callback registered for memory accesses call it now,
     // unless accessing the memory mapped real time clock CSR register
-    else if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
+    else if (p_mem_callback != NULL)
     {
         // Execute callback function
         mem_callback_delay = p_mem_callback(byte_addr, rd_val, type, cycle_count);

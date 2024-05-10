@@ -250,7 +250,11 @@ protected:
     // Debug ABI register names enable flag
     bool                  abi_en;
 
+    // Flag to select using cycle count for internal mtime timer model
     bool                  use_cycles_for_mtime;
+
+    // Flag to select using external memory mapped mtime timer model (user provided via external memory access callback)
+    bool                  use_external_timer;
 
     // Holds CSR and HART (pc and regs) state
     rv32i_state           state;
