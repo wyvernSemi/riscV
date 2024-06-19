@@ -135,29 +135,61 @@ int rv32csr_cpu::process_interrupts()
     // at, or beyond, scheduled wakeup count.
     if (p_int_callback != NULL && clk_cycles() >=  (uint32_t)interrupt_wakeup_time)
     {
-        // Update the MIP CSR MEIP bit with interrupt status
-        if ((*p_int_callback)(clk_cycles(), &interrupt_wakeup_time))
+        // Get interrupt vector
+        uint32_t irq = (*p_int_callback)(clk_cycles(), &interrupt_wakeup_time);
+
+        // If not using external timer, then all non-zero interrupt values are for external IRQ
+        if (!use_external_timer)
         {
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
+            // Update the MIP CSR MEIP bit with interrupt status
+            if (irq)
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
+            }
+            else
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
+            }
+        }
+        // If using an external interrupt timer, then IRQ[1] is for timer, IRQ[0] is for external interrupts.
+        else
+        {
+            if (irq & 0x1)
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
+            }
+            else
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
+            }
+
+            if (irq & 0x2)
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MTIP_BITMASK;
+            }
+            else
+            {
+                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MTIP_BITMASK;
+            }
+        }
+    }
+
+    // If not using external timer, read internal timer model compare register and check against current time
+    if (!use_external_timer)
+    {
+        // Check timer compare
+        uint64_t mtimcmp = (uint64_t)read_mem(RV32I_RTCLOCK_CMP_ADDRESS, MEM_RD_ACCESS_WORD, fault) |
+                          ((uint64_t)read_mem(RV32I_RTCLOCK_CMP_ADDRESS + 4, MEM_RD_ACCESS_WORD, fault) << 32);
+        
+        // If timer greater than compare register, set the pending bit, else clear it
+        if (real_time_us() >= mtimcmp)
+        {
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MTIP_BITMASK;
         }
         else
         {
-            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MTIP_BITMASK;
         }
-    }
-
-    // Check timer compare
-    uint64_t mtimcmp = (uint64_t)read_mem(RV32I_RTCLOCK_CMP_ADDRESS, MEM_RD_ACCESS_WORD, fault) |
-                      ((uint64_t)read_mem(RV32I_RTCLOCK_CMP_ADDRESS + 4, MEM_RD_ACCESS_WORD, fault) << 32);
-
-    // If timer greater than compare register, set the pending bit, else clear it
-    if (real_time_us() >= mtimcmp)
-    {
-        state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MTIP_BITMASK;
-    }
-    else
-    {
-        state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MTIP_BITMASK;
     }
 
     // Raise interrupts, depending on enable statuses

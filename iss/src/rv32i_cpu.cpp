@@ -562,14 +562,14 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
         return;
     }
 
-    if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
+    if (!use_external_timer && (byte_addr & 0xfffffff8) == RV32I_RTCLOCK_ADDRESS) 
     {
         // At this time, don't write as this is a free running RT clock,
         // but have to handle to avoid attempt to write to internal
         // memory at an out-of-range address 
     }
     // Check if accessing the memory mapped time compare register
-    else if ((byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
+    else if (!use_external_timer && (byte_addr & 0xfffffff8) == RV32I_RTCLOCK_CMP_ADDRESS) 
     {
         // Accessing upper word
         if (byte_addr & 0x00000004)
@@ -584,9 +584,8 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
             mtimecmp |= (uint64_t)word;
         }
     }
-    // If a callback registered for memory accesses call it now,
-    // unless accessing the memory mapped real time clock CSR register
-    else if (p_mem_callback != NULL && ((byte_addr & 0xfffffff8) != RV32I_RTCLOCK_CMP_ADDRESS))
+    // If a callback registered for memory accesses call it now
+    else if (p_mem_callback != NULL)
     {
         // Execute callback function
         mem_callback_delay = p_mem_callback(byte_addr, word, type, cycle_count);
