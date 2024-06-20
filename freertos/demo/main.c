@@ -40,6 +40,11 @@
 // -------------------------------------------------------------
 
 #define DELAY_PERIOD_SEC         1000
+#ifndef COSIM
+# define SCALE                   1
+#else
+# define SCALE                   40
+#endif
 #define COUNT_LOOPS              20
 #define DEFAULT_COUNT_START      10000
 #define SLEEP_DELAY_SEC          (100 * DELAY_PERIOD_SEC)
@@ -71,7 +76,7 @@ void freertos_risc_v_trap_handler( void );
 void task (void* ptr)
 {
     TickType_t xLastExecutionTime;
-    TickType_t xDelayPeriod = DELAY_PERIOD_SEC;
+    TickType_t xDelayPeriod = DELAY_PERIOD_SEC/SCALE;
 
     xLastExecutionTime = xTaskGetTickCount();
 
