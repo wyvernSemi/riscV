@@ -29,7 +29,8 @@
 #
 #   MAINDIR         location of application code, including main()
 #   FREERTOSDIR     location of FreeRTOS kernel source code
-#   USRFLAGS        User defined C flags (default -DRV32_ISS)
+#   USRFLAGS        User defined C flags (default empty)
+#   ISSFLAG         ISS target flag (default -DRV32_ISS)
 #   ARCH            RISC-V architecture spec. (default. rv32imc)
 #   OPT             Compilation optimisation flag (default -g)
 #   MEMMANGNUM      FreeRTOS memory management scheme (valid values 1 to 5)
@@ -38,9 +39,10 @@
 
 MAINDIR         = demo
 FREERTOSDIR     = ../../FreeRTOS/FreeRTOS
-USRFLAGS        = -DRV32_ISS
+USRFLAGS        = 
+ISSFLAG         = -DRV32_ISS
 ARCH            = rv32imc
-OPT             = -g
+OPT             = -O3
 MEMMANGNUM      = 1
 TARGET          = main.exe
 
@@ -63,6 +65,7 @@ CFLAGS          = -march=${ARCH} -mabi=ilp32                                    
                   -I ${PORTSRCDIR}                                                 \
                   -I ${FREERTOSDIR}/Source/portable/GCC/RISC-V                     \
                   -I ${FREERTOSDIR}/Source/include                                 \
+                  ${ISSFLAG}                                                       \
                   ${USRFLAGS}
 
 LDFLAGS         = ${CFLAGS}
