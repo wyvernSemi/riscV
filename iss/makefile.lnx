@@ -71,6 +71,7 @@ C++             = g++
 CFLAGS          = -fPIC                                 \
                   ${ARCHFLAG}                           \
                   ${OPTFLAGS}                           \
+                  ${USRFLAGS)                           \
                   -I${SRCDIR}                           \
                   -D_REENTRANT
 

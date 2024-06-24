@@ -503,7 +503,7 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
     if (mem_callback_delay == RV32I_EXT_MEM_NOT_PROCESSED)
     {
         // Check input is a valid address
-        if (byte_addr > RV32I_INT_MEM_WORDS)
+        if (byte_addr >= RV32I_INT_MEM_BYTES)
         {
             // Flag as a bus error only if this is not a debug access, as debugger may try
             // to inspect non-valid addresses.
@@ -596,7 +596,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
     {
 
         // Check input is a valid address
-        if (byte_addr >= RV32I_INT_MEM_WORDS) 
+        if (byte_addr >= RV32I_INT_MEM_BYTES) 
         {
             process_trap(RV32I_ST_AMO_ACCESS_FAULT);
             fault = true;
