@@ -43,6 +43,7 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
 {
     // No callback functions registered by default
     p_mem_callback           = NULL;
+    p_unimp_callback         = NULL;
 
     // Cycle count set to 0
     cycle_count              = 0;
@@ -304,16 +305,17 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
             {
                 error = execute(decode, p_entry);
             }
+            // If no entry in the table, run 'reserved' instruction to allow for any unimp callback processing
             else
             {
-                if (!halt_rsvd_instr)
-                {
-                    process_trap(RV32I_ILLEGAL_INSTR);
-                }
-                else
-                {
-                    error = SIGILL;
-                }
+                rv32i_decode_table_t rsvd_entry = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved};
+                error = execute(decode, &rsvd_entry);
+            }
+
+            // Process any illegal instruction exceptions
+            if (error == SIGILL && !halt_rsvd_instr)
+            {
+                process_trap(RV32I_ILLEGAL_INSTR);
             }
         }
     }
@@ -644,11 +646,31 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
 //
 void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
-    fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
+    uint32_t cb_rtn_value;
+    uint64_t new_pc;
+    bool     pc_updated = false;
+    int32_t  cb_trap    = 0;
 
-    trap = SIGILL;
+    // If there's no 'unimp' callback, or it returned a 'not processed' status when called,
+    // raise an illegal instruction trap.
+    if ((p_unimp_callback == NULL) || ((cb_rtn_value = p_unimp_callback(d, new_pc, pc_updated, cb_trap)) == RV32I_UNIMP_NOT_PROCESSED))
+    {
+        fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
-    increment_pc();
+        trap = SIGILL;
+        increment_pc();
+    }
+    else if (cb_trap != 0)
+    {
+        fprintf(dasm_fp, "**ERROR: extension instruction returned a trap (%d)\n", cb_trap);
+
+        trap = cb_trap;
+        increment_pc();
+    }
+    else if (pc_updated)
+    {
+        state.hart[curr_hart].pc = new_pc;
+    }
 }
 
 // -----------------------------------------------------------
