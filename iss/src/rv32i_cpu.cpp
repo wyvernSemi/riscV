@@ -29,6 +29,7 @@
 // INCLUDES
 // -------------------------------------------------------------------------
 
+#include <iterator>
 #include <cstring>
 #include <cstdlib>
 
@@ -646,30 +647,59 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
 //
 void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
-    uint32_t cb_rtn_value;
-    uint64_t new_pc;
-    bool     pc_updated = false;
-    int32_t  cb_trap    = 0;
+    int32_t cb_rtn_value = RV32I_UNIMP_NOT_PROCESSED;
+    unimp_args_t cb_args;
 
-    // If there's no 'unimp' callback, or it returned a 'not processed' status when called,
+    // If an unimplented callback is registered call it now...
+    if (p_unimp_callback != NULL)
+    {
+        // Initialise the callback arguments structure with current state
+        std::copy(std::begin(state.hart[curr_hart].x), std::end(state.hart[curr_hart].x), std::begin(cb_args.regs));
+        cb_args.pc   = state.hart[curr_hart].pc;
+
+        // Call the user's registered callback function
+        cb_rtn_value = p_unimp_callback(d, cb_args);
+    }
+
+    // If the callback returned a 'not processed' status when called (or because none was registered),
     // raise an illegal instruction trap.
-    if ((p_unimp_callback == NULL) || ((cb_rtn_value = p_unimp_callback(d, new_pc, pc_updated, cb_trap)) == RV32I_UNIMP_NOT_PROCESSED))
+    if (cb_rtn_value == RV32I_UNIMP_NOT_PROCESSED)
     {
         fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
         trap = SIGILL;
         increment_pc();
     }
-    else if (cb_trap != 0)
+    // If a trap was returned by the callback, update the trap value for processing by calling method
+    // and increment the PC
+    else if (cb_args.trap != 0)
     {
-        fprintf(dasm_fp, "**ERROR: extension instruction returned a trap (%d)\n", cb_trap);
+        fprintf(dasm_fp, "**ERROR: extension instruction returned a trap (%d)\n", cb_args.trap);
 
-        trap = cb_trap;
+        trap = cb_args.trap;
         increment_pc();
     }
-    else if (pc_updated)
+    // If no trap, update any new state from the callback
+    else
     {
-        state.hart[curr_hart].pc = new_pc;
+        // If PC updated, update state
+        if (cb_args.pc_updated)
+        {
+            state.hart[curr_hart].pc = cb_args.pc;
+        }
+        else
+        {
+            increment_pc();
+        }
+
+        // If the registers updated, update state
+        if (cb_args.regs_updated)
+        {
+            std::copy(std::begin(cb_args.regs), std::end(cb_args.regs), std::begin(state.hart[curr_hart].x));
+
+            // Ensure x[0] remains as 0
+            state.hart[curr_hart].x[0] = 0;
+        }
     }
 }
 
