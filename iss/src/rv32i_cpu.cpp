@@ -317,6 +317,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
             if (error == SIGILL && !halt_rsvd_instr)
             {
                 process_trap(RV32I_ILLEGAL_INSTR);
+                error = 0;
             }
         }
     }
@@ -352,9 +353,11 @@ int  rv32i_cpu::execute(rv32i_decode_t& decode, rv32i_decode_table_t* p_entry)
     instret_count += 1;
 
     // If an illegal/unimplemented instruction, or halt on a system instruction, flag to calling function
-    if ((halt_rsvd_instr && trap) || ((halt_ecall || halt_ebreak) && (trap == SIGTERM || trap == SIGTRAP)))
+    if (trap == SIGILL || ((halt_ecall || halt_ebreak) && (trap == SIGTERM || trap == SIGTRAP)))
     {
         error = trap;
+
+        // Clear trap condition
         trap = 0;
     }
 
@@ -649,6 +652,8 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
     int32_t cb_rtn_value = RV32I_UNIMP_NOT_PROCESSED;
     unimp_args_t cb_args;
+
+    RV32I_DISASSEM_SYS_TYPE(d->instr, d->entry.instr_name);
 
     // If an unimplented callback is registered call it now...
     if (p_unimp_callback != NULL)

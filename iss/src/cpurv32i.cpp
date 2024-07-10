@@ -411,6 +411,29 @@ uint32_t interrupt_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 }
 
 // -------------------------------
+//
+
+int unimp_callback(const p_rv32i_decode_t d, unimp_args_t& args)
+{
+    //fprintf(stderr, "unimp_callback: opcode = 0x%08x. Executing NOP\n", d->instr);
+
+    // --------- Do a nop ---------
+    
+    // Update PC if needed
+    args.pc += 4;
+    args.pc_updated = false /* true */;
+
+    // Update regs if needed
+    args.regs[17] = 0x5d;
+    args.regs_updated = false /* true */;
+
+    // No trap condition
+    args.trap = 0;
+
+    return 0; // 0 or more for added wait states, or RV32I_UNIMP_NOT_PROCESSED;
+}
+
+// -------------------------------
 // Dump registers
 //
 
@@ -520,6 +543,9 @@ int main(int argc, char** argv)
 
         // Register interrupt callback function
         pCpu->register_int_callback(interrupt_callback);
+
+        // Register unimp callback
+        pCpu->register_unimp_callback(unimp_callback);
 
         // If GDB mode, pass execution to the remote GDB interface
         if (cfg.gdb_mode)
