@@ -430,7 +430,7 @@ int unimp_callback(const p_rv32i_decode_t d, unimp_args_t& args)
     // No trap condition
     args.trap = 0;
 
-    return 0; // 0 or more for added wait states, or RV32I_UNIMP_NOT_PROCESSED;
+    return RV32I_UNIMP_NOT_PROCESSED; // 0 or more for added wait states, or RV32I_UNIMP_NOT_PROCESSED;
 }
 
 // -------------------------------

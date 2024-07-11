@@ -461,6 +461,11 @@ rv32i_decode_table_t* rv32i_cpu::primary_decode(const opcode_t instr, rv32i_deco
     {
         decoded_data.entry = p_entry->ref.entry;
     }
+    // Unimplemented instruction
+    else
+    {
+        decoded_data.entry = {reserved_str, RV32I_INSTR_FMT_S};
+    }
 
     return p_entry;
 }
@@ -653,7 +658,7 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
     int32_t cb_rtn_value = RV32I_UNIMP_NOT_PROCESSED;
     unimp_args_t cb_args;
 
-    RV32I_DISASSEM_SYS_TYPE(d->instr, d->entry.instr_name);
+    RV32I_DISASSEM_SYS_TYPE(cmp_instr ? cmp_instr_code : d->instr , d->entry.instr_name);
 
     // If an unimplented callback is registered call it now...
     if (p_unimp_callback != NULL)
