@@ -496,7 +496,10 @@ typedef struct unimp_args_s
     bool     pc_updated;
     int32_t  trap;
 
-    unimp_args_s() : regs{0}, regs_updated(false), pc(0), pc_updated(false), trap(0)
+    bool     is_compressed_instr;
+    uint16_t compressed_instr;
+
+    unimp_args_s() : regs{0}, regs_updated(false), pc(0), pc_updated(false), trap(0), is_compressed_instr(false), compressed_instr(0)
     {};
 } unimp_args_t;
 

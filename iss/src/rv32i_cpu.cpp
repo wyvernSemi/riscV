@@ -660,7 +660,9 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
     {
         // Initialise the callback arguments structure with current state
         std::copy(std::begin(state.hart[curr_hart].x), std::end(state.hart[curr_hart].x), std::begin(cb_args.regs));
-        cb_args.pc   = state.hart[curr_hart].pc;
+        cb_args.pc                  = state.hart[curr_hart].pc;
+        cb_args.is_compressed_instr = cmp_instr;
+        cb_args.compressed_instr    = cmp_instr_code;
 
         // Call the user's registered callback function
         cb_rtn_value = p_unimp_callback(d, cb_args);
