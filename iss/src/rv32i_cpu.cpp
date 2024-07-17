@@ -680,7 +680,6 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
         fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
         trap = SIGILL;
-        increment_pc();
     }
     // If a trap was returned by the callback, update the trap value for processing by calling method
     // and increment the PC
@@ -689,7 +688,6 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
         fprintf(dasm_fp, "**ERROR: extension instruction returned a trap (%d)\n", cb_args.trap);
 
         trap = cb_args.trap;
-        increment_pc();
     }
     // If no trap, update any new state from the callback
     else
