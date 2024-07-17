@@ -484,10 +484,10 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
     int  mem_callback_delay    = 1;
 
     // Check alignment
-    if (((byte_addr & 0x1) && type != MEM_RD_ACCESS_BYTE) ||
-        ((byte_addr & 0x3) != 0x00 && (type == MEM_RD_ACCESS_WORD || type == MEM_RD_ACCESS_INSTR)))
+    if (((byte_addr & 0x1) && type != RV32I_MEM_RD_ACCESS_BYTE) ||
+        ((byte_addr & 0x3) != 0x00 && (type == RV32I_MEM_RD_ACCESS_WORD || type == RV32I_MEM_RD_ACCESS_INSTR)))
     {
-        process_trap((type == MEM_RD_ACCESS_INSTR) ? RV32I_IADDR_MISALIGNED : RV32I_LADDR_MISALIGNED);
+        process_trap((type == RV32I_MEM_RD_ACCESS_INSTR) ? RV32I_IADDR_MISALIGNED : RV32I_LADDR_MISALIGNED);
         fault = true;
         return 0;
     }
@@ -518,7 +518,7 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
         {
             // Flag as a bus error only if this is not a debug access, as debugger may try
             // to inspect non-valid addresses.
-            if (!(type & MEM_DBG_MASK))
+            if (!(type & (int)RV32I_MEM_DBG_MASK))
             {
                 process_trap(RV32I_LOAD_ACCESS_FAULT);
                 fault = true;
@@ -531,16 +531,16 @@ uint32_t rv32i_cpu::read_mem (const uint32_t byte_addr, const int type, bool &fa
                (internal_mem[byte_addr + 2] << 16) |
                (internal_mem[byte_addr + 3] << 24);
 
-        switch (type & MEM_NOT_DBG_MASK)
+        switch (type & RV32I_MEM_NOT_DBG_MASK)
         {
-        case MEM_RD_ACCESS_BYTE:
+        case RV32I_MEM_RD_ACCESS_BYTE:
             rd_val = word & 0xff;
             break;
-        case MEM_RD_ACCESS_HWORD:
+        case RV32I_MEM_RD_ACCESS_HWORD:
             rd_val = word & 0xffff;
             break;
-        case MEM_RD_ACCESS_INSTR:
-        case MEM_RD_ACCESS_WORD:
+        case RV32I_MEM_RD_ACCESS_INSTR:
+        case RV32I_MEM_RD_ACCESS_WORD:
             rd_val = word;
             break;
         default:
@@ -565,10 +565,10 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
     fault = false;
 
     // Check alignment
-    if (((byte_addr & 0x1) && type != MEM_WR_ACCESS_BYTE) ||
-        ((byte_addr & 0x3) != 0x00 && (type == MEM_WR_ACCESS_WORD || type == MEM_WR_ACCESS_INSTR)))
+    if (((byte_addr & 0x1) && type != RV32I_MEM_WR_ACCESS_BYTE) ||
+        ((byte_addr & 0x3) != 0x00 && (type == RV32I_MEM_WR_ACCESS_WORD || type == RV32I_MEM_WR_ACCESS_INSTR)))
     {
-        process_trap((type == MEM_WR_ACCESS_INSTR) ? RV32I_IADDR_MISALIGNED : RV32I_ST_AMO_ADDR_MISALIGNED);
+        process_trap((type == RV32I_MEM_WR_ACCESS_INSTR) ? RV32I_IADDR_MISALIGNED : RV32I_ST_AMO_ADDR_MISALIGNED);
         fault = true;
         return;
     }
@@ -603,7 +603,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
     }
 
     // If no external processing of write, access the internal memory.
-    if (mem_callback_delay == RV32I_EXT_MEM_NOT_PROCESSED)
+    if (mem_callback_delay == EXT_MEM_NOT_PROCESSED)
     {
 
         // Check input is a valid address
@@ -619,15 +619,15 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
         {
             switch (type)
             {
-            case MEM_WR_ACCESS_BYTE:
+            case RV32I_MEM_WR_ACCESS_BYTE:
                 internal_mem[byte_addr + 0] = word & 0xff;
                 break;
-            case MEM_WR_ACCESS_HWORD:
+            case RV32I_MEM_WR_ACCESS_HWORD:
                 internal_mem[byte_addr + 0] = (word >> 0) & 0xff;
                 internal_mem[byte_addr + 1] = (word >> 8) & 0xff;
                 break;
-            case MEM_WR_ACCESS_INSTR:
-            case MEM_WR_ACCESS_WORD:
+            case RV32I_MEM_WR_ACCESS_INSTR:
+            case RV32I_MEM_WR_ACCESS_WORD:
                 internal_mem[byte_addr + 0] = (word >> 0) & 0xff;
                 internal_mem[byte_addr + 1] = (word >> 8) & 0xff;
                 internal_mem[byte_addr + 2] = (word >> 16) & 0xff;
@@ -655,7 +655,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
 //
 void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
-    int32_t cb_rtn_value = RV32I_UNIMP_NOT_PROCESSED;
+    int32_t cb_rtn_value = UNIMP_NOT_PROCESSED;
     unimp_args_t cb_args;
 
     RV32I_DISASSEM_SYS_TYPE(cmp_instr ? cmp_instr_code : d->instr , d->entry.instr_name);
@@ -675,7 +675,7 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 
     // If the callback returned a 'not processed' status when called (or because none was registered),
     // raise an illegal instruction trap.
-    if (cb_rtn_value == RV32I_UNIMP_NOT_PROCESSED)
+    if (cb_rtn_value == UNIMP_NOT_PROCESSED)
     {
         fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 

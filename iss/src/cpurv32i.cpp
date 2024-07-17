@@ -331,18 +331,18 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
     // process the access (a negatiave value). Otherwise it is the additional
     // access wait states (0 upwards). In this model, writes have no wait states,
     // whilst reads have 2 wait states.
-    int processed = rv32i_consts::RV32I_EXT_MEM_NOT_PROCESSED;
+    int processed = RV32I_EXT_MEM_NOT_PROCESSED;
 
     // If accessing the UART addresses then process here
     if ((byte_addr & UART_REG_ADDR_MASK) == uart0_base_addr)
     {
         processed = 0;
         // If writing to the UART registers, call the model's write function
-        if (type == rv32i_consts::MEM_WR_ACCESS_BYTE || type == rv32i_consts::MEM_WR_ACCESS_HWORD || type == rv32i_consts::MEM_WR_ACCESS_WORD)
+        if (type == MEM_WR_ACCESS_BYTE || type == MEM_WR_ACCESS_HWORD || type == MEM_WR_ACCESS_WORD)
         {
             uart_write(byte_addr & 0x1f, data & 0xff);
         }
-        else if (type == rv32i_consts::MEM_RD_ACCESS_BYTE || type == rv32i_consts::MEM_RD_ACCESS_HWORD || type == rv32i_consts::MEM_RD_ACCESS_WORD)
+        else if (type == MEM_RD_ACCESS_BYTE || type == MEM_RD_ACCESS_HWORD || type == MEM_RD_ACCESS_WORD)
         {
             uint32_t rxdata;
             uart_read(byte_addr & 0x1f, &rxdata);
@@ -355,37 +355,37 @@ int ext_mem_access(const uint32_t byte_addr, uint32_t& data, const int type, con
         uint32_t addr = byte_addr;
         processed = 0;
 
-        switch (type & rv32i_consts::MEM_NOT_DBG_MASK)
+        switch (type & MEM_NOT_DBG_MASK)
         {
-        case rv32i_consts::MEM_RD_ACCESS_BYTE:
+        case MEM_RD_ACCESS_BYTE:
             data = ReadRamByte(addr, 0);
             processed = 2;
             break;
-        case rv32i_consts::MEM_RD_ACCESS_HWORD:
+        case MEM_RD_ACCESS_HWORD:
             data = ReadRamHWord(addr, true, 0);
             processed = 2;
             break;
-        case rv32i_consts::MEM_RD_ACCESS_WORD:
+        case MEM_RD_ACCESS_WORD:
             processed = 2;
-        case rv32i_consts::MEM_RD_ACCESS_INSTR:
+        case MEM_RD_ACCESS_INSTR:
             data = ReadRamWord(addr, true, 0);
             break;
-        case rv32i_consts::MEM_WR_ACCESS_BYTE:
+        case MEM_WR_ACCESS_BYTE:
             WriteRamByte(addr, data, 0);
             break;
-        case rv32i_consts::MEM_WR_ACCESS_HWORD:
+        case MEM_WR_ACCESS_HWORD:
             WriteRamHWord(addr, data, true, 0);
             break;
-        case rv32i_consts::MEM_WR_ACCESS_INSTR:
-        case rv32i_consts::MEM_WR_ACCESS_WORD:
+        case MEM_WR_ACCESS_INSTR:
+        case MEM_WR_ACCESS_WORD:
             WriteRamWord(addr, data, true, 0);
             break;
         default:
-            processed = rv32i_consts::RV32I_EXT_MEM_NOT_PROCESSED;
+            processed = RV32I_EXT_MEM_NOT_PROCESSED;
             break;
         }
     }
-    else if ((type & rv32i_consts::MEM_NOT_DBG_MASK) == rv32i_consts::MEM_WR_ACCESS_WORD && byte_addr == INT_ADDR)
+    else if ((type & MEM_NOT_DBG_MASK) == MEM_WR_ACCESS_WORD && byte_addr == INT_ADDR)
     {
         swirq       = data & 0x1;
         processed = 0;
@@ -430,7 +430,7 @@ int unimp_callback(const p_rv32i_decode_t d, unimp_args_t& args)
     // No trap condition
     args.trap = 0;
 
-    return rv32i_consts::RV32I_UNIMP_NOT_PROCESSED; // 0 or more for added wait states, or RV32I_UNIMP_NOT_PROCESSED;
+    return RV32I_UNIMP_NOT_PROCESSED; // 0 or more for added wait states, or RV32I_UNIMP_NOT_PROCESSED;
 }
 
 // -------------------------------
@@ -487,12 +487,12 @@ void csr_dump(rv32* pCpu, FILE* dfp)
     fprintf(dfp, "  minstret   = 0x%08x%08x\n", pCpu->csr_val(rv32csr_consts::RV32CSR_ADDR_MINSTRETH), pCpu->csr_val(rv32csr_consts::RV32CSR_ADDR_MINSTRET));
 
     bool fault;
-    uint32_t mtimel = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_ADDRESS,   rv32i_consts::MEM_RD_ACCESS_WORD, fault);
-    uint32_t mtimeh = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_ADDRESS+4, rv32i_consts::MEM_RD_ACCESS_WORD, fault);
+    uint32_t mtimel = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_ADDRESS,   rv32i_consts::RV32I_MEM_RD_ACCESS_WORD, fault);
+    uint32_t mtimeh = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_ADDRESS+4, rv32i_consts::RV32I_MEM_RD_ACCESS_WORD, fault);
     fprintf(dfp, "  mtime      = 0x%08x%08x\n", mtimeh, mtimel);
 
-    mtimel = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_CMP_ADDRESS,   rv32i_consts::MEM_RD_ACCESS_WORD, fault);
-    mtimeh = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_CMP_ADDRESS+4, rv32i_consts::MEM_RD_ACCESS_WORD, fault);
+    mtimel = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_CMP_ADDRESS,   rv32i_consts::RV32I_MEM_RD_ACCESS_WORD, fault);
+    mtimeh = pCpu->read_mem(rv32i_consts::RV32I_RTCLOCK_CMP_ADDRESS+4, rv32i_consts::RV32I_MEM_RD_ACCESS_WORD, fault);
     fprintf(dfp, "  mtimecmp   = 0x%08x%08x\n", mtimeh, mtimel);
 
 }
@@ -508,7 +508,7 @@ void mem_dump(uint32_t num, uint32_t start, rv32* pCpu, FILE* dfp)
     fprintf(dfp, "\nMEM state:\n\n");
     for (uint32_t idx = start; idx < ((start & 0xfffffffc) + num*4); idx+=4)
     {
-        uint32_t rval = pCpu->read_mem(idx, rv32i_consts::MEM_RD_ACCESS_WORD, fault);
+        uint32_t rval = pCpu->read_mem(idx, rv32i_consts::RV32I_MEM_RD_ACCESS_WORD, fault);
         fprintf(dfp, "  0x%08x : 0x%08x\n", idx, rval);
     }
     fprintf(dfp, "\n");

@@ -49,6 +49,22 @@
 # define SIGHUP                                        1
 #endif
 
+// Backwards compatibility definitions for external callback functions
+#define MEM_WR_ACCESS_BYTE                             0
+#define MEM_WR_ACCESS_HWORD                            1
+#define MEM_WR_ACCESS_WORD                             2
+#define MEM_WR_ACCESS_INSTR                            3
+#define MEM_RD_ACCESS_BYTE                             4
+#define MEM_RD_ACCESS_HWORD                            5
+#define MEM_RD_ACCESS_WORD                             6
+#define MEM_RD_ACCESS_INSTR                            7
+
+#define MEM_NOT_DBG_MASK                               0x0f
+#define MEM_DBG_MASK                                   0x10
+
+#define RV32I_EXT_MEM_NOT_PROCESSED                    (-1)
+#define RV32I_UNIMP_NOT_PROCESSED                      RV32I_EXT_MEM_NOT_PROCESSED;
+
 // -------------------------------------------------------------------------
 // RV32I constant definitions
 // -------------------------------------------------------------------------
@@ -104,24 +120,24 @@ public:
     static const uint32_t RISCV_TEST_ENV_TERMINATE_ADDR                = 0x40;
 
     // Memory access types
-    static const uint32_t MEM_WR_ACCESS_BYTE                           = 0;
-    static const uint32_t MEM_WR_ACCESS_HWORD                          = 1;
-    static const uint32_t MEM_WR_ACCESS_WORD                           = 2;
-    static const uint32_t MEM_WR_ACCESS_INSTR                          = 3;
-    static const uint32_t MEM_RD_ACCESS_BYTE                           = 4;
-    static const uint32_t MEM_RD_ACCESS_HWORD                          = 5;
-    static const uint32_t MEM_RD_ACCESS_WORD                           = 6;
-    static const uint32_t MEM_RD_ACCESS_INSTR                          = 7;
+    static const uint32_t RV32I_MEM_WR_ACCESS_BYTE                     = MEM_WR_ACCESS_BYTE;
+    static const uint32_t RV32I_MEM_WR_ACCESS_HWORD                    = MEM_WR_ACCESS_HWORD;
+    static const uint32_t RV32I_MEM_WR_ACCESS_WORD                     = MEM_WR_ACCESS_WORD;
+    static const uint32_t RV32I_MEM_WR_ACCESS_INSTR                    = MEM_WR_ACCESS_INSTR;
+    static const uint32_t RV32I_MEM_RD_ACCESS_BYTE                     = MEM_RD_ACCESS_BYTE;
+    static const uint32_t RV32I_MEM_RD_ACCESS_HWORD                    = MEM_RD_ACCESS_HWORD;
+    static const uint32_t RV32I_MEM_RD_ACCESS_WORD                     = MEM_RD_ACCESS_WORD;
+    static const uint32_t RV32I_MEM_RD_ACCESS_INSTR                    = MEM_RD_ACCESS_INSTR;
 
-    static const uint32_t MEM_NOT_DBG_MASK                             = 0x0f;
-    static const uint32_t MEM_DBG_MASK                                 = 0x10;
+    static const uint32_t RV32I_MEM_NOT_DBG_MASK                       = MEM_NOT_DBG_MASK;
+    static const uint32_t RV32I_MEM_DBG_MASK                           = MEM_DBG_MASK;
 
     static const uint32_t SIGN32_BIT                                   = 0x80000000U;
     static const uint64_t SIGN64_BIT                                   = 0x8000000000000000L;
 
     // External memory callback return values
-    static const uint32_t RV32I_EXT_MEM_NOT_PROCESSED                  = (-1);
-    static const uint32_t RV32I_UNIMP_NOT_PROCESSED                    = RV32I_EXT_MEM_NOT_PROCESSED;
+    static const uint32_t EXT_MEM_NOT_PROCESSED                         = RV32I_EXT_MEM_NOT_PROCESSED;
+    static const uint32_t UNIMP_NOT_PROCESSED                           = RV32I_EXT_MEM_NOT_PROCESSED;
 
     static const uint32_t RV32_DEFAULT_TCP_PORT                        = 0xc000;
 
