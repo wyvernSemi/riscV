@@ -28,9 +28,18 @@
 #
 # Modify these variables to customise to local conditions
 #
-TSTROOT=$HOME/winhome/git
-ARCHPREFIX=/opt/riscv/bin/riscv32-unknown-elf-
-EXE_DIR=../eclipse/Debug
+TSTROOT=$HOME/git
+
+
+OS=`uname`
+if [ "$OS" == "Linux" ]
+then
+  EXE_DIR=../
+  ARCHPREFIX=riscv32-unknown-elf-
+else
+  EXE_DIR=../visualstudio/x64/Debug
+  ARCHPREFIX=riscv64-unknown-elf-
+fi
 
 # ------------------------------------------------------------------
 
