@@ -35,52 +35,56 @@
 #include <cstdlib>
 #include <cstdint>
 
+#define   ELF_IDENT                               "\177ELF"
+
 // -------------------------------------------------------------------------
-// DEFINES
+// RV32 ELF constants
 // -------------------------------------------------------------------------
+class rv32elf_consts
+{
+public:
+    static const uint32_t EI_NIDENT               = 16;
 
-#define EI_NIDENT                 16
-                                  
-#define ET_NONE                   0
-#define ET_REL                    1
-#define ET_EXEC                   2
-#define ET_DYN                    3
-#define ET_CORE                   4
-#define ET_LOPROC                 0xff00
-#define ET_HIPROC                 0xffff
+    static const uint32_t ET_NONE                 = 0;
+    static const uint32_t ET_REL                  = 1;
+    static const uint32_t ET_EXEC                 = 2;
+    static const uint32_t ET_DYN                  = 3;
+    static const uint32_t ET_CORE                 = 4;
+    static const uint32_t ET_LOPROC               = 0xff00;
+    static const uint32_t ET_HIPROC               = 0xffff;
 
-#define EM_NONE                   0
-#define EM_M32                    1
-#define EM_SPARC                  2
-#define EM_386                    3
-#define EM_68K                    4
-#define EM_88K                    5
-#define EM_860                    7
-#define EM_MIPS                   8
+    static const uint32_t EM_NONE                 = 0;
+    static const uint32_t EM_M32                  = 1;
+    static const uint32_t EM_SPARC                = 2;
+    static const uint32_t EM_386                  = 3;
+    static const uint32_t EM_68K                  = 4;
+    static const uint32_t EM_88K                  = 5;
+    static const uint32_t EM_860                  = 7;
+    static const uint32_t EM_MIPS                 = 8;
 
-#define EM_RISCV                  243
+    static const uint32_t EM_RISCV                = 243;
 
-#define ELF_IDENT                 "\177ELF"
+    static const uint32_t ELF_MAX_NUM_PHDR        = 4;
 
-#define ELF_MAX_NUM_PHDR          4
+    static const uint32_t PF_X                    = 0x1;            /* Executable. */
+    static const uint32_t PF_W                    = 0x2;            /* Writable. */
+    static const uint32_t PF_R                    = 0x4;            /* Readable. */
 
-#define PF_X                      0x1             /* Executable. */
-#define PF_W                      0x2             /* Writable. */
-#define PF_R                      0x4             /* Readable. */
+    static const uint32_t PT_NULL                 = 0;
+    static const uint32_t PT_LOAD                 = 1;
+    static const uint32_t PT_DYNAMIC              = 2;
+    static const uint32_t PT_INTERP               = 3;
+    static const uint32_t PT_NOTE                 = 4;
+    static const uint32_t PT_SHLIB                = 5;
+    static const uint32_t PT_PHDR                 = 6;
+    static const uint32_t PT_LOSUNW               = 0x6ffffffa;
+    static const uint32_t PT_SUNWBSS              = 0x6ffffffb;
+    static const uint32_t PT_SUNWSTACK            = 0x6ffffffa;
+    static const uint32_t PT_HISUNW               = 0x6fffffff;
+    static const uint32_t PT_LOPROC               = 0x70000000;
+    static const uint32_t PT_HIPROC               = 0x7fffffff;
 
-#define PT_NULL                   0
-#define PT_LOAD                   1
-#define PT_DYNAMIC                2
-#define PT_INTERP                 3
-#define PT_NOTE                   4
-#define PT_SHLIB                  5
-#define PT_PHDR                   6
-#define PT_LOSUNW                 0x6ffffffa
-#define PT_SUNWBSS                0x6ffffffb
-#define PT_SUNWSTACK              0x6ffffffa
-#define PT_HISUNW                 0x6fffffff
-#define PT_LOPROC                 0x70000000
-#define PT_HIPROC                 0x7fffffff
+};
 
 #define PrintPhdr(_P) {\
     fprintf(stderr, " p_type = %x\n p_offset = %x\n p_vaddr = %x\n p_paddr = %x\n p_filesz = %x\n p_memsz = %x\n p_flags = %x\n p_align = %x\n\n", \
@@ -102,7 +106,7 @@ typedef uint32_t Elf32_Off;
 typedef uint16_t Elf32_Half;
 
 typedef struct {
-    unsigned char e_ident[EI_NIDENT] ;
+    unsigned char e_ident[rv32elf_consts::EI_NIDENT] ;
     Elf32_Half e_type ;        
     Elf32_Half e_machine ;    
     Elf32_Word e_version ;

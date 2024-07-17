@@ -225,7 +225,7 @@ static int rv32gdb_gen_register_reply(rv32* cpu, const char* cmd, char *buf, uns
     // Run through all the registers...
     for (int idx = 0; idx < NUM_REGS; idx++)
     {
-        if (idx < RV32I_NUM_OF_REGISTERS)
+        if (idx < rv32i_consts::RV32I_NUM_OF_REGISTERS)
         {
             val = (uint32_t)cpu_state.x[idx];
         }
@@ -321,7 +321,7 @@ static int rv32gdb_set_regs (rv32* cpu, const char* cmd, const int cmdlen, char*
         }
 
         // Update the general purpose registers in the retrieved state structure
-        if (rdx < RV32I_NUM_OF_REGISTERS)
+        if (rdx < rv32i_consts::RV32I_NUM_OF_REGISTERS)
         {
             cpu_state.x[rdx] = val;
         }
@@ -392,7 +392,7 @@ static int rv32gdb_read_mem(rv32* cpu, const char* cmd, const int cmdlen, char *
     for (unsigned idx = 0; idx < len; idx++)
     {
         bool fault;
-        unsigned val = cpu->read_mem(addr++, MEM_RD_ACCESS_BYTE, fault);
+        unsigned val = cpu->read_mem(addr++, rv32i_consts::MEM_RD_ACCESS_BYTE, fault);
 
         checksum += buf[bdx++] = HIHEXCHAR(val);
         checksum += buf[bdx++] = LOHEXCHAR(val);
@@ -492,7 +492,7 @@ static int rv32gdb_write_mem (void* fd, rv32* cpu, const char* cmd, const int cm
             bool fault;
 
             // Write byte to memory
-            cpu->write_mem(addr++, val, MEM_WR_ACCESS_BYTE, fault);
+            cpu->write_mem(addr++, val, rv32i_consts::MEM_WR_ACCESS_BYTE, fault);
 #ifdef RV32GDB_DEBUG
             fprintf(stderr, "%02X", val & 0xff);
 #endif
