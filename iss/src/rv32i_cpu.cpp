@@ -603,7 +603,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
     }
 
     // If no external processing of write, access the internal memory.
-    if (mem_callback_delay == EXT_MEM_NOT_PROCESSED)
+    if (mem_callback_delay == RV32I_EXT_MEM_NOT_PROCESSED)
     {
 
         // Check input is a valid address
@@ -655,7 +655,7 @@ void rv32i_cpu::write_mem (const uint32_t byte_addr, const uint32_t data, const 
 //
 void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 {
-    int32_t cb_rtn_value = UNIMP_NOT_PROCESSED;
+    int32_t cb_rtn_value = RV32I_UNIMP_NOT_PROCESSED;
     unimp_args_t cb_args;
 
     RV32I_DISASSEM_SYS_TYPE(cmp_instr ? cmp_instr_code : d->instr , d->entry.instr_name);
@@ -675,7 +675,7 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
 
     // If the callback returned a 'not processed' status when called (or because none was registered),
     // raise an illegal instruction trap.
-    if (cb_rtn_value == UNIMP_NOT_PROCESSED)
+    if (cb_rtn_value == RV32I_UNIMP_NOT_PROCESSED)
     {
         fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
