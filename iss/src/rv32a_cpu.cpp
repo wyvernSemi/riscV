@@ -89,6 +89,8 @@ void rv32a_cpu::lrw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
+
             state.hart[curr_hart].x[d->rd] = rd_val;
 
             rsvd_mem.active     = true;
@@ -116,6 +118,12 @@ void rv32a_cpu::scw(const p_rv32i_decode_t d)
         if (rsvd_mem.active && access_addr >= rsvd_mem.start_addr && (access_addr + 3) <= rsvd_mem.end_addr)
         {
             write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
+
+            if (!access_fault)
+            {
+                cycle_count += RV32I_STORE_EXTRA_CYCLES;
+            }
+
             state.hart[curr_hart].x[d->rd] = 0;
         }
         else
@@ -146,6 +154,7 @@ void rv32a_cpu::amoswapw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_STORE_EXTRA_CYCLES;
             state.hart[curr_hart].x[d->rd] = rd_val;
             write_mem((uint32_t)access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2], MEM_WR_ACCESS_WORD, access_fault);
         }
@@ -171,6 +180,7 @@ void rv32a_cpu::amoaddw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
             state.hart[curr_hart].x[d->rd] = rd_val;
             write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] + rd_val, MEM_WR_ACCESS_WORD, access_fault);
         }
@@ -178,6 +188,7 @@ void rv32a_cpu::amoaddw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     }
 }
@@ -196,6 +207,7 @@ void rv32a_cpu::amoxorw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
             state.hart[curr_hart].x[d->rd] = rd_val;
             write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] ^ rd_val, MEM_WR_ACCESS_WORD, access_fault);
         }
@@ -203,6 +215,7 @@ void rv32a_cpu::amoxorw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     }
 }
@@ -221,6 +234,7 @@ void rv32a_cpu::amoandw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
             state.hart[curr_hart].x[d->rd] = rd_val;
             write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] & rd_val, MEM_WR_ACCESS_WORD, access_fault);
         }
@@ -228,6 +242,7 @@ void rv32a_cpu::amoandw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     };
 }
@@ -246,6 +261,7 @@ void rv32a_cpu::amoorw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
             state.hart[curr_hart].x[d->rd] = rd_val;
             write_mem(access_addr, (uint32_t)state.hart[curr_hart].x[d->rs2] | rd_val, MEM_WR_ACCESS_WORD, access_fault);
         }
@@ -253,6 +269,7 @@ void rv32a_cpu::amoorw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     }
 }
@@ -271,6 +288,8 @@ void rv32a_cpu::amominw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
+
             state.hart[curr_hart].x[d->rd] = rd_val;
 
             uint32_t wr_val = ((int32_t)rd_val < (int32_t)state.hart[curr_hart].x[d->rs2]) ? rd_val : (uint32_t)state.hart[curr_hart].x[d->rs2];
@@ -281,6 +300,7 @@ void rv32a_cpu::amominw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     };
 }
@@ -299,6 +319,8 @@ void rv32a_cpu::amomaxw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
+
             state.hart[curr_hart].x[d->rd] = rd_val;
 
             uint32_t wr_val = ((int32_t)rd_val > (int32_t)state.hart[curr_hart].x[d->rs2]) ? rd_val : (uint32_t)state.hart[curr_hart].x[d->rs2];
@@ -309,6 +331,7 @@ void rv32a_cpu::amomaxw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     };
 }
@@ -327,6 +350,8 @@ void rv32a_cpu::amominuw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
+
             state.hart[curr_hart].x[d->rd] = rd_val;
 
             uint32_t wr_val = (rd_val < (uint32_t)state.hart[curr_hart].x[d->rs2]) ? rd_val : (uint32_t)state.hart[curr_hart].x[d->rs2];
@@ -337,6 +362,7 @@ void rv32a_cpu::amominuw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     };
 }
@@ -355,6 +381,8 @@ void rv32a_cpu::amomaxuw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
+
             state.hart[curr_hart].x[d->rd] = rd_val;
 
             uint32_t wr_val = (rd_val > (uint32_t)state.hart[curr_hart].x[d->rs2]) ? rd_val : (uint32_t)state.hart[curr_hart].x[d->rs2];
@@ -365,6 +393,7 @@ void rv32a_cpu::amomaxuw(const p_rv32i_decode_t d)
 
     if (!access_fault || disassemble)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     };
 }

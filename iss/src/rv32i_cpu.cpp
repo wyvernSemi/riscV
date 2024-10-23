@@ -1016,6 +1016,7 @@ void rv32i_cpu::lb(const p_rv32i_decode_t d)
         {
             rd_val = SIGN_EXT8(rd_val);
             state.hart[curr_hart].x[d->rd] = rd_val;
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
         }
     }
 
@@ -1041,6 +1042,7 @@ void rv32i_cpu::lh(const p_rv32i_decode_t d)
         {
             rd_val = SIGN_EXT16(rd_val);
             state.hart[curr_hart].x[d->rd] = rd_val;
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
         }
     }
 
@@ -1065,6 +1067,7 @@ void rv32i_cpu::lw(const p_rv32i_decode_t d)
         if (!access_fault)
         {
             state.hart[curr_hart].x[d->rd] = rd_val;
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
         }
     }
 
@@ -1089,6 +1092,7 @@ void rv32i_cpu::lbu(const p_rv32i_decode_t d)
         if (!access_fault)
         {
             state.hart[curr_hart].x[d->rd] = rd_val;
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
         }
     }
 
@@ -1113,6 +1117,7 @@ void rv32i_cpu::lhu(const p_rv32i_decode_t d)
         if (!access_fault)
         {
             state.hart[curr_hart].x[d->rd] = rd_val;
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
         }
     }
 
@@ -1137,6 +1142,7 @@ void rv32i_cpu::sb(const p_rv32i_decode_t d)
 
     if (!access_fault)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     }
 }
@@ -1157,6 +1163,7 @@ void rv32i_cpu::sh(const p_rv32i_decode_t d)
     if (!access_fault)
     {
         increment_pc();
+        cycle_count += RV32I_LOAD_EXTRA_CYCLES;
     }
 }
 
@@ -1176,6 +1183,7 @@ void rv32i_cpu::sw(const p_rv32i_decode_t d)
     if (!access_fault)
     {
         increment_pc();
+        cycle_count += RV32I_LOAD_EXTRA_CYCLES;
     }
 }
 

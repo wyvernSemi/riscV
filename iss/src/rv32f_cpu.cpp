@@ -287,6 +287,7 @@ void rv32f_cpu::flw(const p_rv32i_decode_t d)
 
         if (!access_fault)
         {
+            cycle_count += RV32I_LOAD_EXTRA_CYCLES;
             state.hart[curr_hart].f[d->rd] = rd_val;
         }
     }
@@ -316,6 +317,7 @@ void rv32f_cpu::fsw(const p_rv32i_decode_t d)
 
     if (!access_fault)
     {
+        cycle_count += RV32I_STORE_EXTRA_CYCLES;
         increment_pc();
     }
 }
@@ -352,6 +354,7 @@ void rv32f_cpu::fmadds(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -389,6 +392,8 @@ void rv32f_cpu::fmsubs (const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -424,6 +429,8 @@ void rv32f_cpu::fnmsubs(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -459,6 +466,8 @@ void rv32f_cpu::fnmadds(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -493,6 +502,8 @@ void rv32f_cpu::fadds(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -526,6 +537,8 @@ void rv32f_cpu::fsubs(const p_rv32i_decode_t d)
         handle_fexceptions(); 
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -559,6 +572,8 @@ void rv32f_cpu::fmuls(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -592,6 +607,8 @@ void rv32f_cpu::fdivs(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] = map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
@@ -624,6 +641,8 @@ void rv32f_cpu::fsqrts(const p_rv32i_decode_t d)
         handle_fexceptions();
 
         state.hart[curr_hart].f[d->rd] =  map_float_to_uint(rd_val);
+
+        cycle_count += RV32I_FLOAT_EXTRA_CYCLES;
     }
 
     increment_pc();
