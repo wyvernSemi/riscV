@@ -164,7 +164,7 @@ public:
     }
 
     // Update timing model values
-    LIBRISCV32_API inline int update_timing (timing_index_e idx, uint32_t value)
+    LIBRISCV32_API inline int update_timing (const timing_index_e idx, const uint32_t value)
     {
         int diff_default;
         int error = 0;
