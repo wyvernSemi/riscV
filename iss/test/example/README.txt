@@ -13,7 +13,7 @@ This folder contains the following files:
     * vcredist_x86.exe  : Redistribution (x86) library installer if not installed
                           to run ISS
 
-In order for the rv_asm.bat script to work the RISC-V toolchain must be
+In order for the rv_asm.bat/rv_asm.sh script to work the RISC-V toolchain must be
 installed. Pre-built windows binaries can be found at:
 
     https://sysprogs.com/getfile/1107/risc-v-gcc10.1.0.exe
