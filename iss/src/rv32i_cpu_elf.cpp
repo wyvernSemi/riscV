@@ -159,7 +159,8 @@ int rv32i_cpu::read_elf (const char * const filename)
         // For p_filesz bytes ...
         i = (bytecount - h2[pcount]->p_offset);
         word = 0;
-        for (; bytecount < h2[pcount]->p_offset + h2[pcount]->p_filesz; bytecount++)
+        uint32_t num_seg_bytes = h2[pcount]->p_offset + h2[pcount]->p_filesz;
+        for (; bytecount < num_seg_bytes; bytecount++)
         {
             if ((c = fgetc(elf_fp)) == EOF)
             {
@@ -170,7 +171,7 @@ int rv32i_cpu::read_elf (const char * const filename)
             // Little endian
             word |= (c << ((bytecount & 3) * 8));
 
-            if ((bytecount&3) == 3)
+            if ((bytecount&3) == 3 || (num_seg_bytes - bytecount) == 1)
             {
                 write_mem(h2[pcount]->p_vaddr + i, word, MEM_WR_ACCESS_INSTR, access_fault);
                 i+=4;
