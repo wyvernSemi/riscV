@@ -135,34 +135,24 @@ int rv32csr_cpu::process_interrupts()
     // at, or beyond, scheduled wakeup count.
     if (p_int_callback != NULL && clk_cycles() >=  (uint32_t)interrupt_wakeup_time)
     {
-        // Get interrupt vector
+        // Get interrupt vector. IRQ[2] is for software interrupts, 
+        // IRQ[1] is for external timer, IRQ[0] is for external interrupts.
+
         uint32_t irq = (*p_int_callback)(clk_cycles(), &interrupt_wakeup_time);
 
-        // If not using external timer, then all non-zero interrupt values are for external IRQ
-        if (!use_external_timer)
+        // Update the MIP CSR MEIP bit with interrupt status
+        if (irq & 0x1)
         {
-            // Update the MIP CSR MEIP bit with interrupt status
-            if (irq)
-            {
-                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
-            }
-            else
-            {
-                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
-            }
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
         }
-        // If using an external interrupt timer, then IRQ[1] is for timer, IRQ[0] is for external interrupts.
         else
         {
-            if (irq & 0x1)
-            {
-                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MEIP_BITMASK;
-            }
-            else
-            {
-                state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
-            }
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MEIP_BITMASK;
+        }
 
+        // If using an external interrupt timer, inspect IRQ bit 1
+        if (use_external_timer)
+        {
             if (irq & 0x2)
             {
                 state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MTIP_BITMASK;
@@ -171,6 +161,16 @@ int rv32csr_cpu::process_interrupts()
             {
                 state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MTIP_BITMASK;
             }
+        }
+
+        // Software IRQ in bit 2
+        if (irq & 0x4)
+        {
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] |= RV32CSR_MSIP_BITMASK;
+        }
+        else
+        {
+            state.hart[curr_hart].csr[RV32CSR_ADDR_MIP] &= ~RV32CSR_MSIP_BITMASK;
         }
     }
 

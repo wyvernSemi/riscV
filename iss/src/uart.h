@@ -57,7 +57,7 @@ typedef struct
 } uart_state_t;
 
 // -------------------------------------------------------------------------
-// PUBLIC TYPE DEFINITIONS
+// PUBLIC FUNCTION DEFINITIONS
 // -------------------------------------------------------------------------
 
 extern void              uart_write     (const uint32_t address, const uint32_t data, const int cntx = 0);
