@@ -1,3 +1,7 @@
+
+![announce](https://github.com/user-attachments/assets/c709202e-d11f-4168-9cfb-725e6ff294ab)
+# rv32 RISC-V 32-bit Instruction Set Simulator
+
 The rv32 instruction set simulator (ISS) is a configurable and extensible C++ model of a 32-bit
 RISC-V core capable of running at speeds of >10MIPS (executing a test program with
 concurrent processes on FreeRTOS, running on an i5-8400 core @2.80GHz). A summary of
