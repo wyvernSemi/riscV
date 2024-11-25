@@ -28,10 +28,13 @@
 // INCLUDES
 // ------------------------------------------------
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #if !defined _WIN32 && !defined _WIN64
 #include <unistd.h>
+#include <termios.h>
+#include <sys/time.h>
 
 #define STRDUP strdup
 #else
@@ -80,6 +83,14 @@ extern "C" {
 static uint32_t swirq           = 0;
 static uint32_t uart0_base_addr = UART0_BASE_ADDR;
 
+static double    tv_diff_usec;
+
+#if (!(defined _WIN32) && !(defined _WIN64))
+static struct timeval tv_start, tv_stop;
+#else
+LARGE_INTEGER freq, start, stop;
+#endif
+
 // ------------------------------------------------
 // TYPE DEFINITIONS
 // ------------------------------------------------
@@ -89,6 +100,59 @@ static uint32_t uart0_base_addr = UART0_BASE_ADDR;
 // ------------------------------------------------
 
 // -------------------------------
+// Set up actions prior to running
+// CPU
+//
+
+static void pre_run_setup()
+{
+    // Initialise time
+#if (!(defined _WIN32) && !(defined _WIN64)) || defined __CYGWIN__
+    // For non-windows systems, turn off echoing of input key presses
+    struct termios t;
+
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+
+    // Log time just before running (LINUX only)
+    (void)gettimeofday(&tv_start, NULL);
+#else
+
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&start);
+#endif
+}
+
+// -------------------------------
+// Actions to run after CPU
+// returns from executing
+//
+static void post_run_actions(const int num_instr)
+{
+    // Calculate time difference, in microseconds, from now
+    // to previously saved time stamp
+#if (!(defined _WIN32) && !(defined _WIN64))
+    // For non-windows systems, turn off echoing of input key presses
+    struct termios t;
+
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag |= ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+
+    // Get time just after running, and calculate run time (LINUX only)
+    (void)gettimeofday(&tv_stop, NULL);
+    tv_diff_usec = ((float)(tv_stop.tv_sec - tv_start.tv_sec)*1e6) + ((float)(tv_stop.tv_usec - tv_start.tv_usec));
+#else
+    QueryPerformanceCounter(&stop);
+    tv_diff_usec = (double)(stop.QuadPart - start.QuadPart)*1e6/(double)freq.QuadPart;
+#endif
+
+    printf("\nNumber of executed instructions = %.1f million (%.3f MIPS)\n\n",
+        (float)num_instr/1e6, (float)num_instr/(tv_diff_usec));
+}
+
+// -------------------------------
 // Parse command line arguments
 //
 int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
@@ -96,7 +160,6 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
     int    option;
 
     int error = 0;
-
 
     // Parse the command line arguments and/or configuration file
     // Process the command line options *only* for the INI filename, as we
@@ -578,8 +641,12 @@ int main(int argc, char** argv)
             }
             else
             {
+                pre_run_setup();
+
                 // Run processor
                 pCpu->run(cfg);
+
+                post_run_actions(cfg.num_instr);
 
 #ifdef RV32_DEBUG
                 for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)
