@@ -613,6 +613,9 @@ int main(int argc, char** argv)
         // If GDB mode, pass execution to the remote GDB interface
         if (cfg.gdb_mode)
         {
+            // Set to halt on ebreak when in gdb mode
+            cfg.hlt_on_ebreak = true;
+
             // Load an executable if specified on the command line
             if (cfg.user_fname)
             {
