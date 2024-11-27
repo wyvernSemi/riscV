@@ -173,7 +173,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.user_fname = true;
             break;
         case 'n':
-            cfg.num_instr = atoi(optarg);
+            cfg.num_instr = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'b':
             cfg.en_brk_on_addr = true;
@@ -220,7 +220,7 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             cfg.use_external_timer = true;
             break;
         case 'm':
-            cfg.num_mem_dump_words = atoi(optarg);
+            cfg.num_mem_dump_words = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'M':
             cfg.mem_dump_start = (uint32_t)strtoll(optarg, NULL, 0);
@@ -293,7 +293,7 @@ static int handler(void* user, const char* section, const char* name, const char
     }
     else if (MATCH("control", "num_instructions"))
     {
-        pconfig->num_instr = atoi(value);
+        pconfig->num_instr = (uint32_t)strtoll(value, NULL, 0);
     }
     else if (MATCH("control", "halt_on_unimp"))
     {
@@ -353,7 +353,7 @@ static int handler(void* user, const char* section, const char* name, const char
     }
     else if (MATCH("debug", "mem_dump_words"))
     {
-        pconfig->num_mem_dump_words = atoi(value);
+        pconfig->num_mem_dump_words = (uint32_t)strtoll(value, NULL, 0);
     }
     else if (MATCH("debug", "mem_dump_start_addr"))
     {
@@ -365,7 +365,7 @@ static int handler(void* user, const char* section, const char* name, const char
     }
     else if (MATCH("debug", "gdb_port_num"))
     {
-        pconfig->gdb_ip_portnum = atoi(value);
+        pconfig->gdb_ip_portnum = (uint32_t)strtoll(value, NULL, 0);
     }
     else if (MATCH("peripherals", "uart_base_addr"))
     {

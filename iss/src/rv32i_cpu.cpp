@@ -289,7 +289,7 @@ int rv32i_cpu::run(rv32i_cfg_s &cfg)
     rv32i_decode_table_t* p_entry;
 
     for (instr_count = 0; 
-         (cfg.num_instr == 0 || instret_count < cfg.num_instr) && !error && !(cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc);
+         (cfg.num_instr == 0 || instr_count < cfg.num_instr) && !error && !(cfg.en_brk_on_addr && cfg.brk_addr == state.hart[curr_hart].pc);
          instr_count++)
     {
         // Firstly, check interrupt status
