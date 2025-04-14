@@ -476,7 +476,7 @@ public:
 typedef struct
 {
     const char*                                        instr_name;     // Instruction name string for disassembly
-    int                                                instr_fmt;      // Instruction format
+    int                                                instr_fmt;      // Instruction format (debug only)
 } rv32i_table_entry_t;
 
 // Forward reference the decode table structure type

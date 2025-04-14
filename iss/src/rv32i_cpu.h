@@ -426,10 +426,6 @@ protected:
         state.hart[curr_hart].pc = (uint32_t)(state.hart[curr_hart].pc + 4);
     }
 
-    // Place holder virtual methods for overloading with CSR access functionality
-    virtual uint32_t access_csr(const unsigned funct3, const uint32_t addr, const uint32_t rd, const uint32_t value) { return 1;}
-    virtual uint32_t csr_wr_mask(const uint32_t addr, bool& unimp) { unimp = true; return 0;}
-
     // Fetch next instruction. For RV32I, always a simple 32 bit read.
     // Can be overridden to support compressed instructions (RV32C),
     // expanding to 32 bits, and managing half word PC increments. 

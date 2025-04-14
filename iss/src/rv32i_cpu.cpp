@@ -76,7 +76,7 @@ rv32i_cpu::rv32i_cpu(FILE* dbg_fp) : dasm_fp(dbg_fp)
     // Set up decode tables for RV32I, as per The RISC-V Instruction Set Manual,
     // Volume I: RISC-V Unprivileged ISA V20191213 chapter 24
 
-    // Initialse tertiary tables to reserved instruction
+    // Initialise tertiary tables to reserved instruction
     for (int i = 0; i < RV32I_NUM_TERTIARY_OPCODES; i++)
     {
         sri_tbl[i]     = {false, reserved_str, RV32I_INSTR_ILLEGAL, &rv32i_cpu::reserved };
@@ -249,7 +249,7 @@ void rv32i_cpu::reset()
     // Initialise register state for each supported HART
     for (unsigned idx = 0; idx < RV32I_NUM_OF_HARTS; idx++)
     {
-        state.hart[curr_hart].pc   = reset_vector;
+        state.hart[idx].pc   = reset_vector;
     }
 
 }
@@ -410,6 +410,8 @@ rv32i_decode_table_t* rv32i_cpu::primary_decode(const opcode_t instr, rv32i_deco
     // Check this is a 32 bit instruction before proceeding
     if ((decoded_data.opcode & RV32I_MASK_32BIT_INSTR) == RV32I_MASK_32BIT_INSTR)
     {
+        // For non-compressed instructions the bottom opcode bit is always 1,
+        // so can be discarded for decode
         p_entry = &primary_tbl[decoded_data.opcode >> 2];
 
         // Follow the tables down to until an instruction entry
@@ -677,7 +679,8 @@ void rv32i_cpu::reserved(const p_rv32i_decode_t d)
     // raise an illegal instruction trap.
     if (cb_rtn_value == RV32I_UNIMP_NOT_PROCESSED)
     {
-        fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
+        if (rt_disassem)
+            fprintf(dasm_fp, "**ERROR: Illegal/Unsupported instruction\n");
 
         trap = SIGILL;
     }

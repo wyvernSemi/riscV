@@ -75,7 +75,7 @@ rv32csr_cpu::rv32csr_cpu(FILE* dbgfp) : RV32_ZICSR_INHERITANCE_CLASS(dbgfp)
 
 void rv32csr_cpu::reset()
 {
-    rv32i_cpu::reset();
+    RV32_ZICSR_INHERITANCE_CLASS::reset();
 
     state.hart[curr_hart].csr[RV32CSR_ADDR_MSTATUS] = ~(RV32CSR_MIE_BITMASK | RV32CSR_MPRV_BITMASK);
 
