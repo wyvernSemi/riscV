@@ -772,6 +772,13 @@ void rv32d_cpu::fmaxd(const p_rv32i_decode_t d)
         state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   |= RV32I_NV;
         state.hart[curr_hart].csr[RV32CSR_ADDR_FFLAGS] |= RV32I_NV;
     }
+    else if (state.hart[curr_hart].f[d->rs2] == RV32I_SNAND && !std::isnan(rs1_val))
+    {
+        rd_val = rs1_val;
+
+        state.hart[curr_hart].csr[RV32CSR_ADDR_FCSR]   |= RV32I_NV;
+        state.hart[curr_hart].csr[RV32CSR_ADDR_FFLAGS] |= RV32I_NV;
+    }
     else if (rs1_val == -0.0 || rs2_val == -0.0)
     {
         rd_val = 0.0;

@@ -280,9 +280,9 @@ public:
     static const uint32_t RV32I_NV                                     = 0x10;
 
     static const uint64_t RV32I_QNANF                                  = 0xffffffff7fc00000UL;
-    static const uint64_t RV32I_SNANF                                  = 0xffffffff7f800001UL;
+    static const uint64_t RV32I_SNANF                                  = 0xffffffff7fbfffffUL;
     static const uint64_t RV32I_QNAND                                  = 0x7ff8000000000000UL;
-    static const uint64_t RV32I_SNAND                                  = 0x7ff0000000000001UL;
+    static const uint64_t RV32I_SNAND                                  = 0x7ff7ffffffffffffUL;
 
 };
 
