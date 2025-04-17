@@ -30,6 +30,9 @@
     <ClInclude Include="..\src\rv32i_cpu_elf.h" />
     <ClInclude Include="..\src\rv32i_cpu_hdr.h" />
     <ClInclude Include="..\src\rv32m_cpu.h" />
+    <ClInclude Include="..\src\rv32zba_cpu.h" />
+    <ClInclude Include="..\src\rv32zbb_cpu.h" />
+    <ClInclude Include="..\src\rv32zbs_cpu.h" />
     <ClInclude Include="..\src\rv32_cpu_gdb.h" />
     <ClInclude Include="..\src\rv32_extensions.h" />
   </ItemGroup>
@@ -42,6 +45,9 @@
     <ClCompile Include="..\src\rv32i_cpu.cpp" />
     <ClCompile Include="..\src\rv32i_cpu_elf.cpp" />
     <ClCompile Include="..\src\rv32m_cpu.cpp" />
+    <ClCompile Include="..\src\rv32zba_cpu.cpp" />
+    <ClCompile Include="..\src\rv32zbb_cpu.cpp" />
+    <ClCompile Include="..\src\rv32zbs_cpu.cpp" />
     <ClCompile Include="..\src\rv32_cpu_gdb.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

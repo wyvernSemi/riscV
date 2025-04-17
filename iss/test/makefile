@@ -31,7 +31,7 @@ START_ADDR    = 0
 OSTYPE:=$(shell uname)
 
 # Set OS specific variables between Linux and Windows (MinGW)
-ifeq (${OSTYPE}, Linux)
+ifeq ($(OSTYPE), Linux)
   ARCHCHAIN   = riscv32-unknown-elf-
 else
   ARCHCHAIN   = riscv64-unknown-elf-
@@ -39,47 +39,47 @@ endif
 
 TESTSRCROOT   = ../../..
 
-TESTDIR       = ${TESTSRCROOT}/riscv-tests
-TESTENVDIR    = ${TESTSRCROOT}/riscv-test-env
+TESTDIR       = $(TESTSRCROOT)/riscv-tests
+TESTENVDIR    = $(TESTSRCROOT)/riscv-test-env
 
 SUBDIR        = rv32ui
 
-DIR32UI       = ${TESTDIR}/isa/${SUBDIR}
+DIR32UI       = $(TESTDIR)/isa/$(SUBDIR)
 
 
-CC            = ${ARCHCHAIN}gcc
-LD            = ${ARCHCHAIN}ld
+CC            = $(ARCHCHAIN)gcc
+LD            = $(ARCHCHAIN)ld
 
 INCLPATHS     = -I.                                     \
-                -I${TESTENVDIR}/p                       \
-                -I${TESTDIR}/isa/macros/scalar
+                -I$(TESTENVDIR)/p                       \
+                -I$(TESTDIR)/isa/macros/scalar
                 
 ARCHSPEC      = rv32g
 
-COPTS         = -c -g -fpic -march=${ARCHSPEC} -mabi=ilp32 ${INCLPATHS}
-LDOPTS        = -melf32lriscv -Ttext ${START_ADDR}
+COPTS         = -c -g -fpic -march=$(ARCHSPEC) -mabi=ilp32 $(INCLPATHS)
+LDOPTS        = -melf32lriscv -Ttext $(START_ADDR)
 
 OBJDIR        = obj
 
-OBJS          = ${OBJDIR}/${FNAME:%.S=%.o}
-EXEC          = ${FNAME:%.S=%.exe}
+OBJS          = $(OBJDIR)/$(FNAME:%.S=%.o)
+EXEC          = $(FNAME:%.S=%.exe)
 
 # -----------------------------------------------------------------
 
 .PHONY: all
-all: ${OBJDIR} ${EXEC}
+all: $(OBJDIR) $(EXEC)
 
-${EXEC}: ${OBJS}
-${OBJS}: ${DIR32UI}/${FNAME} ${TESTENVDIR}/p/riscv_test.h ${TESTENVDIR}/encoding.h ${TESTDIR}/isa/macros/scalar/test_macros.h
+$(EXEC): $(OBJS)
+$(OBJS): $(DIR32UI)/$(FNAME) $(TESTENVDIR)/p/riscv_test.h $(TESTENVDIR)/encoding.h $(TESTDIR)/isa/macros/scalar/test_macros.h
 
-${OBJDIR}:
-	@mkdir ${OBJDIR}
+$(OBJDIR):
+	@mkdir $(OBJDIR)
 
-%.exe: ${OBJDIR}/%.o
-	@${LD} $< ${LDOPTS} -o $@
+%.exe: $(OBJDIR)/%.o
+	@$(LD) $< $(LDOPTS) -o $@
 
-${OBJDIR}/%.o : ${DIR32UI}/%.S
-	@${CC} ${COPTS} -o $@ $<
+$(OBJDIR)/%.o : $(DIR32UI)/%.S
+	@$(CC) $(COPTS) -o $@ $<
 
 clean:
-	@rm -rf ${OBJS} ${EXEC} *.exe
+	@rm -rf $(OBJS) $(EXEC) *.exe

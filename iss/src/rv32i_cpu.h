@@ -265,7 +265,6 @@ protected:
     // Internal constant definitions
     // ------------------------------------------------
 
-
     // String constants for instruction disassembly
     const char reserved_str[DISASSEM_STR_SIZE] = "reserved ";
     const char lb_str      [DISASSEM_STR_SIZE] = "lb       ";
@@ -365,6 +364,7 @@ protected:
     rv32i_decode_table_t  sri_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  srr_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  sll_tbl        [RV32I_NUM_TERTIARY_OPCODES];
+    rv32i_decode_table_t  slli_tbl       [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  slt_tbl        [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  sltu_tbl       [RV32I_NUM_TERTIARY_OPCODES];
     rv32i_decode_table_t  xor_tbl        [RV32I_NUM_TERTIARY_OPCODES];

@@ -73,6 +73,11 @@ class rv32gui :
     self.extG               = IntVar()
     self.extZcr             = IntVar()
     self.extZifencei        = IntVar()
+    
+    self.extZba             = IntVar()
+    self.extZbb             = IntVar()
+    self.extZbs             = IntVar()
+    self.extB               = IntVar()
 
     self.machine            = IntVar()
     self.supervisor         = IntVar()
@@ -90,7 +95,7 @@ class rv32gui :
     # Set/configure instance objects here
     # ------------------------------------------------------------
 
-    self.root.title('rv32.py : Copyright (c) 2021 WyvernSemi')
+    self.root.title('rv32.py : Copyright \u24B8 2021-2025 WyvernSemi')
 
     # Configure the font for message boxes (the default is awful)
     self.root.option_add('*Dialog.msg.font', 'Ariel 10')
@@ -114,6 +119,10 @@ class rv32gui :
     self.extG.set       (1)
     self.extZcr.set     (1)
     self.extZifencei.set(1)
+    self.extB.set       (1)
+    self.extZba.set     (1)
+    self.extZbb.set     (1)
+    self.extZbs.set     (1)
 
     self.machine.set    (1)
     self.supervisor.set (0)
@@ -127,18 +136,20 @@ class rv32gui :
     self.extF.trace       ('w', self.__rv32ExtFUpdated)
     self.extD.trace       ('w', self.__rv32ExtDUpdated)
     self.extG.trace       ('w', self.__rv32ExtGUpdated)
+    self.extB.trace       ('w', self.__rv32ExtBUpdated)
 
-    self.extI.trace       ('w', self.__chkUpdated)
-    self.extM.trace       ('w', self.__chkUpdated)
-    self.extA.trace       ('w', self.__chkUpdated)
-    self.extF.trace       ('w', self.__chkUpdated)
-    self.extD.trace       ('w', self.__chkUpdated)
-    self.extE.trace       ('w', self.__chkUpdated)
-    self.extC.trace       ('w', self.__chkUpdated)
-    self.extZcr.trace     ('w', self.__chkUpdated)
-    self.extZifencei.trace('w', self.__chkUpdated)
-
-
+    self.extI.trace       ('w', self.__chkGUpdated)
+    self.extM.trace       ('w', self.__chkGUpdated)
+    self.extA.trace       ('w', self.__chkGUpdated)
+    self.extF.trace       ('w', self.__chkGUpdated)
+    self.extD.trace       ('w', self.__chkGUpdated)
+    self.extE.trace       ('w', self.__chkGUpdated)
+    self.extC.trace       ('w', self.__chkGUpdated)
+    self.extZcr.trace     ('w', self.__chkGUpdated)
+    self.extZifencei.trace('w', self.__chkGUpdated)
+    self.extZba.trace     ('w', self.__chkBUpdated)
+    self.extZbb.trace     ('w', self.__chkBUpdated)
+    self.extZbs.trace     ('w', self.__chkBUpdated)
 
   # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Define the 'Private' class methods
@@ -340,11 +351,30 @@ class rv32gui :
       if self.extI.get() and self.extZifencei.get() and self.extZcr.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
         showwarning('Warning', 'Unchecked G extension with all G extensions selected')
 
-  def __chkUpdated(self, object, lstidx, mode) :
+  # __rv32ExtBUpdated()
+  #
+  # Callback for changes to B extension check box
+  #
+  def __rv32ExtBUpdated(self, object, lstidx, mode) :
+    if self.extB.get() != 0 :
+      self.extZba.set(1)
+      self.extZbb.set(1)
+      self.extZbs.set(1)
+    else :
+      if self.extZba.get() and self.extZbb.get() and self.extZbs.get() :
+        showwarning('Warning', 'Unchecked B extension with all B extensions selected')
+
+  def __chkGUpdated(self, object, lstidx, mode) :
     if self.extI.get() and self.extZifencei.get() and self.extZcr.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
       self.extG.set(1)
     else :
       self.extG.set(0)
+      
+  def __chkBUpdated(self, object, lstidx, mode) :
+    if self.extZba.get() and self.extZbb.get() and self.extZbs.get() :
+      self.extB.set(1)
+    else :
+      self.extB.set(0)
 
   # __rv32GetOutputFile()
   #
@@ -364,6 +394,8 @@ class rv32gui :
   # Callback for 'Generate' button
   #
   def __rv32Generate(self) :
+  
+    rv32f_included = True
 
     # Open file for writing
 
@@ -394,7 +426,10 @@ class rv32gui :
                   (self.extA,   'rv32a_cpu',   'RV32_A_INHERITANCE_CLASS',     'RV32A_INCLUDE'),
                   (self.extF,   'rv32f_cpu',   'RV32_F_INHERITANCE_CLASS',     'RV32F_INCLUDE'),
                   (self.extD,   'rv32d_cpu',   'RV32_D_INHERITANCE_CLASS',     'RV32D_INCLUDE'),
-                  (self.extC,   'rv32c_cpu',   'RV32_C_INHERITANCE_CLASS',     'RV32C_INCLUDE')]
+                  (self.extC,   'rv32c_cpu',   'RV32_C_INHERITANCE_CLASS',     'RV32C_INCLUDE'),
+                  (self.extZba, 'rv32zba_cpu', 'RV32_ZBA_INHERITANCE_CLASS',   'RV32ZBA_INCLUDE'),
+                  (self.extZbb, 'rv32zbb_cpu', 'RV32_ZBB_INHERITANCE_CLASS',   'RV32ZBB_INCLUDE'),
+                  (self.extZbs, 'rv32zbs_cpu', 'RV32_ZBS_INHERITANCE_CLASS',   'RV32ZBS_INCLUDE')]
 
     lastExt = ''
 
@@ -411,10 +446,10 @@ class rv32gui :
         else :
           ofp.write ('#define ' + define + padStr + 'rv32f_cpu' + ' /* Excluded, so defaulted to rv32f so will compile */\n')
 
-    if self.extI.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
-      ofp.write('\n// Inheritance for a G spec processor should have all the above\n')
-      ofp.write('// classes inherited, without skips\n')
-      ofp.write('#define RV32_G_INHERITANCE_CLASS         rv32d_cpu\n')
+    #if self.extI.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
+    #  ofp.write('\n// Inheritance for a G spec processor should have all the above\n')
+    #  ofp.write('// classes inherited, without skips\n')
+    #  ofp.write('#define RV32_G_INHERITANCE_CLASS         rv32d_cpu\n')
 
 
     ofp.write('\n// Uncomment the following to compile for RV32E base class,\n')
@@ -446,6 +481,11 @@ class rv32gui :
             ofp.write('#define ' + incl + padStr + '"' + 'rv32f_cpu' + '.h" /* Excluded, so defaulted to rv32f so will compile */\n')
           else :
             ofp.write('#define ' + incl + padStr + '"' + 'rv32i_cpu' + '.h" /* Excluded, so defaulted to base so will compile */\n')
+            if ext == 'rv32f_cpu' :
+              rv32f_included = False
+
+    if not rv32f_included :
+      ofp.write('\n#define RV32F_NOT_INCLUDE\n')
 
     ofp.write('\n')
     ofp.write('// Define the extension spec for the target model. Chose the\n')
@@ -527,7 +567,8 @@ class rv32gui :
     flagsframe = LabelFrame(master = master, text = 'Extensions:', padding = 20)
     tupleList = [
       [('I', self.extI, 1), ('M', self.extM, 1), ('A', self.extA, 1), ('F', self.extF, 1), ('D', self.extD, 1)],
-      [('Zifencei', self.extZifencei, 1), ('Zcsr', self.extZcr, 1), ('G', self.extG, 1), ('E', self.extE, 1), ('C', self.extC, 1)]
+      [('Zifencei', self.extZifencei, 1), ('Zicsr', self.extZcr, 1), ('G', self.extG, 1), ('E', self.extE, 1), ('C', self.extC, 1)],
+      [('B', self.extB, 1), ('Zba', self.extZba, 1), ('Zbb', self.extZbb, 1), ('Zbs', self.extZbs, 1)]
     ]
     self.chkHdls = self.__addCheckButtonRows('', tupleList, flagsframe, 12)
 
@@ -540,7 +581,7 @@ class rv32gui :
     panel.grid(row = framerow, column = 2, pady = 10, padx = 5)
 
     framerow += 1
-    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 21)
+    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 36)
     tupleList = [
       [('machine', self.machine, 1), ('supervisor', self.supervisor, 1), ('user', self.user, 1)]
     ]
@@ -553,7 +594,7 @@ class rv32gui :
 
     flagsframe.grid(row = framerow, padx = 10, pady = 10, sticky = W)
 
-    flagsframe = LabelFrame(master = master, text = 'Architecture:', padding = 21)
+    flagsframe = LabelFrame(master = master, text = 'Architecture:', padding = 36)
     tupleList = [
       [('RV32', self.arch, '0'), ('RV64', self.arch, '1')]
     ]
