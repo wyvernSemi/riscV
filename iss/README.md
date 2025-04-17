@@ -16,6 +16,10 @@ the model's main features is shown below.
   * RV32F (floating point)
   * RV32D (double precision floating point)
 * RV32C compression extensions (configurable)
+* RV32B (bit manipulation)
+  * RVZBA
+  * RVZBB
+  * RVZBS
 * Single HART
 * Only Machine (M) privilege currently mode supported
 * Trap handling (with Zicsr extension)
