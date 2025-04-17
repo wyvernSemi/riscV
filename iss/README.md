@@ -1,5 +1,6 @@
 
-![announce](https://github.com/user-attachments/assets/c709202e-d11f-4168-9cfb-725e6ff294ab)
+![announce](https://github.com/user-attachments/assets/5e4259c9-9d02-421c-a251-700329b39206)
+
 # rv32 RISC-V 32-bit Instruction Set Simulator
 
 The rv32 instruction set simulator (ISS) is a configurable and extensible C++ model of a 32-bit
