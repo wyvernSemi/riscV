@@ -54,7 +54,11 @@ The ISS has the following features:
 	*	RV32A
 	*	RV32F
 	*	RV32D
-*	RV32C extensions	
+*	RV32C extensions
+*   RV32B extensions
+    * RV32ZBA
+	* RV32ZBB
+	* RV32ZBS	
 *	Single HART
 *	Only Machine (M) privilege currently mode supported
 *	Trap handling

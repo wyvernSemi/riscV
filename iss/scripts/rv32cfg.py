@@ -484,8 +484,15 @@ class rv32gui :
             if ext == 'rv32f_cpu' :
               rv32f_included = False
 
-    if not rv32f_included :
-      ofp.write('\n#define RV32F_NOT_INCLUDE\n')
+    if not self.extF.get() :
+      ofp.write('\n// Flag indicating there is no RV32F extension included\n')
+      ofp.write('#define RV32F_NOT_INCLUDE\n')
+    
+    ofp.write('\n// Definition indictating presence of all B extensions, or not, for setting MISA\n')
+    if self.extZba.get() and self.extZbb.get() and self.extZbs.get() :
+      ofp.write('#define RV32CSR_EXT_B_CONFIG             RV32CSR_EXT_B\n')
+    else :
+      ofp.write('#define RV32CSR_EXT_B_CONFIG             0\n')
 
     ofp.write('\n')
     ofp.write('// Define the extension spec for the target model. Chose the\n')

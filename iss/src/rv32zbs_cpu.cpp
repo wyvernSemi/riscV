@@ -33,6 +33,9 @@
 
 rv32zbs_cpu::rv32zbs_cpu(FILE* dbgfp) : RV32_ZBS_INHERITANCE_CLASS(dbgfp)
 {
+    // Flag if *all* B extensions present (defined in auto-generated rv32_extensions.h)
+    state.hart[curr_hart].csr[RV32CSR_ADDR_MISA]   |=  RV32CSR_EXT_B_CONFIG;
+
     sll_tbl[0x14]  = {false, bset_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32zbs_cpu::bset };     /*BSET*/
     sll_tbl[0x24]  = {false, bclr_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32zbs_cpu::bclr };     /*BCLR*/
     sll_tbl[0x34]  = {false, binv_str,      RV32I_INSTR_FMT_R,   (pFunc_t)&rv32zbs_cpu::binv };     /*BINV*/

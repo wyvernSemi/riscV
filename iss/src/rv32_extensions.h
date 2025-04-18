@@ -44,6 +44,9 @@
 #define RV32ZBB_INCLUDE                  "rv32zba_cpu.h"
 #define RV32ZBS_INCLUDE                  "rv32zbb_cpu.h"
 
+// Definition indictating presence of all B extensions, or not, for setting MISA
+#define RV32CSR_EXT_B_CONFIG             RV32CSR_EXT_B
+
 // Define the extension spec for the target model. Chose the
 // highest order class that's needed.
 #define RV32_TARGET_INHERITANCE_CLASS    rv32zbs_cpu
