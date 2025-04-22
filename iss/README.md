@@ -18,18 +18,17 @@ the model's main features is shown below.
   * RV32D (double precision floating point)
 * RV32C compression extensions (configurable)
 * RV32B (bit manipulation)
-  * RVZBA
-  * RVZBB
-  * RVZBS
+  * RV32Zba, RV32Zbb, RV32Zbs
 * Single HART
-* Only Machine (M) privilege currently mode supported
+* Machine (M) privilege mode supported
 * Trap handling (with Zicsr extension)
-* Cycle count and real-time clock models
+* Configurable instruction timing model
+* Internal timer model using cycle count or real-time clock
 * Interrupt handling (with Zicsr extension)
   * External interrupts
   * Timer interrupts
   * Software interrupts
-* Basic internal memory model (1MBytes)
+* Internal memory model (1MBytes)
 * User registerable external callback functions
   * For memory accesses
   * For interrupts
@@ -39,4 +38,4 @@ the model's main features is shown below.
 * Debugging interface for gdb remote target
 * Co-simulation support
 
-The model can be configured to enable/disable the instruction extensions via a python GUI.
+The model can be configured to enable/disable the instruction extensions before compilation via a supplied python GUI. A `makefile` is provide to compile either for Linux or under Windows with MSYS2/mingw-w64, but a Visual Studio environment is also supplied. This can be used with the IDE, but the `makefile` also allows build with a target of `MSVC`

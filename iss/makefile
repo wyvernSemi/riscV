@@ -69,7 +69,10 @@ LIB_CPP_BASE    = rv32i_cpu_elf.cpp                     \
                   rv32a_cpu.cpp                         \
                   rv32f_cpu.cpp                         \
                   rv32d_cpu.cpp                         \
-                  rv32c_cpu.cpp
+                  rv32c_cpu.cpp                         \
+                  rv32zba_cpu.cpp                       \
+                  rv32zbb_cpu.cpp                       \
+                  rv32zbs_cpu.cpp
 
 # List of additional files for executable
 EXEC_CPP_BASE   = cpurv32i.cpp                          \
@@ -98,6 +101,9 @@ HEADERS         = uart.h                                \
                   rv32f_cpu.h                           \
                   rv32d_cpu.h                           \
                   rv32c_cpu.h                           \
+                  rv32zba_cpu.h                         \
+                  rv32zbb_cpu.h                         \
+                  rv32zbs_cpu.h                         \
                   rv32csr_cpu_hdr.h                     \
                   rv32i_cpu_hdr.h                       \
                   rv32_extensions.h                     \
