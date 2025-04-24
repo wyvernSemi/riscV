@@ -23,6 +23,8 @@ for %%i in (^
   lhu^
   lui^
   lw^
+  ld_st^
+  st_ld^
   or^
   ori^
   sb^
@@ -49,15 +51,19 @@ for %%i in (^
     make FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
  )
- 
+
  for %%i in (^
   csr^
-  illegal^
   ma_addr^
   ma_fetch^
   mcsr^
   sbreak^
   shamt^
+  lh-misaligned^
+  lw-misaligned^
+  sh-misaligned^
+  sw-misaligned^
+  zicntr^
   ) do (
     echo.
     echo.
@@ -65,7 +71,7 @@ for %%i in (^
     make SUBDIR=rv32mi FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
-  
+
  for %%i in (^
   mul^
   mulh^
@@ -82,7 +88,7 @@ for %%i in (^
     make SUBDIR=rv32um FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
-  
+
   for %%i in (^
   amoadd_w^
   amoand_w^
@@ -100,7 +106,7 @@ for %%i in (^
     echo Running test for %%i instruction...
     make SUBDIR=rv32ua FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
-  ) 
+  )
 
   for %%i in (^
   fadd^
@@ -121,7 +127,7 @@ for %%i in (^
     make SUBDIR=rv32uf FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
-  
+
   for %%i in (^
   fadd^
   fclass^
@@ -141,7 +147,7 @@ for %%i in (^
     make SUBDIR=rv32ud FNAME=%%i.S
     ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )
-  
+
   for %%i in (^
   rvc^
   ) do (
@@ -151,4 +157,68 @@ for %%i in (^
     rm -f obj\%%i.o
     make SUBDIR=rv32uc FNAME=%%i.S ARCHSPEC=rv32gc
     ..\visualstudio\x64\Debug\rv32.exe -b -A0x36 -t %%i.exe
+  )
+
+  for %%i in (^
+  sh1add^
+  sh2add^
+  sh3add^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32uzba FNAME=%%i.S ARCHSPEC=rv32g_zba
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  )
+
+  for %%i in (^
+  andn^
+  orn^
+  xnor^
+  clz^
+  cpop^
+  ctz^
+  max^
+  maxu^
+  min^
+  minu^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32uzbb FNAME=%%i.S ARCHSPEC=rv32g_zbb
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  )
+
+  for %%i in (^
+  bset^
+  bseti^
+  bclr^
+  bclri^
+  bext^
+  bexti^
+  binv^
+  binvi^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32uzbs FNAME=%%i.S ARCHSPEC=rv32g_zbs
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
+  )
+
+  for %%i in (^
+  clmul^
+  clmulh^
+  clmulr^
+  ) do (
+    echo.
+    echo.
+    echo Running test for %%i instruction...
+    rm -f obj\%%i.o
+    make SUBDIR=rv32uzbc FNAME=%%i.S ARCHSPEC=rv32g_zbc
+    ..\visualstudio\x64\Debug\rv32.exe -b -t %%i.exe
   )

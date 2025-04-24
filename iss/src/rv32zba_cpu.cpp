@@ -44,7 +44,7 @@ rv32zba_cpu::rv32zba_cpu(FILE* dbgfp) : RV32_ZBA_INHERITANCE_CLASS(dbgfp)
 // RV32ZBA instruction methods
 // -----------------------------------------------------------
 
-// Common Zba  shhift address instruction execution method
+// Common Zba shift address instruction execution method
 void rv32zba_cpu::shxadd(const p_rv32i_decode_t d, const uint32_t shamt)
 {
     bool access_fault = false;

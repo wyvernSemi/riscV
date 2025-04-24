@@ -23,6 +23,7 @@
 #define RV32_ZBA_INHERITANCE_CLASS       rv32c_cpu
 #define RV32_ZBB_INHERITANCE_CLASS       rv32zba_cpu
 #define RV32_ZBS_INHERITANCE_CLASS       rv32zbb_cpu
+#define RV32_ZBC_INHERITANCE_CLASS       rv32zbs_cpu
 
 // Uncomment the following to compile for RV32E base class,
 // or define it when compiling rv32i_cpu.cpp
@@ -43,15 +44,16 @@
 #define RV32ZBA_INCLUDE                  "rv32c_cpu.h"
 #define RV32ZBB_INCLUDE                  "rv32zba_cpu.h"
 #define RV32ZBS_INCLUDE                  "rv32zbb_cpu.h"
+#define RV32ZBC_INCLUDE                  "rv32zbs_cpu.h"
 
 // Definition indictating presence of all B extensions, or not, for setting MISA
 #define RV32CSR_EXT_B_CONFIG             RV32CSR_EXT_B
 
 // Define the extension spec for the target model. Chose the
 // highest order class that's needed.
-#define RV32_TARGET_INHERITANCE_CLASS    rv32zbs_cpu
+#define RV32_TARGET_INHERITANCE_CLASS    rv32zbc_cpu
 
 // Define target include: must match include of RV32_TARGET_INHERITANCE_CLASS
-#define RV32_TARGET_INCLUDE             "rv32zbs_cpu.h"
+#define RV32_TARGET_INCLUDE             "rv32zbc_cpu.h"
 
 #endif

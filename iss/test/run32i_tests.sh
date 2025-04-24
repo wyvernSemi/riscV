@@ -52,10 +52,10 @@ rm -rf obj/* *.exe
 #
 # RV32I tests
 #
-for tst in simple add addi and andi auipc beq bge \
-  bgeu blt bltu bne jal jalr lb lbu lh lhu lui lw \
-  or ori sb sh sll slli slt slti sltiu sltu sra   \
-  srai srl srli sub sw xor xori fence_i
+for tst in simple add addi and andi auipc beq bge  \
+  bgeu blt bltu bne jal jalr lb lbu lh lhu lui lw  \
+  ld_st or ori sb sh st_ld sll slli slt slti sltiu \
+  sltu sra srai srl srli sub sw xor xori fence_i
 do
     echo
     echo
@@ -67,7 +67,9 @@ done
 #
 # RVZcsr tests
 #
-for tst in csr ma_addr ma_fetch mcsr sbreak shamt
+for tst in csr ma_addr ma_fetch mcsr sbreak shamt  \
+  lh-misaligned lw-misaligned sh-misaligned        \
+  sw-misaligned zicntr
 do
     echo
     echo
@@ -175,6 +177,21 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzbs FNAME=$tst.S ARCHSPEC=rv32g_zbs
+    $EXE_DIR/rv32 -b -t $tst.exe
+done
+
+
+#
+# RV32ZBC tests
+#
+
+for tst in clmul clmulh clmulr
+do
+    echo
+    echo
+    echo "Running test for $tst instruction..."
+    rm -rf obj/$tst.o
+    make $MAKE_ARGS SUBDIR=rv32uzbc FNAME=$tst.S ARCHSPEC=rv32g_zbc
     $EXE_DIR/rv32 -b -t $tst.exe
 done
 

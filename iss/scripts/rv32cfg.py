@@ -78,6 +78,7 @@ class rv32gui :
     self.extZbb             = IntVar()
     self.extZbs             = IntVar()
     self.extB               = IntVar()
+    self.extZbc             = IntVar()
 
     self.machine            = IntVar()
     self.supervisor         = IntVar()
@@ -90,6 +91,9 @@ class rv32gui :
     # Tk variables for directory locations
     self.scriptdir          = StringVar()
     self.rundir             = StringVar()
+    
+    self.indirectG          = False
+    self.indirectB          = False
 
     # ------------------------------------------------------------
     # Set/configure instance objects here
@@ -123,6 +127,7 @@ class rv32gui :
     self.extZba.set     (1)
     self.extZbb.set     (1)
     self.extZbs.set     (1)
+    self.extZbc.set     (1)
 
     self.machine.set    (1)
     self.supervisor.set (0)
@@ -150,6 +155,7 @@ class rv32gui :
     self.extZba.trace     ('w', self.__chkBUpdated)
     self.extZbb.trace     ('w', self.__chkBUpdated)
     self.extZbs.trace     ('w', self.__chkBUpdated)
+    self.extZbc.trace     ('w', self.__chkBUpdated)
 
   # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Define the 'Private' class methods
@@ -349,7 +355,13 @@ class rv32gui :
       self.extD.set(1)
     else :
       if self.extI.get() and self.extZifencei.get() and self.extZcr.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
-        showwarning('Warning', 'Unchecked G extension with all G extensions selected')
+        if not self.indirectG :
+          self.extZcr.set(0)
+          self.extM.set(0)
+          self.extA.set(0)
+          self.extF.set(0)
+          self.extD.set(0)
+    self.indirectG = False
 
   # __rv32ExtBUpdated()
   #
@@ -362,15 +374,21 @@ class rv32gui :
       self.extZbs.set(1)
     else :
       if self.extZba.get() and self.extZbb.get() and self.extZbs.get() :
-        showwarning('Warning', 'Unchecked B extension with all B extensions selected')
+        if not self.indirectB :
+          self.extZba.set(0)
+          self.extZbb.set(0)
+          self.extZbs.set(0)
+      self.indirectB = False;
 
   def __chkGUpdated(self, object, lstidx, mode) :
+    self.indirectG = True
     if self.extI.get() and self.extZifencei.get() and self.extZcr.get() and self.extM.get() and self.extA.get() and self.extF.get() and self.extD.get() :
       self.extG.set(1)
     else :
       self.extG.set(0)
       
   def __chkBUpdated(self, object, lstidx, mode) :
+    self.indirectB = True
     if self.extZba.get() and self.extZbb.get() and self.extZbs.get() :
       self.extB.set(1)
     else :
@@ -429,7 +447,8 @@ class rv32gui :
                   (self.extC,   'rv32c_cpu',   'RV32_C_INHERITANCE_CLASS',     'RV32C_INCLUDE'),
                   (self.extZba, 'rv32zba_cpu', 'RV32_ZBA_INHERITANCE_CLASS',   'RV32ZBA_INCLUDE'),
                   (self.extZbb, 'rv32zbb_cpu', 'RV32_ZBB_INHERITANCE_CLASS',   'RV32ZBB_INCLUDE'),
-                  (self.extZbs, 'rv32zbs_cpu', 'RV32_ZBS_INHERITANCE_CLASS',   'RV32ZBS_INCLUDE')]
+                  (self.extZbs, 'rv32zbs_cpu', 'RV32_ZBS_INHERITANCE_CLASS',   'RV32ZBS_INCLUDE'),
+                  (self.extZbc, 'rv32zbc_cpu', 'RV32_ZBC_INHERITANCE_CLASS',   'RV32ZBC_INCLUDE')]
 
     lastExt = ''
 
@@ -575,7 +594,7 @@ class rv32gui :
     tupleList = [
       [('I', self.extI, 1), ('M', self.extM, 1), ('A', self.extA, 1), ('F', self.extF, 1), ('D', self.extD, 1)],
       [('Zifencei', self.extZifencei, 1), ('Zicsr', self.extZcr, 1), ('G', self.extG, 1), ('E', self.extE, 1), ('C', self.extC, 1)],
-      [('B', self.extB, 1), ('Zba', self.extZba, 1), ('Zbb', self.extZbb, 1), ('Zbs', self.extZbs, 1)]
+      [('B', self.extB, 1), ('Zba', self.extZba, 1), ('Zbb', self.extZbb, 1), ('Zbs', self.extZbs, 1), ('Zbc', self.extZbc, 1)]
     ]
     self.chkHdls = self.__addCheckButtonRows('', tupleList, flagsframe, 12)
 
@@ -588,7 +607,7 @@ class rv32gui :
     panel.grid(row = framerow, column = 2, pady = 10, padx = 5)
 
     framerow += 1
-    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 36)
+    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 42)
     tupleList = [
       [('machine', self.machine, 1), ('supervisor', self.supervisor, 1), ('user', self.user, 1)]
     ]
