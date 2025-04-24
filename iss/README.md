@@ -1,5 +1,5 @@
 
-![announce](https://github.com/user-attachments/assets/5e4259c9-9d02-421c-a251-700329b39206)
+![announce](https://github.com/user-attachments/assets/4f693d40-657f-4ce8-b9b1-38bef1d5c17c)
 
 # rv32 RISC-V 32-bit Instruction Set Simulator
 
