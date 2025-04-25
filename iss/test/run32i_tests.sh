@@ -1,7 +1,7 @@
 #!/bin/bash
 ###################################################################
 #
-# Copyright (c) 2021 Simon Southwell. All rights reserved.
+# Copyright (c) 2021-2025 Simon Southwell. All rights reserved.
 #
 # Date: 28th July 2021
 #
@@ -29,16 +29,21 @@
 # Modify these variables to customise to local conditions
 #
 TSTROOT=$HOME/git
+ARCHPREFIX=riscv64-unknown-elf-
 
 OS=`uname`
 if [ "$OS" == "Linux" ]
 then
-  EXE_DIR=../
-  ARCHPREFIX=riscv32-unknown-elf-
+  EXE=../rv32
 else
-  EXE_DIR=../visualstudio/x64/Debug
-  ARCHPREFIX=riscv64-unknown-elf-
+  EXE=../rv32.exe
 fi
+
+echo
+echo "Building $EXE executable..."
+
+make --no-print-directory -C ../ clean
+make --no-print-directory -C ../ OPTFLAGS="-O3"
 
 # ------------------------------------------------------------------
 
@@ -61,7 +66,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -75,7 +80,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32mi FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -87,7 +92,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32um FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -99,7 +104,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32ua FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -111,7 +116,7 @@ do
     echo
     echo "Running test for $tst (single) instruction..."
     make $MAKE_ARGS SUBDIR=rv32uf FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -124,7 +129,7 @@ do
     echo "Running test for $tst (double) instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32ud FNAME=$tst.S
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -137,7 +142,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uc FNAME=$tst.S ARCHSPEC=rv32gc
-    $EXE_DIR/rv32 -b -A0x36 -t $tst.exe
+    $EXE -b -A0x36 -t $tst.exe
 done
 
 #
@@ -151,7 +156,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzba FNAME=$tst.S ARCHSPEC=rv32g_zba
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 # RV32ZBB tests
@@ -163,7 +168,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32uzbb FNAME=$tst.S ARCHSPEC=rv32g_zbb
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 #
@@ -177,7 +182,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzbs FNAME=$tst.S ARCHSPEC=rv32g_zbs
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
 
@@ -192,6 +197,6 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzbc FNAME=$tst.S ARCHSPEC=rv32g_zbc
-    $EXE_DIR/rv32 -b -t $tst.exe
+    $EXE -b -t $tst.exe
 done
 
