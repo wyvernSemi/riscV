@@ -46,31 +46,32 @@ The Verilog Softcore has the following features
 
 The ISS has the following features:
 
-*	RV32I ISA model
-*	Support for RV32E via compile option
-*	CSR instructions and registers
-*	RV32G extensions
-	*	RV32M
-	*	RV32A
-	*	RV32F
-	*	RV32D
-*	RV32C extensions
-*   RV32B extensions
-    * RV32ZBA
-	* RV32ZBB
-	* RV32ZBS	
-*	Single HART
-*	Only Machine (M) privilege currently mode supported
-*	Trap handling
-*	Cycle count and real-time clock
-*	Interrupt handling
-*	External interrupts
-*	Timer interrupts
-*	Software interrupts
-*	Basic internal memory model (16KBytes)
-*	External memory callback feature
-*	External interrupt callback feature
-*	Disassembler, both run-time and static
-*	Loading of ELF programs to memory
-*	Co-simulation support for connecting to a Verilog or mixed signal logic simulator
-*	Remote gdb debug interface for connection to gdb/IDEs
+* RV32I ISA model
+	* Support for RV32E via compile option
+* Standard extension support
+	* Zicsr extension with CSR instructions and registers
+	* RV32G extensions
+		* RV32M, RV32A, RV32F and RV32D
+	* RV32C extension
+	* RV32B extensions
+		* RV32ZBA, RV32ZBB and RV32ZBS	
+	* RV32Zbc extension
+* Single HART
+* Machine (M) privilege mode supported
+* Trap handling
+* Configurable instruction timing model
+* Internal timer model using cycle count or real-time clock
+* Instructions retired count
+* Interrupt handling
+	* External interrupts
+	* Timer interrupts
+	* Software interrupts
+* Internal memory model (1MBytes)
+* User registerable extenal callback functions
+	* External memory callback 
+	* External interrupt callback
+ 	* Unimplemented instructions callback 
+* Disassembler, both run-time and static
+* Loading of ELF programs to memory
+* Remote gdb debug interface for connection to gdb/IDEs
+* Co-simulation support for connecting to a logic simulator
