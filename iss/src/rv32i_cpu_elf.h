@@ -64,7 +64,7 @@ public:
 
     static const uint32_t EM_RISCV                = 243;
 
-    static const uint32_t ELF_MAX_NUM_PHDR        = 4;
+    static const uint32_t ELF_MAX_NUM_PHDR        = 16;
 
     static const uint32_t PF_X                    = 0x1;            /* Executable. */
     static const uint32_t PF_W                    = 0x2;            /* Writable. */

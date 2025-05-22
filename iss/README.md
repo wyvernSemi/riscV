@@ -41,4 +41,4 @@ the model's main features is shown below.
 * Debugging interface for gdb remote target
 * Co-simulation support
 
-The model can be configured to enable/disable the instruction extensions before compilation via a supplied python GUI. A `makefile` is provide to compile either for Linux or under Windows with MSYS2/mingw-w64, but a Visual Studio environment is also supplied. This can be used with the IDE, but the `makefile` also allows build with a target of `MSVC` to bult the x86_64 Debug build, or a target of `ALLMSVC` to build all target types.
+The model can be configured to enable/disable the instruction extensions before compilation via a supplied python GUI. A `makefile` is provide to compile either for Linux or under Windows with MSYS2/mingw-w64, but a Visual Studio environment is also supplied. This can be used with the IDE, but the `makefile` also allows building with a target of `MSVC` to build the x86_64 Debug build, or a target of `ALLMSVC` to build all target types.
