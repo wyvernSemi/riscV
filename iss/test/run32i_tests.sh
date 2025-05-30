@@ -39,11 +39,14 @@ else
   EXE=../rv32.exe
 fi
 
-echo
-echo "Building $EXE executable..."
+if [ "$1" != "NOBUILD" ]
+then
+  echo
+  echo "Building $EXE executable..."
 
-make --no-print-directory -C ../ clean
-make --no-print-directory -C ../ OPTFLAGS="-O3"
+  make --no-print-directory -C ../ clean
+  make --no-print-directory -C ../ OPTFLAGS="-O3"
+fi
 
 # ------------------------------------------------------------------
 

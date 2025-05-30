@@ -68,7 +68,7 @@ extern "C" {
 // DEFINES
 // ------------------------------------------------
 
-#define RV32I_GETOPT_ARG_STR               "hHgdbeEraCTt:n:D:A:p:S:xcm:M:u:"
+#define RV32I_GETOPT_ARG_STR               "hHgdbeEraCTt:n:D:A:p:S:xcm:M:u:BL:"
 
 #define INT_ADDR                           0xaffffffc
 #define UART0_BASE_ADDR                    0x80000000
@@ -80,8 +80,10 @@ extern "C" {
 // LOCAL VARIABLES
 // ------------------------------------------------
 
-static uint32_t swirq           = 0;
-static uint32_t uart0_base_addr = UART0_BASE_ADDR;
+static uint32_t swirq            = 0;
+static uint32_t uart0_base_addr  = UART0_BASE_ADDR;
+static uint32_t binary_base_addr = 0x00000000; 
+static bool     load_binary      = false;
 
 static double    tv_diff_usec;
 
@@ -238,13 +240,21 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
         case 'u':
             uart0_base_addr    = (uint32_t)strtoll(optarg, NULL, 0);
             break;
+        case 'B':
+            load_binary        = true;
+            break;
+        case 'L':
+            binary_base_addr   = (uint32_t)strtoll(optarg, NULL, 0);
+            break;
         case 'h':
         default:
             fprintf(stderr, "\nrv32 version %d.%d.%d. Copyright (c) 2021-2025 Simon Southwell.\n\n", rv32::major_ver, rv32::minor_ver, rv32::patch_ver);
-            fprintf(stderr, "Usage: %s [-hHeEbdragxcCT][-t <test executable>][-n <num instructions>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-hHeEbdragxcCTB][-t <test executable>][-n <num instructions>]\n", argv[0]);
             fprintf(stderr, "      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n");
-            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>]\n\n");
+            fprintf(stderr, "      [-m <num words>][-M <addr>][-u <uart addr>][-L<binary load addr>]\n\n");
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
+            fprintf(stderr, "   -B specify to load a raw binary file (default load ELF executable)\n");
+            fprintf(stderr, "   -L specify address to load binary, if -B specified (default 0x00000000)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
@@ -619,9 +629,13 @@ int main(int argc, char** argv)
             // Load an executable if specified on the command line
             if (cfg.user_fname)
             {
-                if (pCpu->read_elf(cfg.exec_fname))
+                if (load_binary)
                 {
-                    error = 1;
+                    error = pCpu->read_binary(cfg.exec_fname, binary_base_addr);
+                }
+                else
+                {
+                    error = pCpu->read_elf(cfg.exec_fname);
                 }
             }
 
@@ -638,11 +652,16 @@ int main(int argc, char** argv)
         else
         {
             // Load an executable
-            if (pCpu->read_elf(cfg.exec_fname))
+            if (load_binary)
             {
-                error = 1;
+                error = pCpu->read_binary(cfg.exec_fname, binary_base_addr);
             }
             else
+            {
+                error = pCpu->read_elf(cfg.exec_fname);
+            }
+            
+            if (!error)
             {
                 pre_run_setup();
 
