@@ -128,7 +128,7 @@ static void pre_run_setup()
 // Actions to run after CPU
 // returns from executing
 //
-static void post_run_actions(const int num_instr)
+static void post_run_actions(const uint64_t num_instr)
 {
     // Calculate time difference, in microseconds, from now
     // to previously saved time stamp
@@ -148,8 +148,26 @@ static void post_run_actions(const int num_instr)
     tv_diff_usec = (double)(stop.QuadPart - start.QuadPart)*1e6/(double)freq.QuadPart;
 #endif
 
-    printf("\nNumber of executed instructions = %.1f million (%.3f MIPS)\n\n",
-        (float)num_instr/1e6, (float)num_instr/(tv_diff_usec));
+    // If number of instructions executed is non-zero, print out value and the
+    // calculated MIPS rate
+    if (num_instr)
+    {
+        if (num_instr < 1000)
+        {
+            printf("\nNumber of executed instructions = %u (%.3f MIPS)\n\n",
+                (uint32_t)num_instr, (float)num_instr/(tv_diff_usec));
+        }
+        else if (num_instr < 1000000)
+        {
+            printf("\nNumber of executed instructions = %.3f thousand (%.3f MIPS)\n\n",
+                (float)num_instr/1e3, (float)num_instr/(tv_diff_usec));
+        }
+        else
+        {
+            printf("\nNumber of executed instructions = %.1f million (%.3f MIPS)\n\n",
+                (float)num_instr/1e6, (float)num_instr/(tv_diff_usec));
+        }
+    }
 }
 
 // -------------------------------
@@ -674,7 +692,9 @@ int main(int argc, char** argv)
                 // Run processor
                 pCpu->run(cfg);
 
-                post_run_actions(cfg.num_instr);
+                // If number of instructions to run is not zero, get the instruction retired count from CSR registers, else set it to 0
+                uint64_t instr_ret = cfg.num_instr ? ((uint64_t)pCpu->csr_val(rv32csr_consts::RV32CSR_ADDR_MINSTRET) | ((uint64_t)pCpu->csr_val(rv32csr_consts::RV32CSR_ADDR_MINSTRETH) << 32)) : 0;
+                post_run_actions(instr_ret);
 
 #ifdef RV32_DEBUG
                 for (int idx = 0; idx < RV32I_NUM_OF_REGISTERS; idx++)

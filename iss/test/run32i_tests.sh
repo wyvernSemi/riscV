@@ -31,6 +31,10 @@
 TSTROOT=$HOME/git
 ARCHPREFIX=riscv64-unknown-elf-
 
+# Common arguments to halt on an address and specify 
+# a number of instructois to ru (to act as a timeout)
+COMMARGS="-b -n1000000"
+
 OS=`uname`
 if [ "$OS" == "Linux" ]
 then
@@ -69,7 +73,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -83,7 +87,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32mi FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -95,7 +99,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32um FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -107,7 +111,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32ua FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -119,7 +123,7 @@ do
     echo
     echo "Running test for $tst (single) instruction..."
     make $MAKE_ARGS SUBDIR=rv32uf FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -132,7 +136,7 @@ do
     echo "Running test for $tst (double) instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32ud FNAME=$tst.S
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -145,7 +149,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uc FNAME=$tst.S ARCHSPEC=rv32gc
-    $EXE -b -A0x36 -t $tst.exe
+    $EXE $COMMARGS -A0x36 -t $tst.exe
 done
 
 #
@@ -159,7 +163,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzba FNAME=$tst.S ARCHSPEC=rv32g_zba
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 # RV32ZBB tests
@@ -171,7 +175,7 @@ do
     echo
     echo Running test for $tst instruction...
     make $MAKE_ARGS SUBDIR=rv32uzbb FNAME=$tst.S ARCHSPEC=rv32g_zbb
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 #
@@ -185,7 +189,7 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzbs FNAME=$tst.S ARCHSPEC=rv32g_zbs
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
 
@@ -200,6 +204,6 @@ do
     echo "Running test for $tst instruction..."
     rm -rf obj/$tst.o
     make $MAKE_ARGS SUBDIR=rv32uzbc FNAME=$tst.S ARCHSPEC=rv32g_zbc
-    $EXE -b -t $tst.exe
+    $EXE $COMMARGS -t $tst.exe
 done
 
