@@ -610,6 +610,8 @@ typedef struct rv32i_decode_table_t
 // Model configuration structure
 struct  rv32i_cfg_s {
     const char*    exec_fname;
+    bool           load_binary;
+    uint32_t       load_bin_addr;
     bool           user_fname;
     unsigned       num_instr;
     bool           rt_dis;
@@ -636,6 +638,8 @@ struct  rv32i_cfg_s {
     {
         exec_fname             = "test.exe";
         user_fname             = false;
+        load_binary            = false;
+        load_bin_addr          = 0x00000000;
         num_instr              = 0;
         rt_dis                 = false;
         dis_en                 = false;

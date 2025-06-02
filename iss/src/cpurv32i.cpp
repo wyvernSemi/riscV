@@ -82,8 +82,6 @@ extern "C" {
 
 static uint32_t swirq            = 0;
 static uint32_t uart0_base_addr  = UART0_BASE_ADDR;
-static uint32_t binary_base_addr = 0x00000000; 
-static bool     load_binary      = false;
 
 static double    tv_diff_usec;
 
@@ -241,10 +239,10 @@ int parse_args(int argc, char** argv, rv32i_cfg_s &cfg)
             uart0_base_addr    = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'B':
-            load_binary        = true;
+            cfg.load_binary    = true;
             break;
         case 'L':
-            binary_base_addr   = (uint32_t)strtoll(optarg, NULL, 0);
+            cfg.load_bin_addr  = (uint32_t)strtoll(optarg, NULL, 0);
             break;
         case 'h':
         default:
@@ -300,6 +298,14 @@ static int handler(void* user, const char* section, const char* name, const char
     {
         pconfig->new_rst_vec = (uint32_t)strtoll(value, NULL, 0);
         pconfig->update_rst_vec = true;
+    }
+    else if (MATCH("program", "load_binary_addr"))
+    {
+        pconfig->load_bin_addr = (uint32_t)strtoll(value, NULL, 0);
+    }
+    else if (MATCH("program", "load_binary"))
+    {
+        pconfig->load_binary = true;
     }
     else if (MATCH("control", "num_instructions"))
     {
@@ -629,9 +635,9 @@ int main(int argc, char** argv)
             // Load an executable if specified on the command line
             if (cfg.user_fname)
             {
-                if (load_binary)
+                if (cfg.load_binary)
                 {
-                    error = pCpu->read_binary(cfg.exec_fname, binary_base_addr);
+                    error = pCpu->read_binary(cfg.exec_fname, cfg.load_bin_addr);
                 }
                 else
                 {
@@ -652,9 +658,9 @@ int main(int argc, char** argv)
         else
         {
             // Load an executable
-            if (load_binary)
+            if (cfg.load_binary)
             {
-                error = pCpu->read_binary(cfg.exec_fname, binary_base_addr);
+                error = pCpu->read_binary(cfg.exec_fname, cfg.load_bin_addr);
             }
             else
             {
