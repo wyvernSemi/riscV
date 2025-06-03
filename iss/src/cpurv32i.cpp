@@ -323,7 +323,7 @@ static int handler(void* user, const char* section, const char* name, const char
     }
     else if (MATCH("program", "load_binary"))
     {
-        pconfig->load_binary = true;
+        pconfig->load_binary = IS_TRUE(value);
     }
     else if (MATCH("control", "num_instructions"))
     {
