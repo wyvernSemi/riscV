@@ -37,7 +37,8 @@ the model's main features is shown below.
   * For interrupts
   * For unimplemented instructions
 * Disassembler, both run-time and static
-* Loading of ELF programs to memory
+* Loading of ELF or binary programs to memory
+* Model execution performance metrics
 * Debugging interface for gdb remote target
 * Co-simulation support
 
