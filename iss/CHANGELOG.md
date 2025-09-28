@@ -2,6 +2,7 @@
 
 | Revision  |  Change Summary | 
 ------------|----------- 
+| 1.2.10    | Minor corrections to rv32cfg.py layout |
 | 1.2.9     | Bug fixes |
 | 1.2.8     | Minor changes |
 | 1.2.7     | .ini config update |
@@ -19,6 +20,9 @@
 | 1.1.2     | Fix to loading ELF with unaligned EOF |
 | 1.1.1     | Added timing model configurability |
 | 1.0.0     | First official release |
+
+## 1.2.10 28th September 2025
+* Minor corrections to rv32cfg.py layout 
 
 ## 1.2.9  3rd June 2025
 * Bug fixes for configuration of loading binary file

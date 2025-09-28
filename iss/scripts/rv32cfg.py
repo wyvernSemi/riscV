@@ -607,12 +607,12 @@ class rv32gui :
     panel.grid(row = framerow, column = 2, pady = 10, padx = 5)
 
     framerow += 1
-    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 42)
+    flagsframe = LabelFrame(master = master, text = 'Privilege Levels:', padding = 36)
     tupleList = [
       [('machine', self.machine, 1), ('supervisor', self.supervisor, 1), ('user', self.user, 1)]
     ]
 
-    hdls = self.__addCheckButtonRows('', tupleList, flagsframe, 21)
+    hdls = self.__addCheckButtonRows('', tupleList, flagsframe, 23)
 
     hdls[0].config(state = DISABLED)
     hdls[1].config(state = DISABLED)
