@@ -1,88 +1,138 @@
 ###################################################################
-# Makefile for memory model test bench
+# Makefile for rv32 co-simulation with VProc virtual processor
 #
-# Copyright (c) 2021 Simon Southwell
+# Copyright (c) 2021 - 2025 Simon Southwell.
+#
+# This file is part of rv32.
+#
+# This file is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# The file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this file. If not, see <http://www.gnu.org/licenses/>.
 #
 ###################################################################
 
-#
-# Ensure that the MODEL_TECH environment variable has been setup and
-# points to the correct ModelSim location
-#
+# Get OS type
+OSTYPE:=$(shell uname)
 
-# User files to build, passed in to vproc makefile build
+# User files to build, passed into vproc makefile build
 USERCODE           = VUserMain0.cpp mem_vproc_api.cpp
+MEMCSRC            = mem.c mem_model.c
 
 # Set up Variables for tools
 MAKE_EXE           = make
-VSIMEXE            = ${MODEL_TECH}\\vsim
+VSIMEXE            = vsim
 VSIMARGS           =
 
-# Directories, relative to vproc directory
-MEMMODELDIR        = ../mem_model
-ISSDIR             = ../riscV/iss
+# Directories
+MEMMODELDIR        = $(CURDIR)/../../../../mem_model
+ISSDIR             = $(CURDIR)/../../
+RV32LIBDIR         = $(CURDIR)/../../
+VPROCDIR           = $(CURDIR)/../../../../vproc
 
-RV32LIBDIR         = ../../
-RV32LIB            = ${RV32LIBDIR}/librv32.a
+# RV32 ISS library to build
+RV32LIB            = $(RV32LIBDIR)/librv32.a
 
-# VProc location, relative to this directory
-VPROCDIR           = ../../../../vproc
-
-USRCFLAGS          = "-I${MEMMODELDIR}/src               \
-                      -I${ISSDIR}/src                    \
-                      -L${ISSDIR}                        \
-                      -lrv32                             \
-                      -lws2_32                           \
-                      -DINCL_VLOG_MEM_MODEL              \
+# C flags for user code
+USRCFLAGS          = "-I$(MEMMODELDIR)/src             \
+                      -I$(ISSDIR)/src                  \
+                      -DINCL_VLOG_MEM_MODEL            \
                       -DMEM_MODEL_DEFAULT_ENDIAN=1"
 
-MEMCSRC            = mem.c mem_model.c
+# Shared object link flags
+SIMFLAGSSO         = -L$(MODEL_TECH) -lmtipli -L$(ISSDIR) -lrv32
+
+# For windows the Ws2 library must be tagged on the end of the link command
+ifneq ($(OSTYPE), Linux)
+  POSTVPROCSOFLAGS = -lws2_32
+endif
+
+# Command to compile verilog
+HDLCMD             = vlog +define+VPROC_BURST_IF       \
+                          +define+VPROC_BYTE_INTERFACE \
+                          +incdir+$(VPROCDIR)          \
+                          -f files_vlog.tcl            \
+                          -work work
+
+#------------------------------------------------------
+# MODEL_TECH path
+
+# If run from a place where MODEL_TECH is not defined, construct from path to PLI library
+ifeq ("$(MODEL_TECH)", "")
+  ifeq ($(OSTYPE), Linux)
+    PLILIB         = libmtipli.so
+  else
+    PLILIB         = mtipli.dll
+  endif
+
+  VSIMPATH         = $(shell which vsim)
+  SIMROOT          = $(shell dirname $(VSIMPATH))/..
+  PLILIBPATH       = $(shell find $(SIMROOT) -name "$(PLILIB)")
+  MODEL_TECH       = $(shell dirname $(PLILIBPATH))
+endif
 
 #------------------------------------------------------
 # BUILD RULES
 #------------------------------------------------------
 
-# Build is dependant on processing makefile in vproc and riscV/iss
-all: ${RV32LIB} vproc
+.PHONY : vproc, all, hdl, run, rungui, runlog, compile, waves, gui, sim, log, help, clean
 
-.PHONY : ${RV32LIB}
-${RV32LIB}:
-	@${MAKE_EXE} -C ${RV32LIBDIR}
+# Build is dependent on processing makefile in vproc and riscV/iss
+all: $(RV32LIB) vproc hdl
+
+$(RV32LIB):
+	@$(MAKE_EXE) --no-print-directory -C $(RV32LIBDIR)
 
 # Call the vproc make file for it to determine if anything
 # needs building.
-.PHONY : vproc
 vproc:
-	@${MAKE_EXE} ${CURDIR}/VProc.so             \
-                 -C ${VPROCDIR}                 \
-                 USRFLAGS=${USRCFLAGS}          \
-                 USRCDIR=${CURDIR}/src          \
-                 USER_C="${USERCODE}"           \
-                 MEMMODELDIR=${MEMMODELDIR}/src \
-                 MEM_C="${MEMCSRC}"             \
-                 TESTDIR=${CURDIR}              \
-                 MODELSIMDIR="${MODEL_TECH}\.."
+	@$(MAKE_EXE) $(CURDIR)/VProc.so                    \
+	             --no-print-directory                  \
+	             -C $(VPROCDIR)/test                   \
+	             USRFLAGS=$(USRCFLAGS)                 \
+	             USRCDIR=$(CURDIR)/src                 \
+	             USER_C="$(USERCODE)"                  \
+	             MEMMODELDIR=$(MEMMODELDIR)/src        \
+	             MEM_C="$(MEMCSRC)"                    \
+	             TESTDIR=$(CURDIR)                     \
+	             SIMFLAGSSO="$(SIMFLAGSSO)"            \
+	             POSTVPROCSOFLAGS=$(POSTVPROCSOFLAGS)  \
+	             MODELSIMDIR="$(MODEL_TECH)\.."
+
+hdl:
+	@if [ ! -d "./work" ]; then                        \
+	      vlib work;                                   \
+	fi
+	@$(HDLCMD)
 
 #------------------------------------------------------
 # EXECUTION RULES
 #------------------------------------------------------
 
 run: all
-	@${VSIMEXE} -c -do sim.do ${VSIMARGS}
+	@$(VSIMEXE) -c -do sim.do $(VSIMARGS)
 
 rungui: all
-	@${VSIMEXE} -gui -do wave.do -do simg.do ${VSIMARGS}
-    
+	@$(VSIMEXE) -gui -do wave.do -do simg.do $(VSIMARGS)
+
 runlog: all
-	@awk -F" " '/add wave/{print "log " $$NF}' < wave.do > batch.do
-	@${VSIMEXE} -c -do simlog.do ${VSIMARGS}
-    
+	@awk -F" " '/add wave/(print "log " $$NF)' < wave.do > batch.do
+	@$(VSIMEXE) -c -do simlog.do $(VSIMARGS)
+
 
 compile:
-	@${VSIMEXE} -c -do compile.do -do quit
+	@$(VSIMEXE) -c -do compile.do -do quit
 
 waves:
-	@${VSIMEXE} -view vsim.wlf -do wave.do
+	@$(VSIMEXE) -view vsim.wlf -do wave.do
 
 gui: rungui
 
@@ -105,9 +155,9 @@ help:
 #------------------------------------------------------
 
 clean:
-	@${MAKE_EXE} -C ${VPROCDIR} USER_C="${USERCODE}" TESTDIR="${CURDIR}" clean
-	@${MAKE_EXE} -C ${RV32LIBDIR} clean
-	@rm -rf "wlf*"
-	@rm -rf "work"
-	@rm -rf transcript
+	@$(MAKE_EXE) --no-print-directory -C $(VPROCDIR)/test USER_C="$(USERCODE)" TESTDIR="$(CURDIR)" clean
+	@$(MAKE_EXE) --no-print-directory -C $(RV32LIBDIR) clean
 	@vsim -c -do cleanvlib.do -do quit
+	@rm -rf vsim.wlf
+	@rm -rf work
+	@rm -rf transcript

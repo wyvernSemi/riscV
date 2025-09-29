@@ -1,7 +1,8 @@
 /**************************************************************/
 /* mem_api_vproc.cpp                         Date: 2021/08/02 */
 /*                                                            */
-/* Copyright (c) 2021 Simon Southwell. All rights reserved.   */
+/* Copyright (c) 2021 - 2025 Simon Southwell.                 */
+/* All rights reserved.                                       */
 /*                                                            */
 /**************************************************************/
 #include <cstdio>
@@ -9,6 +10,26 @@
 #include <cstdint>
 
 #include "mem_vproc_api.h"
+
+static int node = -1;
+
+static inline chknodenum(int nodenum)
+{
+    return nodenum >= VP_MAX_NODES || nodenum < 0;
+}
+
+int init_mem (const int nodenum)
+{
+    if (chknodenum(nodenum))
+    {
+        fprintf(stderr, "init_mem(): Invalid node number (%d)\n", nodenum);
+        return 1;
+    }
+        
+    node = nodenum;
+    
+    return 0;
+}
 
 void write_word(uint32_t addr, uint32_t data)
 {

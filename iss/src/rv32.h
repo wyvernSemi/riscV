@@ -39,7 +39,7 @@ public:
 
     static const int major_ver = 1;
     static const int minor_ver = 2;
-    static const int patch_ver = 10;
+    static const int patch_ver = 11;
 
     LIBRISCV32_API rv32(FILE* dbg_fp = stdout) : RV32_TARGET_INHERITANCE_CLASS(dbg_fp)
     {

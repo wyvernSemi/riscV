@@ -1,24 +1,41 @@
 /**************************************************************/
 /* VUserMain0.cpp                            Date: 2021/08/02 */
 /*                                                            */
-/* Copyright (c) 2021 Simon Southwell. All rights reserved.   */
+/* Copyright (c) 2021 - 2025 Simon Southwell.                 */
+/* All rights reserved.                                       */
 /*                                                            */
 /**************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 
 #include "VUserMain0.h"
 #include "mem_vproc_api.h"
 #include "rv32.h"
+#include "rv32i_cpu.h"
 #include "rv32_cpu_gdb.h"
 
-// I'm node 0
-int node = 0;
+int                    node           = -1;
 
-static bool     vproc_interrupt_seen = false;
+static const int       strbufsize     = 256;
 
-static uint32_t irq_state            = 0;
+static uint32_t        sw_irq_addr    = 0xafffffff;
+static uint32_t        irq_state      = 0;
+static uint32_t        swirq          = 0;
+static bool            load_binary    = false;
+static uint32_t        bin_load_addr  = 0x00000000;
+
+static char            argstr[strbufsize];
+static char            execstr[strbufsize];
+
+// For windows, defined getopt externals
+#if defined _WIN32 || defined _WIN64
+extern "C" {
+    extern int getopt(int nargc, char** nargv, const char* ostr);
+    extern char* optarg;
+}
+#endif
 
 // ---------------------------------------------
 // External memory map access
@@ -27,38 +44,48 @@ static uint32_t irq_state            = 0;
 
 int ext_mem_access(const uint32_t addr, uint32_t& data, const int type, const rv32i_time_t time)
 {
-    int processed = 2;
+    int       processed             = 2; // default to two cycles for an access
+    const int write_wait_cycle      = 0;
 
-    switch (type & MEM_NOT_DBG_MASK)
+    // Accessing the software interrupt
+    if (addr == sw_irq_addr)
     {
-    case MEM_RD_ACCESS_BYTE:
-        data = read_byte(addr);
-        break;
-    case MEM_RD_ACCESS_HWORD:
-        data = read_hword(addr);
-        break;
-    case MEM_RD_ACCESS_INSTR:
-        data = read_instr(addr);
-        break;
-    case MEM_RD_ACCESS_WORD:
-        data = read_word(addr);
-        break;
-    case MEM_WR_ACCESS_BYTE:
-        write_byte(addr, data);
-        break;
-    case MEM_WR_ACCESS_HWORD:
-        write_hword(addr, data);
-        break;
-    case MEM_WR_ACCESS_INSTR:
-        // For instruction loads, write directly to memory
-        WriteRamWord(addr, data, MEM_MODEL_DEFAULT_ENDIAN, MEM_MODEL_DEFAULT_NODE);
-        break;
-    case MEM_WR_ACCESS_WORD:
-        write_word(addr, data);
-        break;
-    default:
-        processed = RV32I_EXT_MEM_NOT_PROCESSED;
-        break;
+        swirq     = (data & 0x1) << 2;
+        processed = write_wait_cycle;
+    }
+    else
+    {
+        switch (type & MEM_NOT_DBG_MASK)
+        {
+        case MEM_RD_ACCESS_BYTE:
+            data = read_byte(addr);
+            break;
+        case MEM_RD_ACCESS_HWORD:
+            data = read_hword(addr);
+            break;
+        case MEM_RD_ACCESS_INSTR:
+            data = read_instr(addr);
+            break;
+        case MEM_RD_ACCESS_WORD:
+            data = read_word(addr);
+            break;
+        case MEM_WR_ACCESS_BYTE:
+            write_byte(addr, data);
+            break;
+        case MEM_WR_ACCESS_HWORD:
+            write_hword(addr, data);
+            break;
+        case MEM_WR_ACCESS_INSTR:
+            // For instruction loads, write directly to memory
+            WriteRamWord(addr, data, MEM_MODEL_DEFAULT_ENDIAN, MEM_MODEL_DEFAULT_NODE);
+            break;
+        case MEM_WR_ACCESS_WORD:
+            write_word(addr, data);
+            break;
+        default:
+            processed = RV32I_EXT_MEM_NOT_PROCESSED;
+            break;
+        }
     }
 
     return processed;
@@ -76,7 +103,7 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
     char*  argvBuf[MAXARGS];
     char** argv = NULL;
 
-    char*  argstr = NULL;
+    char   argstr[strbufsize];
     size_t len = 0;
     char   delim[2];
     char   vusermainname[16];
@@ -101,7 +128,7 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
         strcpy(delim, " ");
         sprintf(vusermainname, "vusermain%c", '0' + node);
 
-        while (getline(&argstr, &len, fp) != -1)
+        while (fgets(argstr, strbufsize, fp) != NULL)
         {
             char* name = strtok(argstr, delim);
 
@@ -117,7 +144,7 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
         while((argvBuf[argc] = strtok(NULL, " ")) != NULL && argc < MAXARGS)
         {
             unsigned lastchar = argvBuf[argc][strlen(argvBuf[argc])-1];
-            
+
             // If last character is CR or LF, delete it
             if (lastchar == '\r' || lastchar == '\n')
             {
@@ -138,29 +165,39 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
         switch (c)
         {
         case 't':
-            cfg.exec_fname = optarg;
-            cfg.user_fname = true;
+            strncpy(execstr, optarg, strbufsize);
+            cfg.exec_fname             = execstr;
+            cfg.user_fname             = true;
+            break;
+        case 'B':
+            load_binary                = true;
+            break;
+        case 'L':
+            bin_load_addr              = strtol(optarg, NULL, 0);
             break;
         case 'n':
-            cfg.num_instr = atoi(optarg);
+            cfg.num_instr              = atoi(optarg);
             break;
         case 'b':
-            cfg.en_brk_on_addr = true;
+            cfg.en_brk_on_addr         = true;
             break;
         case 'A':
-            cfg.brk_addr = strtol(optarg, NULL, 0);
+            cfg.brk_addr               = strtol(optarg, NULL, 0);
             break;
         case 'r':
-            cfg.rt_dis = true;
+            cfg.rt_dis                 = true;
             break;
         case 'd':
-            cfg.dis_en = true;
+            cfg.dis_en                 = true;
             break;
         case 'H':
-            cfg.hlt_on_inst_err = true;
+            cfg.hlt_on_inst_err        = true;
             break;
         case 'e':
-            cfg.hlt_on_ecall = true;
+            cfg.hlt_on_ecall           = true;
+            break;
+        case 'E':
+            cfg.hlt_on_ebreak          = true;
             break;
         case 'D':
             if ((cfg.dbg_fp = fopen(optarg, "wb")) == NULL)
@@ -173,24 +210,51 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
             cfg.gdb_mode = true;
             break;
         case 'p':
-            cfg.gdb_ip_portnum = strtol(optarg, NULL, 0);
+            cfg.gdb_ip_portnum         = strtol(optarg, NULL, 0);
             break;
         case 'S':
-            cfg.update_rst_vec = true;
-            cfg.new_rst_vec    = strtol(optarg, NULL, 0);
+            cfg.update_rst_vec         = true;
+            cfg.new_rst_vec            = strtol(optarg, NULL, 0);
+            break;
+        case 'C':
+            cfg.use_cycles_for_mtime   = true;
+            break;
+        case 'a':
+            cfg.abi_en = true;
+            break;
+        case 'T':
+            cfg.use_external_timer     = true;
+            break;
+        case 'R':
+            cfg.dump_regs              = true;
+            break;
+        case 'c':
+            cfg.dump_csrs              = true;
+            break;
+        case 's':
+            sw_irq_addr                = strtol(optarg, NULL, 0);
             break;
         case 'h':
         default:
-            fprintf(stderr, "Usage: %s -t <test executable> [-hHebdrg][-n <num instructions>]\n      [-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>]\n", argv[0]);
+            fprintf(stderr, "Usage: %s -t <test executable> [-hHeEbdrgcRTaCB][-n <num instructions>]\n      [-L <load addr>][-S <start addr>][-A <brk addr>][-D <debug o/p filename>][-p <port num>][-s <addr>]\n", argv[0]);
             fprintf(stderr, "   -t specify test executable (default test.exe)\n");
+            fprintf(stderr, "   -B specify to load a raw binary file (default load ELF executable)\n");
+            fprintf(stderr, "   -L specify address to load binary, if -B specified (default 0x00000000)\n");
             fprintf(stderr, "   -n specify number of instructions to run (default 0, i.e. run until unimp)\n");
             fprintf(stderr, "   -d Enable disassemble mode (default off)\n");
             fprintf(stderr, "   -r Enable run-time disassemble mode (default off. Overridden by -d)\n");
+            fprintf(stderr, "   -C Use cycle count for internal mtime timer (default real-time)\n");
+            fprintf(stderr, "   -a display ABI register names when disassembling (default x names)\n");
+            fprintf(stderr, "   -T Use external memory mapped timer model (default internal)\n");
             fprintf(stderr, "   -H Halt on unimplemented instructions (default trap)\n");
-            fprintf(stderr, "   -e Halt on ecall/ebreak instruction (default trap)\n");
+            fprintf(stderr, "   -e Halt on ecall instruction (default trap)\n");
+            fprintf(stderr, "   -E Halt on ebreak instruction (default trap)\n");
             fprintf(stderr, "   -b Halt at a specific address (default off)\n");
             fprintf(stderr, "   -A Specify halt address if -b active (default 0x00000040)\n");
             fprintf(stderr, "   -D Specify file for debug output (default stdout)\n");
+            fprintf(stderr, "   -s Specify a software interrupt address (default = 0xafffffff)\n");
+            fprintf(stderr, "   -R Dump x0 to x31 on exit (default no dump)\n");
+            fprintf(stderr, "   -c Dump CSR registers on exit (default no dump)\n");
             fprintf(stderr, "   -g Enable remote gdb mode (default disabled)\n");
             fprintf(stderr, "   -p Specify remote GDB port number (default 49152)\n");
             fprintf(stderr, "   -S Specify start address (default 0)\n");
@@ -212,35 +276,50 @@ int parseArgs(int argcIn, char** argvIn, rv32i_cfg_s &cfg, const int node)
 // variables. Also, it is not valid to make further VProc calls from
 // this CB, but updating state here should instigate required functionality
 // in the main program flow.
-int vproc_user_callback(int val)
+int vproc_irq_callback(int val)
 {
-    vproc_interrupt_seen = val ? true : false;
+    irq_state = val;
+
+    return 0;
 }
 
-// The ISS interrupt callback will return an interrupt when vproc_interrupt_seen
-// is true, else it returns 0. The wakeup time in this model is always the next
+// The ISS interrupt callback will return an interrupt when irq_state
+// is non-zero. The wakeup time in this model is always the next
 // cycle.
 uint32_t iss_int_callback(const rv32i_time_t time, rv32i_time_t *wakeup_time)
 {
-    *wakeup_time = time + 1;
+    // Sample the swirq state
+    uint32_t sw_interrupt = swirq;
 
-    return vproc_interrupt_seen ? 1 : 0;
+    // Clear the pending swirq
+    swirq                 = 0;
+
+    *wakeup_time          = time + 1;
+
+
+    return irq_state | sw_interrupt;
 }
 
 // ---------------------------------------------
 // Main entry point for node 0 VPRoc
 // ---------------------------------------------
 
-extern "C" void VUserMain0()
+extern "C" void VUserMain0 (uint32_t nodenum)
 {
     rv32*         pCpu;
     rv32i_cfg_s   cfg;
+    int           error = 0;
 
     VPrint("\n*****************************\n");
     VPrint(  "*   Wyvern Semiconductors   *\n");
     VPrint(  "*  rv32_cpu ISS (on VProc)  *\n");
-    VPrint(  "*     Copyright (c) 2021    *\n");
+    VPrint(  "*     Copyright (c) 2025    *\n");
     VPrint(  "*****************************\n\n");
+    
+    node = nodenum;
+
+    // Initialise memory mode with node number
+    init_mem(node);
 
     VTick(20, node);
 
@@ -263,8 +342,9 @@ extern "C" void VUserMain0()
         // Register ISS interrupt callback
         pCpu->register_int_callback(iss_int_callback);
 
-        // Register VProc user callback, used to update irq status
-        VRegUser(vproc_user_callback, node);
+        // Register VProc user callback, used to update IRQ state
+        VRegIrq(vproc_irq_callback, node);
+        
 
         // If GDB mode, pass execution to the remote GDB interface
         if (cfg.gdb_mode)
@@ -274,20 +354,31 @@ extern "C" void VUserMain0()
             WSADATA wsaData;
             WSAStartup(versionWanted, &wsaData);
 #endif
-            int error = 0;
 
             // Load an executable if specified on the command line
             if (cfg.user_fname)
             {
-                if (pCpu->read_elf(cfg.exec_fname))
+                // Load the specified ELF file to memory
+                if (!load_binary)
                 {
-                    error = 1;
+                    if (pCpu->read_elf(cfg.exec_fname))
+                    {
+                        error++;
+                    }
+                }
+                else
+                {
+                    // Load the specified binary to memory
+                    if (pCpu->read_binary(cfg.exec_fname, bin_load_addr))
+                    {
+                        error++;
+                    }
                 }
             }
 
             if (!error)
             {
-                // Start procssing commands from GDB
+                // Start processing commands from GDB
                 if (rv32gdb_process_gdb(pCpu, cfg.gdb_ip_portnum, cfg))
                 {
                     fprintf(stderr, "***ERROR in opening PTY\n");
@@ -301,7 +392,25 @@ extern "C" void VUserMain0()
         else
         {
             // Load an executable
-            if (!pCpu->read_elf(cfg.exec_fname))
+            if (!load_binary)
+            {
+                // Load an ELF file to memory
+                if (pCpu->read_elf(cfg.exec_fname))
+                {
+                    error++;
+                }
+            }
+            else
+            {
+                // Load a binary to memory
+                if (pCpu->read_binary(cfg.exec_fname, bin_load_addr))
+                {
+                    error++;
+                }
+            }
+
+            // Run the model
+            if (!error)
             {
                 // Run processor
                 pCpu->run(cfg);
@@ -323,7 +432,7 @@ extern "C" void VUserMain0()
             fclose(cfg.dbg_fp);
         }
         delete pCpu;
-    }
+ }
 
     VTick(20, node);
 

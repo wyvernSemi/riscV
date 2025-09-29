@@ -35,7 +35,6 @@
 `define RESET_PERIOD    10
 `define TIMEOUT_COUNT   400000
 
-`define BE_ADDR         32'hAFFFFFF0
 `define HALT_ADDR       32'hAFFFFFF8
 `define INT_ADDR        32'hAFFFFFFC
 
@@ -120,23 +119,18 @@ end
 // Virtual CPU
 // -----------------------------------------------
 
- riscVsim  #(.BE_ADDR(`BE_ADDR), .USE_HARVARD(USE_HARVARD)) cpu
+ riscVsim  #(.NODE(0)) cpu
  (
    .clk                     (clk),
 
-   .daddress                (address),
-   .dwrite                  (write),
-   .dwritedata              (writedata),
-   .dbyteenable             (byteenable),
-   .dread                   (read),
-   .dreaddata               (readdata),
-   .dwaitrequest            (read & ~readdatavalid),
+   .address                 (address),
+   .write                   (write),
+   .writedata               (writedata),
+   .byteenable              (byteenable),
+   .read                    (read),
+   .readdata                (readdata),
+   .waitrequest             (read & ~readdatavalid),
    
-   .iaddress                (iaddress),
-   .iread                   (iread),
-   .ireaddata               (readdata),
-   .iwaitrequest            (iread & ~readdatavalid),
-
    .irq                     (irq)
  );
 
@@ -149,11 +143,11 @@ end
     .clk                    (clk),
     .rst_n                  (reset_n),
 
-    .address                (readaddress),
+    .address                (address),
     .write                  (write),
     .writedata              (writedata),
     .byteenable             (byteenable),
-    .read                   (read | iread),
+    .read                   (read),
     .readdata               (readdata),
     .readdatavalid          (readdatavalid),
 

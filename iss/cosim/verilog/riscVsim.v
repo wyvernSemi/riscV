@@ -11,7 +11,7 @@
 //  This block defines the top level for verilog wrapper around the rv32_cpu ISS
 //  Using VProc
 // -----------------------------------------------------------------------------
-//  Copyright (c) 2021 Simon Southwell
+//  Copyright (c) 2021 - 2025 Simon Southwell
 // -----------------------------------------------------------------------------
 //
 //  This is free software: you can redistribute it and/or modify
@@ -32,94 +32,88 @@
 `timescale 1ns / 1ps
 
 module riscVsim
- #(parameter          BE_ADDR     = 32'hAFFFFFF0,
-   parameter          NODE        = 0,
-   parameter          USE_HARVARD = 1)
+ #(
+`ifndef VPROC_BYTE_ENABLE
+   parameter          BE_ADDR     = 32'hAFFFFFF0,
+`endif
+   parameter          NODE        = 0
+ )
  (
     input             clk,
 
     // Memory mapped master interface
-    output     [31:0] daddress,
-    output reg        dwrite,
-    output     [31:0] dwritedata,
-    output reg  [3:0] dbyteenable,
-    output            dread,
-    input      [31:0] dreaddata,
-    input             dwaitrequest,
-    
-    // Interface active if USE_HARVARD is 1 and instr_access set by software
-    output     [31:0] iaddress,
-    output            iread,
-    input      [31:0] ireaddata,
-    input             iwaitrequest,
-    
+    output     [31:0] address,
+    output reg        write,
+    output     [31:0] writedata,
+    output reg  [3:0] byteenable,
+    output            read,
+    input      [31:0] readdata,
+    input             waitrequest,
+
     input             irq
 );
 
-reg         irqDly;
-reg         instr_access;
 reg         UpdateResponse;
 wire        Update;
 wire        WE;
+wire        BE;
 wire        RDAck;
-wire        read_int;
-wire [31:0] nodenum = NODE;
-wire [31:0] rd_data;
+wire [31:0] nodenum    = NODE;
 
-assign      iaddress = daddress;
-assign      iread    = read_int && instr_access && USE_HARVARD;
-assign      dread    = read_int && (instr_access == 1'b0 || USE_HARVARD == 0);
-assign      rd_data  = dread ? dreaddata : ireaddata;
-assign      RDAck    = ((dread & ~dwaitrequest) == 1'b1 || (iread & ~iwaitrequest) == 1'b1) ? 1'b1 : 1'b0;
+assign      RDAck      = (read & ~waitrequest);
 
 initial
 begin
-  irqDly          <= 1'b0;
-  instr_access    <= 1'b0;
-
-  UpdateResponse  <= 1'b1;
-  dbyteenable     <= 4'hf;
+  UpdateResponse       <= 1'b1;
+  byteenable           <= 4'hf;
 end
 
 
   VProc vp (
             .Clk                     (clk),
-            .Addr                    (daddress),
+            .Addr                    (address),
             .WE                      (WE),
-            .RD                      (read_int),
-            .DataOut                 (dwritedata),
-            .DataIn                  (rd_data),
+`ifdef VPROC_BYTE_ENABLE
+            .BE                      (BE)
+`endif
+            .RD                      (read),
+            .DataOut                 (writedata),
+            .DataIn                  (readdata),
             .WRAck                   (WE),
             .RDAck                   (RDAck),
-            .Interrupt               (3'b000),
+            .Interrupt               ({2'b00, irq}),
+`ifdef VPROC_BURST_IF
+            .Burst                   (),
+            .BurstFirst              (),
+            .BurstLast               (),
+`endif
             .Update                  (Update),
             .UpdateResponse          (UpdateResponse),
             .Node                    (nodenum[3:0])
            );
 
+// -----------------------------------------------------
+// VProc update process
+// -----------------------------------------------------
 
 always @(Update)
 begin
-  if (WE == 1'b1 && daddress == BE_ADDR)
+`ifndef VPROC_BYTE_ENABLE
+  if (WE == 1'b1 && address == BE_ADDR)
   begin
-    dbyteenable        <= dwritedata[3:0];
-    instr_access       <= dwritedata[31];
-    dwrite             <= 1'b0;
+    byteenable         <= writedata[3:0];
+    write              <= 1'b0;
   end
   else
   begin
-    dwrite             <= WE;
+    write              <= WE;
   end
-  
-  irqDly               <= irq;
-  
-  // When the irq state changes, call the user function with the updated value
-  if (irq != irqDly)
-  begin
-     $vprocuser(nodenum, irq);
-  end
-  
-  UpdateResponse = ~UpdateResponse;
+`else
+    write              <= WE;
+    byteenable         <= BE;
+`endif
+
+  UpdateResponse       = ~UpdateResponse;
 end
 
 endmodule

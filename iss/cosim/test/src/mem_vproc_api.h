@@ -31,8 +31,7 @@ extern "C" {
 
 #define INSTR_ACCESS                            0x8000000F
 
-extern int      node;
-
+extern int      init_mem    (const int node);
 extern void     write_word  (uint32_t addr, uint32_t data);
 extern void     write_hword (uint32_t addr, uint32_t data);
 extern void     write_byte  (uint32_t addr, uint32_t data);

@@ -15,7 +15,7 @@ extern "C" {
 }
 
 #define CFGFILENAME                        "vusermain.cfg"
-#define RV32I_GETOPT_ARG_STR               "hHdbrget:n:D:A:p:S:"
+#define RV32I_GETOPT_ARG_STR               "hHdbrgeEt:n:D:A:p:S:BL:CaTRcs:"
 #define MAXARGS                            100
 #define MEM_SIZE                           (1024*1024)
 #define MEM_OFFSET                         0
