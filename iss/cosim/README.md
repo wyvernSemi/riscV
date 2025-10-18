@@ -15,6 +15,13 @@ _QuestaSim_.
 
 ## Verilog Component
 
-The Verilog component in  `verilog/riscVsim.v`
+The Verilog component in `verilog/riscVsim.v` has a clock input, a very simple generic 32-bit address
+bus and a interrupt request input. It has a single `NODE` parameter for setting the internal _VProc_
+component's node number so that the component can be mixed with other _VProc_ based modules, each
+of which must have a unique node number.
+
+The diagram below illustrates the component and its ports.
 
 ![image](images/riscVsim.png)
+
+Copyright &copy; 2025 Simon Southwell
