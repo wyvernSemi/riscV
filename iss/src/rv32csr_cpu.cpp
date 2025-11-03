@@ -390,6 +390,10 @@ uint32_t rv32csr_cpu::csr_wr_mask(const uint32_t addr, bool &unimp)
         case RV32CSR_ADDR_MINSTRETH:
             mask = RV32CSR_MINSTRET_WR_MASK;
             break;
+        case RV32CSR_ADDR_INSTRET:
+        case RV32CSR_ADDR_INSTRETH:
+            mask = RV32CSR_INSTRET_WR_MASK;
+            break;
         case RV32CSR_ADDR_MCOUNTINHIBIT:
             mask = RV32CSR_MCOUNTINHIBIT_WR_MASK;
             break;

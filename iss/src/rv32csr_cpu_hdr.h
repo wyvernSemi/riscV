@@ -269,6 +269,7 @@ public:
     static const uint32_t RV32CSR_FCSR_WR_MASK                         = 0x000000ff;
 
     static const uint32_t RV32CSR_CYCLE_WR_MASK                        = 0x00000000; /* Read only in user space */
+    static const uint32_t RV32CSR_INSTRET_WR_MASK                      = 0x00000000; /* Read only in user space */
 
     static const uint32_t RV32CSR_MSTATUS_FS_MASK                      = 0x00006000;
     static const uint32_t RV32CSR_MSTATUS_FS_OFF                       = 0x00000000;
