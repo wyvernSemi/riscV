@@ -21,6 +21,7 @@ the model's main features is shown below.
   * RV32B (bit manipulation)
     * RV32Zba, RV32Zbb, RV32Zbs
   * RV32Zbc (carry-less multiply)
+  * Zicntr extensions, with emulated `rdtime[h]` instructions
 * Single HART
 * Machine (M) privilege mode supported
 * Trap handling (with Zicsr extension)
