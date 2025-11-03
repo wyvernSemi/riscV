@@ -241,6 +241,12 @@ void rv32csr_cpu::update_csr_counts(void)
     state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH]   = (clk_cycles() >> 32) & 0xffffffff;
     state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRET]  = inst_retired() & 0xffffffff;
     state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRETH] = (inst_retired() >> 32) & 0xffffffff;
+
+    // Mirror the  counts in the user space registers
+    state.hart[curr_hart].csr[RV32CSR_ADDR_CYCLE]     = state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLE];
+    state.hart[curr_hart].csr[RV32CSR_ADDR_CYCLEH]    = state.hart[curr_hart].csr[RV32CSR_ADDR_MCYCLEH];
+    state.hart[curr_hart].csr[RV32CSR_ADDR_INSTRET]   = state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRET];
+    state.hart[curr_hart].csr[RV32CSR_ADDR_INSTRETH]  = state.hart[curr_hart].csr[RV32CSR_ADDR_MINSTRETH];
 }
 
 // -----------------------------------------------------------
@@ -375,6 +381,10 @@ uint32_t rv32csr_cpu::csr_wr_mask(const uint32_t addr, bool &unimp)
         case RV32CSR_ADDR_MCYCLE:
         case RV32CSR_ADDR_MCYCLEH:
             mask = RV32CSR_MCYCLE_WR_MASK;
+            break;
+        case RV32CSR_ADDR_CYCLE:
+        case RV32CSR_ADDR_CYCLEH:
+            mask = RV32CSR_CYCLE_WR_MASK;
             break;
         case RV32CSR_ADDR_MINSTRET:
         case RV32CSR_ADDR_MINSTRETH:
