@@ -2,6 +2,8 @@
 
 | Revision  |  Change Summary | 
 ------------|----------- 
+| 1.3.0     | Added Zicntr extensions |
+| 1.2.11    | Fix rv32 cosim for latest VProc |
 | 1.2.10    | Minor corrections to rv32cfg.py layout |
 | 1.2.9     | Bug fixes |
 | 1.2.8     | Minor changes |
@@ -20,6 +22,12 @@
 | 1.1.2     | Fix to loading ELF with unaligned EOF |
 | 1.1.1     | Added timing model configurability |
 | 1.0.0     | First official release |
+
+## 1.3 3rd November 2025
+* Added Zicntr extensions to support user space `RDCYLE[H]` and `RDINSRET[H]` instructions. `RDTIME[H]` supported through emulated instruction.
+
+## 1.2.11 29th September 2025
+* Fixed rv32 ISS co-simulatoin for latest
 
 ## 1.2.10 28th September 2025
 * Minor corrections to rv32cfg.py layout 
