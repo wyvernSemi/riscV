@@ -1,7 +1,7 @@
 # riscV
-An open source Verilog  Softcore and C++ Instruction Set Simulator and logic RISC-V 32 bit project. The project is meant to be an informative and educational exercise in the contruction of processor models and logic implementations, using the RISC-V open-source architecture as a base, as a modern, relevant, processor architecture.
+An open source Verilog  Softcore RISC-V 32 bit project. The project is meant to be an informative and educational exercise in the contruction of processor models and logic implementations, using the RISC-V open-source architecture as a base, as a modern, relevant, processor architecture.
 
-The project, at this time, limits itself to the 32 bit specifications, but the implementations are architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see HDL/doc/manual.pdf and iss/doc/iss_manual.pdf).
+The project, at this time, limits itself to the 32 bit specifications, but the implementations are architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see `HDL/doc/manual.pdf`). The [`rv32`](github.com/wyvernSemi/rv32) instruction set simulator (ISS) repoistory is added as a submodule for use as a reference. Its manual can be found in `rv32\iss\doc\iss_manual.pdf`).
 
 ## HDL
 
@@ -39,39 +39,3 @@ The Verilog Softcore has the following features
 	*	Targeting 100MHz clock operation
 	*	< 1000 ALMs (~2600 LEs) when also employing Zicsr and RV32M extensions (RV32I implementation currently around 700 ALMs, ~1900 LEs).
 
-## ISS
-<p align="center">
-<img src="https://github.com/wyvernSemi/riscV/assets/21970031/61eb37df-3997-43bc-aaf7-9a63da63149c" width=600>
-</p>
-
-The ISS has the following features:
-
-* RV32I ISA model
-	* Support for RV32E via compile option
-* Standard extension support
-	* Zicsr extension with CSR instructions and registers
-	* RV32G extensions
-		* RV32M, RV32A, RV32F and RV32D
-	* RV32C extension
-	* RV32B extensions
-		* RV32ZBA, RV32ZBB and RV32ZBS	
-	* RV32Zbc extension
-* Single HART
-* Machine (M) privilege mode supported
-* Trap handling
-* Configurable instruction timing model
-* Internal timer model using cycle count or real-time clock
-* Instructions retired count
-* Interrupt handling
-	* External interrupts
-	* Timer interrupts
-	* Software interrupts
-* Internal memory model (1MBytes)
-* User registerable extenal callback functions
-	* External memory callback 
-	* External interrupt callback
- 	* Unimplemented instructions callback 
-* Disassembler, both run-time and static
-* Loading of ELF programs to memory
-* Remote gdb debug interface for connection to gdb/IDEs
-* Co-simulation support for connecting to a logic simulator
