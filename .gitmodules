@@ -1,0 +1,3 @@
+[submodule "rv32"]
+	path = rv32
+	url = http://github.com/wyvernSemi/rv32
