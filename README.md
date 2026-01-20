@@ -1,7 +1,7 @@
 # riscV
 An open source Verilog  Softcore RISC-V 32 bit project. The project is meant to be an informative and educational exercise in the contruction of processor models and logic implementations, using the RISC-V open-source architecture as a base, as a modern, relevant, processor architecture.
 
-The project, at this time, limits itself to the 32 bit specifications, but the implementations are architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see `HDL/doc/manual.pdf`). The [`rv32`](github.com/wyvernSemi/rv32) instruction set simulator (ISS) repoistory is added as a submodule for use as a reference. Its manual can be found in `rv32\iss\doc\iss_manual.pdf`).
+The project, at this time, limits itself to the 32 bit specifications, but the implementations are architected to be an expandable implementation that can mix and match the various RISC-V expansion specifications (see `HDL/doc/manual.pdf`). The [`rv32`](https://github.com/wyvernSemi/rv32) instruction set simulator (ISS) repoistory is added as a submodule for use as a reference. Its manual can be found in `rv32\iss\doc\iss_manual.pdf`).
 
 ## HDL
 
